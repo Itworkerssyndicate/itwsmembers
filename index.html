@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="neon-dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#000000" />
+
+<!-- ============================================
+     SEO + TITLE
+     ============================================ -->
+<title>نقابة تكنولوجيا المعلومات والبرمجيات</title>
+<meta name="description" content="منظومة العضوية الرقمية لنقابة تكنولوجيا المعلومات والبرمجيات — قدّم طلب عضويتك وتابع حالة طلبك إلكترونيًا." />
+<meta name="keywords" content="نقابة تكنولوجيا المعلومات, البرمجيات, عضوية, مصر" />
+<meta name="author" content="نقابة تكنولوجيا المعلومات والبرمجيات" />
+
+<!-- ============================================
+     OPEN GRAPH (Facebook / WhatsApp / Telegram)
+     ============================================ -->
+<!--
+  TODO: بعد ما ترفع اللوجو من الإعدادات، خد الرابط المباشر للصورة
+  والصقه مكان السطرين اللي تحت (og:image و twitter:image)
+-->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="نقابة تكنولوجيا المعلومات والبرمجيات" />
+<meta property="og:title" content="نقابة تكنولوجيا المعلومات والبرمجيات" />
+<meta property="og:description" content="منظومة العضوية الرقمية — قدّم طلب عضويتك وتابع حالة طلبك إلكترونيًا." />
+<meta property="og:url" content="https://zenhokbsuxgiyptmdphs.supabase.co/storage/v1/object/public/branding/logo.png" />
+<meta property="og:image" content="https://zenhokbsuxgiyptmdphs.supabase.co/storage/v1/object/public/branding/logo.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="شعار نقابة تكنولوجيا المعلومات والبرمجيات" />
+<meta property="og:locale" content="ar_EG" />
+
+<!-- ============================================
+     TWITTER CARD
+     ============================================ -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="نقابة تكنولوجيا المعلومات والبرمجيات" />
+<meta name="twitter:description" content="منظومة العضوية الرقمية — قدّم طلب عضويتك وتابع حالة طلبك إلكترونيًا." />
+<meta name="twitter:image" content="https://zenhokbsuxgiyptmdphs.supabase.co/storage/v1/object/public/branding/logo.png" />
+
+<!-- ============================================
+     FAVICON (Dynamic - يتحدّث من الإعدادات)
+     ============================================ -->
+<link rel="icon" id="faviconLink" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt;%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt;%3C/text%3E%3C/svg%3E" />
+<link rel="shortcut icon" id="shortcutIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt;%3C/text%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/themes.css" />
+<style>
+  /* ============================================
+     RESET & BASE
+     ============================================ */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    background: #000;
+    font-family: 'Cairo', 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
+    color: #fff;
+    user-select: none;
+  }
+
+  /* ============================================
+     BACKGROUND LAYERS
+     ============================================ */
+  .bg-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  #matrixCanvas { z-index: 1; opacity: 0.55; }
+  #neuralCanvas { z-index: 2; opacity: 0.85; }
+
+  .grid-overlay {
+    z-index: 3;
+    background-image:
+      linear-gradient(rgba(0, 240, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridMove 25s linear infinite;
+  }
+
+  @keyframes gridMove {
+    from { background-position: 0 0, 0 0; }
+    to   { background-position: 60px 60px, 60px 60px; }
+  }
+
+  .vignette {
+    z-index: 4;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 0%,
+      transparent 40%,
+      rgba(0, 0, 0, 0.6) 80%,
+      rgba(0, 0, 0, 0.95) 100%
+    );
+  }
+
+  .scanline {
+    z-index: 5;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(0, 240, 255, 0.06) 50%,
+      transparent 100%
+    );
+    height: 25%;
+    animation: scanMove 4s linear infinite;
+  }
+
+  @keyframes scanMove {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(500%); }
+  }
+
+  /* Circuit Board */
+  .circuit-bg {
+    z-index: 2;
+    opacity: 0.15;
+    overflow: hidden;
+  }
+
+  .circuit-bg svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .circuit-line {
+    stroke: var(--accent, #00f0ff);
+    stroke-width: 1;
+    fill: none;
+    stroke-dasharray: 400;
+    stroke-dashoffset: 400;
+    animation: drawLine 4s ease-in-out infinite;
+  }
+
+  .circuit-line:nth-child(1) { animation-delay: 0s; }
+  .circuit-line:nth-child(2) { animation-delay: 0.3s; }
+  .circuit-line:nth-child(3) { animation-delay: 0.6s; }
+  .circuit-line:nth-child(4) { animation-delay: 0.9s; }
+  .circuit-line:nth-child(5) { animation-delay: 1.2s; }
+  .circuit-line:nth-child(6) { animation-delay: 1.5s; }
+  .circuit-line:nth-child(7) { animation-delay: 1.8s; }
+  .circuit-line:nth-child(8) { animation-delay: 2.1s; }
+
+  @keyframes drawLine {
+    0%   { stroke-dashoffset: 400; opacity: 0; }
+    30%  { opacity: 1; }
+    70%  { opacity: 1; }
+    100% { stroke-dashoffset: -400; opacity: 0; }
+  }
+
+  .circuit-node {
+    fill: var(--accent, #00f0ff);
+    animation: nodePulse 2s ease-in-out infinite;
+  }
+
+  @keyframes nodePulse {
+    0%, 100% { opacity: 0.3; }
+    50%      { opacity: 1; }
+  }
+
+  /* Data Streams */
+  .data-stream {
+    position: fixed;
+    z-index: 2;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent, #00f0ff);
+    opacity: 0.25;
+    white-space: nowrap;
+    pointer-events: none;
+    animation: streamMove linear infinite;
+  }
+
+  .data-stream.s1 { top: 15%; animation-duration: 18s; animation-delay: 0s; }
+  .data-stream.s2 { top: 35%; animation-duration: 22s; animation-delay: -5s; }
+  .data-stream.s3 { top: 55%; animation-duration: 20s; animation-delay: -10s; }
+  .data-stream.s4 { top: 75%; animation-duration: 25s; animation-delay: -3s; }
+  .data-stream.s5 { top: 90%; animation-duration: 19s; animation-delay: -8s; }
+
+  @keyframes streamMove {
+    from { transform: translateX(-100vw); }
+    to   { transform: translateX(100vw); }
+  }
+
+  /* Corners */
+  .corner {
+    position: fixed;
+    width: 70px;
+    height: 70px;
+    border: 2px solid var(--accent, #00f0ff);
+    z-index: 10;
+    opacity: 0.6;
+    animation: cornerPulse 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .corner.tl { top: 20px; left: 20px; border-right: none; border-bottom: none; border-top-left-radius: 6px; }
+  .corner.tr { top: 20px; right: 20px; border-left: none; border-bottom: none; border-top-right-radius: 6px; }
+  .corner.bl { bottom: 20px; left: 20px; border-right: none; border-top: none; border-bottom-left-radius: 6px; }
+  .corner.br { bottom: 20px; right: 20px; border-left: none; border-top: none; border-bottom-right-radius: 6px; }
+
+  @keyframes cornerPulse {
+    0%, 100% { opacity: 0.3; box-shadow: 0 0 0 var(--accent, #00f0ff); }
+    50%      { opacity: 1;   box-shadow: 0 0 20px var(--accent, #00f0ff); }
+  }
+
+  /* ============================================
+     MAIN WRAP
+     ============================================ */
+  .splash-wrap {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  }
+
+  /* ============================================
+     LOGO STAGE (Dynamic)
+     ============================================ */
+  .logo-stage {
+    position: relative;
+    width: 170px;
+    height: 170px;
+    margin-bottom: 28px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: logoEnter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes logoEnter {
+    from { opacity: 0; transform: scale(0.5) rotate(-180deg); }
+    to   { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+
+  .logo-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: var(--accent, #00f0ff);
+    border-right-color: var(--accent2, #b026ff);
+    animation: rotateRing 1.4s linear infinite;
+    box-shadow:
+      0 0 30px var(--accent, #00f0ff),
+      inset 0 0 30px var(--accent, #00f0ff);
+  }
+
+  .logo-ring:nth-child(2) {
+    inset: 14px;
+    animation-duration: 2s;
+    animation-direction: reverse;
+    border-top-color: var(--accent2, #b026ff);
+    border-left-color: var(--accent, #00f0ff);
+  }
+
+  .logo-ring:nth-child(3) {
+    inset: 28px;
+    animation-duration: 1s;
+    border-top-color: #fff;
+    border-bottom-color: var(--accent2, #b026ff);
+  }
+
+  @keyframes rotateRing { to { transform: rotate(360deg); } }
+
+  .logo-core {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 30% 30%,
+      rgba(255, 255, 255, 0.05),
+      rgba(0, 0, 0, 0.6) 70%,
+      transparent
+    );
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    z-index: 2;
+    animation: pulseCore 1.5s ease-in-out infinite;
+    border: 1.5px solid rgba(0, 240, 255, 0.4);
+  }
+
+  .logo-core img {
+    width: 88%;
+    height: 88%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 12px var(--accent, #00f0ff));
+    animation: logoImgPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes logoImgPulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.05); }
+  }
+
+  .logo-core svg.logo-fallback {
+    width: 55%;
+    height: 55%;
+    stroke: #fff;
+    stroke-width: 2;
+    fill: none;
+    filter: drop-shadow(0 0 10px var(--accent, #00f0ff));
+  }
+
+  @keyframes pulseCore {
+    0%, 100% { box-shadow: 0 0 40px var(--accent, #00f0ff), inset 0 0 20px rgba(0, 240, 255, 0.15); }
+    50%      { box-shadow: 0 0 60px var(--accent, #00f0ff), inset 0 0 30px rgba(0, 240, 255, 0.25); }
+  }
+
+  /* ============================================
+     SYNDICATE NAME
+     ============================================ */
+  .syndicate-name {
+    font-family: 'Tajawal', 'Cairo', sans-serif;
+    font-size: clamp(24px, 5.5vw, 42px);
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    text-align: center;
+    line-height: 1.3;
+    background: linear-gradient(
+      90deg,
+      var(--accent, #00f0ff),
+      var(--accent2, #b026ff),
+      var(--accent, #00f0ff)
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 3s linear infinite, titleEnter 1s 0.3s both;
+    filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.4));
+  }
+
+  .syndicate-name-en {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(10px, 1.8vw, 13px);
+    font-weight: 700;
+    letter-spacing: 6px;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    margin-bottom: 20px;
+    animation: titleEnter 1s 0.5s both;
+  }
+
+  @keyframes shine { to { background-position: 200% center; } }
+
+  @keyframes titleEnter {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============================================
+     HEAD CARD
+     ============================================ */
+  .head-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(0, 240, 255, 0.05);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    border-radius: 50px;
+    padding: 10px 22px;
+    margin-bottom: 28px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.15), inset 0 0 20px rgba(0, 240, 255, 0.05);
+    animation: titleEnter 1s 0.7s both;
+    position: relative;
+  }
+
+  .head-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 50px;
+    padding: 1px;
+    background: linear-gradient(90deg,
+      var(--accent, #00f0ff),
+      var(--accent2, #b026ff),
+      var(--accent, #00f0ff));
+    background-size: 200% auto;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: shine 3s linear infinite;
+    pointer-events: none;
+  }
+
+  .head-icon {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 0 8px var(--accent, #00f0ff));
+  }
+
+  .head-icon svg {
+    width: 100%;
+    height: 100%;
+    stroke: var(--accent, #00f0ff);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .head-label {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 1px;
+  }
+
+  .head-name {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 15px var(--accent, #00f0ff);
+  }
+
+  /* ============================================
+     TERMINAL
+     ============================================ */
+  .terminal {
+    width: 100%;
+    max-width: 520px;
+    background: rgba(0, 0, 0, 0.75);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(11px, 2.4vw, 13px);
+    color: var(--accent, #00f0ff);
+    text-align: left;
+    direction: ltr;
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.15), inset 0 0 20px rgba(0, 240, 255, 0.05);
+    margin-bottom: 24px;
+    min-height: 140px;
+    animation: titleEnter 1s 0.9s both;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .terminal::before {
+    content: '● ● ●';
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    font-size: 8px;
+    letter-spacing: 4px;
+    color: #ff5f56;
+    opacity: 0.7;
+  }
+
+  .terminal-line {
+    opacity: 0;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .terminal-line:nth-child(1) { animation: typeLine 0.4s 0.2s forwards; }
+  .terminal-line:nth-child(2) { animation: typeLine 0.4s 0.9s forwards; }
+  .terminal-line:nth-child(3) { animation: typeLine 0.4s 1.6s forwards; }
+  .terminal-line:nth-child(4) { animation: typeLine 0.4s 2.3s forwards; }
+  .terminal-line:nth-child(5) { animation: typeLine 0.4s 3.0s forwards; }
+  .terminal-line:nth-child(6) { animation: typeLine 0.4s 3.6s forwards; }
+  .terminal-line:nth-child(7) { animation: typeLine 0.4s 4.1s forwards; }
+
+  .terminal-line .ok { color: #00ff9d; font-weight: 700; }
+  .terminal-line .warn { color: #ffb800; font-weight: 700; }
+  .terminal-line .prompt { color: var(--accent2, #b026ff); font-weight: 700; }
+
+  @keyframes typeLine {
+    from { opacity: 0; transform: translateX(-12px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Progress */
+  .progress-wrap {
+    width: 100%;
+    max-width: 520px;
+    animation: titleEnter 1s 1.2s both;
+    flex-shrink: 0;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent, #00f0ff), var(--accent2, #b026ff));
+    box-shadow: 0 0 15px var(--accent, #00f0ff);
+    border-radius: 4px;
+    transition: width 0.15s linear;
+    position: relative;
+  }
+
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    animation: progressShine 1.5s linear infinite;
+  }
+
+  @keyframes progressShine {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(100%); }
+  }
+
+  .progress-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.45);
+    margin-top: 10px;
+    letter-spacing: 1px;
+  }
+
+  #progressPct {
+    color: var(--accent, #00f0ff);
+    font-weight: 700;
+  }
+
+  /* Skip Button */
+  .skip-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 30;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: titleEnter 0.8s 3s both;
+  }
+
+  .skip-btn:hover {
+    background: var(--accent, #00f0ff);
+    color: #000;
+    box-shadow: 0 0 25px var(--accent, #00f0ff);
+    transform: translateX(-4px);
+  }
+
+  .skip-btn:active { transform: scale(0.95); }
+
+  .skip-btn .arrow {
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.3s;
+  }
+
+  .skip-btn .arrow svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .skip-btn:hover .arrow { transform: translateX(-4px); }
+
+  /* Version */
+  .version {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    z-index: 30;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 2px;
+    animation: titleEnter 0.8s 3.2s both;
+  }
+
+  /* Fade Out */
+  body.fade-out .splash-wrap,
+  body.fade-out .corner,
+  body.fade-out .version,
+  body.fade-out .skip-btn {
+    opacity: 0;
+    transform: scale(1.05);
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .logo-stage { width: 140px; height: 140px; margin-bottom: 22px; }
+    .logo-core { width: 75px; height: 75px; }
+    .logo-ring:nth-child(2) { inset: 11px; }
+    .logo-ring:nth-child(3) { inset: 22px; }
+    .terminal { padding: 12px 14px; min-height: 130px; font-size: 10px; }
+    .head-card { padding: 8px 16px; margin-bottom: 20px; }
+    .head-name { font-size: 14px; }
+    .head-label { font-size: 11px; }
+    .head-icon { width: 18px; height: 18px; }
+    .corner { width: 45px; height: 45px; }
+    .corner.tl, .corner.tr { top: 12px; }
+    .corner.bl, .corner.br { bottom: 12px; }
+    .corner.tl, .corner.bl { left: 12px; }
+    .corner.tr, .corner.br { right: 12px; }
+    .skip-btn { bottom: 20px; right: 20px; padding: 8px 18px; font-size: 12px; }
+    .version { bottom: 20px; left: 20px; font-size: 10px; }
+  }
+
+  @media (max-height: 700px) {
+    .logo-stage { width: 110px; height: 110px; margin-bottom: 16px; }
+    .logo-core { width: 55px; height: 55px; }
+    .syndicate-name { margin-bottom: 4px; }
+    .syndicate-name-en { margin-bottom: 12px; }
+    .head-card { margin-bottom: 18px; padding: 7px 16px; }
+    .terminal { margin-bottom: 14px; min-height: 110px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- MATRIX RAIN -->
+<canvas id="matrixCanvas" class="bg-layer"></canvas>
+
+<!-- NEURAL NETWORK -->
+<canvas id="neuralCanvas" class="bg-layer"></canvas>
+
+<!-- CIRCUIT BOARD -->
+<div class="bg-layer circuit-bg">
+  <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <path class="circuit-line" d="M 100 100 L 300 100 L 350 150 L 500 150" />
+    <path class="circuit-line" d="M 1100 100 L 900 100 L 850 150 L 700 150" />
+    <path class="circuit-line" d="M 100 700 L 300 700 L 350 650 L 500 650" />
+    <path class="circuit-line" d="M 1100 700 L 900 700 L 850 650 L 700 650" />
+    <path class="circuit-line" d="M 200 400 L 400 400 L 450 350 L 600 350" />
+    <path class="circuit-line" d="M 1000 400 L 800 400 L 750 450 L 600 450" />
+    <path class="circuit-line" d="M 600 200 L 600 300 L 650 350 L 650 500 L 600 550 L 600 650" />
+    <path class="circuit-line" d="M 400 250 L 550 250 L 600 300" />
+    <circle class="circuit-node" cx="300" cy="100" r="3" />
+    <circle class="circuit-node" cx="500" cy="150" r="3" />
+    <circle class="circuit-node" cx="900" cy="100" r="3" />
+    <circle class="circuit-node" cx="700" cy="150" r="3" />
+    <circle class="circuit-node" cx="300" cy="700" r="3" />
+    <circle class="circuit-node" cx="500" cy="650" r="3" />
+    <circle class="circuit-node" cx="900" cy="700" r="3" />
+    <circle class="circuit-node" cx="700" cy="650" r="3" />
+    <circle class="circuit-node" cx="400" cy="400" r="3" />
+    <circle class="circuit-node" cx="800" cy="400" r="3" />
+  </svg>
+</div>
+
+<!-- GRID + VIGNETTE + SCANLINE -->
+<div class="bg-layer grid-overlay"></div>
+<div class="bg-layer vignette"></div>
+<div class="bg-layer scanline"></div>
+
+<!-- DATA STREAMS -->
+<div class="data-stream s1">01001001 01010100 00100000 01010011 01011001 01001110 01000100 01001001 01000011 01000001 01010100 01000101 &nbsp;&nbsp; 0x4F 0x5A 0x31 0x41</div>
+<div class="data-stream s2">SYSTEM.BOOT.SEQUENCE.INITIALIZING ... LOADING.MODULES ... CHECKING.INTEGRITY ... 100% ... OK</div>
+<div class="data-stream s3">01001110 01000101 01010101 01010010 01000001 01001100 &nbsp;&nbsp; AI.CHECK.ENGINE.ACTIVE &nbsp;&nbsp; DATABASE.SYNC</div>
+<div class="data-stream s4">const syndicate = { name: "IT", country: "EG", established: 2026, status: "ACTIVE" };</div>
+<div class="data-stream s5">01001000 01000101 01001100 01001100 01001111 &nbsp;&nbsp; ACCESS.GRANTED &nbsp;&nbsp; AUTHENTICATION.OK</div>
+
+<!-- CORNERS -->
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<!-- MAIN CONTENT -->
+<div class="splash-wrap">
+
+  <!-- LOGO (Dynamic from settings) -->
+  <div class="logo-stage">
+    <div class="logo-ring"></div>
+    <div class="logo-ring"></div>
+    <div class="logo-ring"></div>
+    <div class="logo-core" id="logoCore">
+      <img id="logoImg" src="" alt="شعار النقابة" style="display:none;" />
+      <svg class="logo-fallback" id="logoFallback" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="16 18 22 12 16 6" />
+        <polyline points="8 6 2 12 8 18" />
+        <line x1="14" y1="4" x2="10" y2="20" />
+      </svg>
+    </div>
+  </div>
+
+  <!-- SYNDICATE NAME -->
+  <div class="syndicate-name">نقابة تكنولوجيا المعلومات والبرمجيات</div>
+  <div class="syndicate-name-en">INFORMATION TECHNOLOGY WORKERS SYNDICATE</div>
+
+  <!-- HEAD OF SYNDICATE -->
+  <div class="head-card">
+    <span class="head-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 7l4 5 5-7 5 7 4-5v10H3V7z" />
+        <path d="M5 20h14" />
+      </svg>
+    </span>
+    <div>
+      <div class="head-label">النقيب العام</div>
+      <div class="head-name">م / محمود جميل</div>
+    </div>
+  </div>
+
+  <!-- TERMINAL -->
+  <div class="terminal">
+    <div class="terminal-line"><span class="prompt">$</span> boot --mode=secure --env=production</div>
+    <div class="terminal-line"><span class="prompt">$</span> connecting to database ... <span class="ok">[OK]</span></div>
+    <div class="terminal-line"><span class="prompt">$</span> loading security layer ... <span class="ok">[OK]</span></div>
+    <div class="terminal-line"><span class="prompt">$</span> verifying protocols ... <span class="ok">[OK]</span></div>
+    <div class="terminal-line"><span class="prompt">$</span> syncing realtime engine ... <span class="ok">[OK]</span></div>
+    <div class="terminal-line"><span class="prompt">$</span> initializing interface ... <span class="warn">[...]</span></div>
+    <div class="terminal-line"><span class="prompt">$</span> ready <span class="ok">[OK]</span></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text">
+      <span id="progressPct">0%</span>
+      <span>LOADING SYSTEM...</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- SKIP BUTTON -->
+<button class="skip-btn" onclick="skipSplash()" aria-label="تخطي شاشة الافتتاح">
+  <span>تخطي</span>
+  <span class="arrow">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <line x1="19" y1="12" x2="5" y2="12" />
+      <polyline points="12 19 5 12 12 5" />
+    </svg>
+  </span>
+</button>
+
+<!-- VERSION -->
+<div class="version">v1.0.0 • 2026</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ============================================
+     CONFIG
+     ============================================ */
+  const SPLASH_DURATION = 5000;
+  const REDIRECT_URL = 'home.html';
+  const SPLASH_KEY = 'its_splash_seen';
+  const LOGO_CACHE_KEY = 'its_logo_url';
+  const SETTINGS_CACHE_KEY = 'its_site_settings';
+
+  /* ============================================
+     CHECK SPLASH SEEN
+     ============================================ */
+  if (sessionStorage.getItem(SPLASH_KEY) === '1') {
+    window.location.replace(REDIRECT_URL);
+    return;
+  }
+  sessionStorage.setItem(SPLASH_KEY, '1');
+
+  /* ============================================
+     DYNAMIC LOGO + FAVICON + TITLE
+     ============================================ */
+  function applyLogo(logoUrl) {
+    if (!logoUrl) return;
+
+    // 1. Update splash logo
+    const img = document.getElementById('logoImg');
+    const fallback = document.getElementById('logoFallback');
+    if (img && fallback) {
+      img.onload = () => {
+        img.style.display = 'block';
+        fallback.style.display = 'none';
+      };
+      img.onerror = () => {
+        img.style.display = 'none';
+        fallback.style.display = 'block';
+      };
+      img.src = logoUrl;
+    }
+
+    // 2. Update favicon (all types)
+    const favicon = document.getElementById('faviconLink');
+    const appleIcon = document.getElementById('appleTouchIcon');
+    const shortcutIcon = document.getElementById('shortcutIcon');
+    if (favicon) { favicon.type = 'image/png'; favicon.href = logoUrl; }
+    if (appleIcon) { appleIcon.href = logoUrl; }
+    if (shortcutIcon) { shortcutIcon.href = logoUrl; }
+
+    // 3. Cache in localStorage for fast load on other pages
+    try { localStorage.setItem(LOGO_CACHE_KEY, logoUrl); } catch (e) {}
+  }
+
+  function applySettings(settings) {
+    if (!settings) return;
+
+    if (settings.site_name) {
+      document.title = settings.site_name;
+    }
+    if (settings.site_logo_url) {
+      applyLogo(settings.site_logo_url);
+    }
+
+    try {
+      localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(settings));
+    } catch (e) {}
+  }
+
+  // 1) Try cache first (instant)
+  let cachedSettings = null;
+  try {
+    const raw = localStorage.getItem(SETTINGS_CACHE_KEY);
+    if (raw) cachedSettings = JSON.parse(raw);
+  } catch (e) {}
+
+  if (cachedSettings) {
+    applySettings(cachedSettings);
+  } else {
+    const cachedLogo = localStorage.getItem(LOGO_CACHE_KEY);
+    if (cachedLogo) applyLogo(cachedLogo);
+  }
+
+  // 2) Fetch fresh from Supabase in background
+  async function fetchSettingsFromSupabase() {
+    try {
+      const SUPABASE_URL = 'https://zenhokbsuxgiyptmdphs.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_uh_nhMGHE5OoO4VI097w_g_-64KUF80';
+
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/settings?select=*&limit=1`,
+        {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          }
+        }
+      );
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const settings = {};
+        data.forEach(item => {
+          settings[item.key] = item.value;
+        });
+        applySettings(settings);
+      }
+    } catch (err) {
+      // Silent fail — we already have cache or fallback
+    }
+  }
+
+  /* ============================================
+     THEME COLOR HELPERS
+     ============================================ */
+  function getCSSVar(name, fallback) {
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(name).trim() || fallback;
+  }
+
+  function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
+
+  const ACCENT = getCSSVar('--accent', '#00f0ff');
+  const ACCENT2 = getCSSVar('--accent2', '#b026ff');
+  const ACCENT_RGB = hexToRgb(ACCENT) || { r: 0, g: 240, b: 255 };
+  const ACCENT2_RGB = hexToRgb(ACCENT2) || { r: 176, g: 38, b: 255 };
+
+  /* ============================================
+     MATRIX RAIN
+     ============================================ */
+  const matrixCanvas = document.getElementById('matrixCanvas');
+  const matrixCtx = matrixCanvas.getContext('2d');
+
+  const MATRIX_CHARS = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+  const matrixChars = MATRIX_CHARS.split('');
+
+  let matrixW = 0, matrixH = 0;
+  let matrixDrops = [];
+  const FONT_SIZE = 14;
+
+  function initMatrix() {
+    const dpr = window.devicePixelRatio || 1;
+    matrixW = window.innerWidth;
+    matrixH = window.innerHeight;
+    matrixCanvas.width = matrixW * dpr;
+    matrixCanvas.height = matrixH * dpr;
+    matrixCanvas.style.width = matrixW + 'px';
+    matrixCanvas.style.height = matrixH + 'px';
+    matrixCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const cols = Math.floor(matrixW / FONT_SIZE);
+    matrixDrops = [];
+    for (let i = 0; i < cols; i++) {
+      matrixDrops[i] = Math.random() * matrixH / FONT_SIZE;
+    }
+  }
+
+  function drawMatrix() {
+    matrixCtx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+    matrixCtx.fillRect(0, 0, matrixW, matrixH);
+
+    matrixCtx.font = FONT_SIZE + 'px "JetBrains Mono", monospace';
+
+    for (let i = 0; i < matrixDrops.length; i++) {
+      const char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+      const x = i * FONT_SIZE;
+      const y = matrixDrops[i] * FONT_SIZE;
+
+      matrixCtx.fillStyle = `rgba(${ACCENT_RGB.r}, ${ACCENT_RGB.g}, ${ACCENT_RGB.b}, 1)`;
+      matrixCtx.shadowColor = ACCENT;
+      matrixCtx.shadowBlur = 8;
+      matrixCtx.fillText(char, x, y);
+
+      matrixCtx.shadowBlur = 0;
+      matrixCtx.fillStyle = `rgba(${ACCENT_RGB.r}, ${ACCENT_RGB.g}, ${ACCENT_RGB.b}, 0.35)`;
+      const prevChar = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+      matrixCtx.fillText(prevChar, x, y - FONT_SIZE);
+
+      if (y > matrixH && Math.random() > 0.975) matrixDrops[i] = 0;
+      matrixDrops[i] += 0.5;
+    }
+  }
+
+  /* ============================================
+     NEURAL NETWORK
+     ============================================ */
+  const neuralCanvas = document.getElementById('neuralCanvas');
+  const neuralCtx = neuralCanvas.getContext('2d');
+
+  let neuralW = 0, neuralH = 0;
+  let nodes = [];
+
+  function initNeural() {
+    const dpr = window.devicePixelRatio || 1;
+    neuralW = window.innerWidth;
+    neuralH = window.innerHeight;
+    neuralCanvas.width = neuralW * dpr;
+    neuralCanvas.height = neuralH * dpr;
+    neuralCanvas.style.width = neuralW + 'px';
+    neuralCanvas.style.height = neuralH + 'px';
+    neuralCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const count = Math.min(70, Math.max(30, Math.floor(neuralW / 25)));
+    nodes = [];
+    for (let i = 0; i < count; i++) {
+      nodes.push({
+        x: Math.random() * neuralW,
+        y: Math.random() * neuralH,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        r: Math.random() * 1.8 + 0.6,
+        pulsePhase: Math.random() * Math.PI * 2
+      });
+    }
+  }
+
+  function drawNeural() {
+    neuralCtx.clearRect(0, 0, neuralW, neuralH);
+
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      n.x += n.vx;
+      n.y += n.vy;
+
+      if (n.x < 0 || n.x > neuralW) n.vx *= -1;
+      if (n.y < 0 || n.y > neuralH) n.vy *= -1;
+
+      n.x = Math.max(0, Math.min(neuralW, n.x));
+      n.y = Math.max(0, Math.min(neuralH, n.y));
+      n.pulsePhase += 0.03;
+    }
+
+    const maxDist = 150;
+    const maxDistSq = maxDist * maxDist;
+
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const distSq = dx * dx + dy * dy;
+
+        if (distSq < maxDistSq) {
+          const dist = Math.sqrt(distSq);
+          const opacity = (1 - dist / maxDist) * 0.45;
+
+          const grd = neuralCtx.createLinearGradient(
+            nodes[i].x, nodes[i].y,
+            nodes[j].x, nodes[j].y
+          );
+          grd.addColorStop(0, `rgba(${ACCENT_RGB.r},${ACCENT_RGB.g},${ACCENT_RGB.b},${opacity})`);
+          grd.addColorStop(1, `rgba(${ACCENT2_RGB.r},${ACCENT2_RGB.g},${ACCENT2_RGB.b},${opacity})`);
+
+          neuralCtx.strokeStyle = grd;
+          neuralCtx.lineWidth = 0.7;
+          neuralCtx.beginPath();
+          neuralCtx.moveTo(nodes[i].x, nodes[i].y);
+          neuralCtx.lineTo(nodes[j].x, nodes[j].y);
+          neuralCtx.stroke();
+        }
+      }
+    }
+
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      const pulse = Math.sin(n.pulsePhase) * 0.5 + 0.5;
+      const pulseR = n.r + pulse * 1.5;
+
+      const grd = neuralCtx.createRadialGradient(n.x, n.y, 0, n.x, n.y, pulseR * 5);
+      grd.addColorStop(0, `rgba(${ACCENT_RGB.r},${ACCENT_RGB.g},${ACCENT_RGB.b},${0.6 + pulse * 0.4})`);
+      grd.addColorStop(1, `rgba(${ACCENT_RGB.r},${ACCENT_RGB.g},${ACCENT_RGB.b},0)`);
+
+      neuralCtx.fillStyle = grd;
+      neuralCtx.beginPath();
+      neuralCtx.arc(n.x, n.y, pulseR * 5, 0, Math.PI * 2);
+      neuralCtx.fill();
+
+      neuralCtx.fillStyle = `rgba(255, 255, 255, ${0.7 + pulse * 0.3})`;
+      neuralCtx.beginPath();
+      neuralCtx.arc(n.x, n.y, pulseR * 0.7, 0, Math.PI * 2);
+      neuralCtx.fill();
+    }
+  }
+
+  /* ============================================
+     ANIMATION LOOP
+     ============================================ */
+  let animId = null;
+  let lastMatrixTime = 0;
+  let lastNeuralTime = 0;
+
+  function loop(timestamp) {
+    if (timestamp - lastMatrixTime > 1000 / 30) {
+      drawMatrix();
+      lastMatrixTime = timestamp;
+    }
+    if (timestamp - lastNeuralTime > 1000 / 60) {
+      drawNeural();
+      lastNeuralTime = timestamp;
+    }
+    animId = requestAnimationFrame(loop);
+  }
+
+  /* ============================================
+     PROGRESS
+     ============================================ */
+  const progressFill = document.getElementById('progressFill');
+  const progressPct = document.getElementById('progressPct');
+  let currentPct = 0;
+  const startTime = performance.now();
+
+  function updateProgress() {
+    const elapsed = performance.now() - startTime;
+    const targetPct = Math.min(100, (elapsed / SPLASH_DURATION) * 100);
+    currentPct += (targetPct - currentPct) * 0.15;
+    if (currentPct > 99.5) currentPct = 100;
+
+    progressFill.style.width = currentPct + '%';
+    progressPct.textContent = Math.floor(currentPct) + '%';
+
+    if (currentPct < 100) requestAnimationFrame(updateProgress);
+  }
+
+  /* ============================================
+     REDIRECT
+     ============================================ */
+  let hasRedirected = false;
+
+  function goNext() {
+    if (hasRedirected) return;
+    hasRedirected = true;
+    document.body.classList.add('fade-out');
+    setTimeout(() => { window.location.href = REDIRECT_URL; }, 500);
+  }
+
+  window.skipSplash = function () { goNext(); };
+
+  /* ============================================
+     INIT
+     ============================================ */
+  function init() {
+    initMatrix();
+    initNeural();
+    animId = requestAnimationFrame(loop);
+    updateProgress();
+    setTimeout(goNext, SPLASH_DURATION);
+
+    // Fetch settings in background
+    fetchSettingsFromSupabase();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  /* ============================================
+     RESIZE
+     ============================================ */
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      initMatrix();
+      initNeural();
+    }, 200);
+  });
+
+  /* ============================================
+     KEYBOARD
+     ============================================ */
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      goNext();
+    }
+  });
+
+  /* ============================================
+     CLEANUP
+     ============================================ */
+  window.addEventListener('beforeunload', () => {
+    if (animId) cancelAnimationFrame(animId);
+  });
+
+})();
+</script>
+
+</body>
+</html>
