@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="neon-dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#000000" />
+<meta name="description" content="تسجيل دخول الموظفين — نقابة تكنولوجيا المعلومات والبرمجيات" />
+<title>تسجيل الدخول — نقابة تكنولوجيا المعلومات والبرمجيات</title>
+
+<!-- FAVICON -->
+<link rel="icon" id="faviconLink" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="css/themes.css" />
+<link rel="stylesheet" href="css/style.css" />
+
+<style>
+  /* ============================================
+     PAGE-SPECIFIC: LOGIN
+     ============================================ */
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* Corners */
+  .corner {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    border: 1.5px solid var(--accent);
+    z-index: 10;
+    opacity: 0.5;
+    pointer-events: none;
+    animation: cornerPulse 2.5s ease-in-out infinite;
+  }
+  .corner.tl { top: 15px; left: 15px; border-right: none; border-bottom: none; border-top-left-radius: 8px; }
+  .corner.tr { top: 15px; right: 15px; border-left: none; border-bottom: none; border-top-right-radius: 8px; }
+  .corner.bl { bottom: 15px; left: 15px; border-right: none; border-top: none; border-bottom-left-radius: 8px; }
+  .corner.br { bottom: 15px; right: 15px; border-left: none; border-top: none; border-bottom-right-radius: 8px; }
+
+  @keyframes cornerPulse {
+    0%, 100% { opacity: 0.25; }
+    50%      { opacity: 0.8; }
+  }
+
+  /* Back link */
+  .back-link {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 50;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: var(--radius-md);
+    transition: all 0.25s;
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .back-link:hover {
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.06);
+    border-color: rgba(var(--accent-rgb), 0.2);
+    transform: translateX(4px);
+  }
+
+  .back-link svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.25s;
+  }
+
+  .back-link:hover svg {
+    transform: translateX(4px);
+  }
+
+  /* Login wrapper */
+  .login-wrap {
+    position: relative;
+    z-index: 20;
+    width: 100%;
+    max-width: 440px;
+    animation: cardEnter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes cardEnter {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Login card */
+  .login-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 40px 32px 32px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-lg), var(--glow-accent);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .login-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: var(--radius-xl);
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      var(--accent),
+      transparent 40%,
+      transparent 60%,
+      var(--accent-2)
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  /* Brand */
+  .brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 28px;
+    text-align: center;
+  }
+
+  .brand-logo {
+    position: relative;
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(
+      circle at 30% 30%,
+      rgba(var(--accent-rgb), 0.15),
+      rgba(0, 0, 0, 0.6) 70%
+    );
+    border: 1.5px solid rgba(var(--accent-rgb), 0.45);
+    box-shadow: var(--glow-accent), inset 0 0 15px rgba(var(--accent-rgb), 0.15);
+    overflow: hidden;
+    margin-bottom: 16px;
+    animation: logoPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes logoPulse {
+    0%, 100% { box-shadow: var(--glow-accent), inset 0 0 15px rgba(var(--accent-rgb), 0.15); }
+    50%      { box-shadow: 0 0 45px rgba(var(--accent-rgb), 0.5), inset 0 0 20px rgba(var(--accent-rgb), 0.25); }
+  }
+
+  .brand-logo img {
+    width: 85%;
+    height: 85%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 8px var(--accent));
+  }
+
+  .brand-logo svg.logo-fallback {
+    width: 55%;
+    height: 55%;
+    stroke: #fff;
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .brand-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .brand-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--text-dim);
+  }
+
+  /* Title */
+  .login-title {
+    text-align: center;
+    margin-bottom: 6px;
+    font-size: 24px;
+    font-weight: 800;
+    background: linear-gradient(
+      90deg,
+      var(--accent),
+      var(--accent-2),
+      var(--accent)
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 3s linear infinite;
+  }
+
+  .login-desc {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-bottom: 28px;
+  }
+
+  /* Password toggle */
+  .field-toggle {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: background 0.2s;
+    z-index: 3;
+  }
+
+  .field-toggle:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .field-toggle svg {
+    width: 18px;
+    height: 18px;
+    stroke: var(--text-muted);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke 0.2s;
+  }
+
+  .field-toggle:hover svg {
+    stroke: var(--accent);
+  }
+
+  .field-with-icon input {
+    padding-left: 44px;
+  }
+
+  /* Remember + Forgot */
+  .row-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    gap: 12px;
+  }
+
+  .form-check {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .forgot-link {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--accent);
+    transition: all 0.2s;
+  }
+
+  .forgot-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Submit */
+  .submit-btn {
+    width: 100%;
+    margin-top: 4px;
+    position: relative;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 22px 0;
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  .divider::before,
+  .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--border),
+      transparent
+    );
+  }
+
+  /* Footer note */
+  .login-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .login-footer a {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .login-footer a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Copyright */
+  .login-copy {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 11.5px;
+    color: var(--text-dim);
+  }
+
+  /* Head card below */
+  .login-head-note {
+    margin-top: 22px;
+    padding: 12px 18px;
+    background: rgba(var(--accent-rgb), 0.04);
+    border: 1px solid rgba(var(--accent-rgb), 0.15);
+    border-radius: var(--radius-md);
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+
+  .login-head-note strong {
+    color: var(--accent);
+    font-weight: 700;
+    display: block;
+    margin-top: 4px;
+    font-size: 14px;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .login-card {
+      padding: 32px 22px 24px;
+    }
+
+    .back-link {
+      top: 14px;
+      right: 14px;
+      padding: 7px 12px;
+      font-size: 12px;
+    }
+
+    .back-link span {
+      display: none;
+    }
+
+    .brand-logo {
+      width: 70px;
+      height: 70px;
+    }
+
+    .brand-title {
+      font-size: 15px;
+    }
+
+    .corner {
+      width: 42px;
+      height: 42px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND -->
+<canvas id="loginCanvas" class="bg-layer"></canvas>
+<div class="bg-grid"></div>
+<div class="bg-glow glow-1"></div>
+<div class="bg-glow glow-2"></div>
+<div class="vignette"></div>
+
+<!-- CORNERS -->
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<!-- BACK LINK -->
+<a href="home.html" class="back-link">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <line x1="19" y1="12" x2="5" y2="12" />
+    <polyline points="12 19 5 12 12 5" />
+  </svg>
+  <span>رجوع للرئيسية</span>
+</a>
+
+<!-- LOGIN WRAP -->
+<div class="login-wrap">
+  <div class="login-card">
+
+    <!-- Brand -->
+    <div class="brand">
+      <div class="brand-logo">
+        <img id="brandLogoImg" src="" alt="شعار النقابة" style="display:none;" />
+        <svg class="logo-fallback" id="brandLogoFallback" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+          <line x1="14" y1="4" x2="10" y2="20" />
+        </svg>
+      </div>
+      <div class="brand-title" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
+      <div class="brand-sub">IT WORKERS SYNDICATE</div>
+    </div>
+
+    <!-- Title -->
+    <div class="login-title">تسجيل الدخول</div>
+    <div class="login-desc">أدخل بياناتك للوصول إلى لوحة التحكم</div>
+
+    <!-- Alert box -->
+    <div id="alertBox"></div>
+
+    <!-- Form -->
+    <form id="loginForm" autocomplete="on">
+
+      <div class="form-group">
+        <label for="email">البريد الإلكتروني</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="admin@itsyndicate.eg"
+          required
+          autocomplete="email"
+          dir="ltr"
+          style="text-align:right;"
+        />
+      </div>
+
+      <div class="form-group field-with-icon">
+        <label for="password">كلمة المرور</label>
+        <div style="position:relative;">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            required
+            autocomplete="current-password"
+            style="padding-left:44px;"
+          />
+          <button type="button" class="field-toggle" id="togglePassword" aria-label="إظهار كلمة المرور">
+            <svg id="eyeIcon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="row-between">
+        <label class="form-check">
+          <input type="checkbox" id="rememberMe" name="remember" />
+          <span>تذكرني</span>
+        </label>
+        <a href="#" class="forgot-link" id="forgotLink">نسيت كلمة المرور؟</a>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg submit-btn" id="loginBtn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+          <polyline points="10 17 15 12 10 7" />
+          <line x1="15" y1="12" x2="3" y2="12" />
+        </svg>
+        <span>دخول</span>
+      </button>
+
+    </form>
+
+    <!-- Divider -->
+    <div class="divider">أو</div>
+
+    <div class="login-footer">
+      عضو جديد؟ <a href="apply.html">قدّم طلب عضويتك من هنا</a>
+    </div>
+
+  </div>
+
+  <!-- Head note -->
+  <div class="login-head-note">
+    <div data-head-title>النقيب العام</div>
+    <strong data-head-name>م / محمود جميل</strong>
+  </div>
+
+  <div class="login-copy">
+    © 2026 نقابة تكنولوجيا المعلومات والبرمجيات — جميع الحقوق محفوظة
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="js/supabase-config.js"></script>
+<script src="js/theme-manager.js"></script>
+<script src="js/settings.js"></script>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ============================================
+     BACKGROUND PARTICLES
+     ============================================ */
+  const canvas = document.getElementById('loginCanvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0, dots = [];
+
+    function accentRgb() {
+      const raw = getComputedStyle(document.documentElement)
+        .getPropertyValue('--accent-rgb').trim();
+      if (raw) {
+        const parts = raw.split(',').map(s => parseInt(s.trim()));
+        return { r: parts[0] || 0, g: parts[1] || 240, b: parts[2] || 255 };
+      }
+      return { r: 0, g: 240, b: 255 };
+    }
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      init();
+    }
+
+    function init() {
+      const count = Math.min(50, Math.max(20, Math.floor(W / 32)));
+      dots = [];
+      for (let i = 0; i < count; i++) {
+        dots.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.35,
+          vy: (Math.random() - 0.5) * 0.35,
+          r: Math.random() * 1.5 + 0.5
+        });
+      }
+    }
+
+    function loop() {
+      const rgb = accentRgb();
+      ctx.clearRect(0, 0, W, H);
+
+      dots.forEach((d, i) => {
+        d.x += d.vx;
+        d.y += d.vy;
+        if (d.x < 0 || d.x > W) d.vx *= -1;
+        if (d.y < 0 || d.y > H) d.vy *= -1;
+
+        ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.55)`;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        for (let j = i + 1; j < dots.length; j++) {
+          const dx = d.x - dots[j].x;
+          const dy = d.y - dots[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 130) {
+            ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.1 * (1 - dist / 130)})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(d.x, d.y);
+            ctx.lineTo(dots[j].x, dots[j].y);
+            ctx.stroke();
+          }
+        }
+      });
+
+      requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('resize', () => {
+      clearTimeout(window.__loginResizeT);
+      window.__loginResizeT = setTimeout(resize, 200);
+    });
+
+    resize();
+    loop();
+  }
+
+  /* ============================================
+     PASSWORD TOGGLE
+     ============================================ */
+  const toggleBtn = document.getElementById('togglePassword');
+  const passwordInput = document.getElementById('password');
+  const eyeIcon = document.getElementById('eyeIcon');
+
+  if (toggleBtn && passwordInput) {
+    let visible = false;
+
+    toggleBtn.addEventListener('click', () => {
+      visible = !visible;
+      passwordInput.type = visible ? 'text' : 'password';
+
+      if (eyeIcon) {
+        if (visible) {
+          // Eye-off icon
+          eyeIcon.innerHTML = `
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          `;
+        } else {
+          // Eye icon
+          eyeIcon.innerHTML = `
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          `;
+        }
+      }
+    });
+  }
+
+  /* ============================================
+     ALERT HELPER
+     ============================================ */
+  function showAlert(type, message) {
+    const box = document.getElementById('alertBox');
+    if (!box) return;
+
+    const colors = {
+      success: { bg: 'rgba(var(--success-rgb), 0.12)', border: 'var(--success)', text: 'var(--success)' },
+      error:   { bg: 'rgba(var(--danger-rgb), 0.12)',  border: 'var(--danger)',  text: 'var(--danger)' },
+      warning: { bg: 'rgba(var(--warning-rgb), 0.12)', border: 'var(--warning)', text: 'var(--warning)' },
+      info:    { bg: 'rgba(var(--accent-rgb), 0.1)',   border: 'var(--accent)',  text: 'var(--accent)' }
+    };
+    const c = colors[type] || colors.info;
+
+    const iconSvg = type === 'success'
+      ? '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg>'
+      : type === 'error'
+      ? '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+      : '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+
+    box.innerHTML = `
+      <div style="
+        background:${c.bg};
+        border:1.5px solid ${c.border};
+        color:${c.text};
+        padding:13px 16px;
+        border-radius:12px;
+        font-size:13.5px;
+        font-weight:600;
+        display:flex;
+        align-items:center;
+        gap:10px;
+        margin-bottom:18px;
+        animation:alertIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      ">
+        ${iconSvg}
+        <span>${message}</span>
+      </div>
+      <style>
+        @keyframes alertIn {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      </style>
+    `;
+  }
+
+  function clearAlert() {
+    const box = document.getElementById('alertBox');
+    if (box) box.innerHTML = '';
+  }
+
+  /* ============================================
+     LOGIN HANDLER
+     ============================================ */
+  const form = document.getElementById('loginForm');
+  const loginBtn = document.getElementById('loginBtn');
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAlert();
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const remember = document.getElementById('rememberMe').checked;
+
+      if (!email || !password) {
+        showAlert('error', 'من فضلك أدخل البريد وكلمة المرور');
+        return;
+      }
+
+      // Disable button + loading
+      const originalHtml = loginBtn.innerHTML;
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = `
+        <span class="spinner"></span>
+        <span>جاري التحقق...</span>
+      `;
+
+      try {
+        // Wait for Supabase
+        const client = await waitForSupabase();
+        if (!client) {
+          throw new Error('فشل تحميل النظام، حاول تحديث الصفحة');
+        }
+
+        // Sign in
+        const { data, error } = await client.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (error) {
+          throw new Error(translateAuthError(error.message));
+        }
+
+        if (!data?.user) {
+          throw new Error('لم يتم العثور على المستخدم');
+        }
+
+        // Remember me
+        try {
+          if (remember) {
+            localStorage.setItem('its_remember_email', email);
+          } else {
+            localStorage.removeItem('its_remember_email');
+          }
+        } catch (err) {}
+
+        // Get user role
+        let role = 'committee';
+        try {
+          const { data: userData } = await client
+            .from('users')
+            .select('role')
+            .eq('id', data.user.id)
+            .maybeSingle();
+
+          if (userData?.role) role = userData.role;
+        } catch (err) {
+          // ignore — default committee
+        }
+
+        showAlert('success', 'تم تسجيل الدخول، جاري التحويل...');
+
+        // Redirect based on role
+        setTimeout(() => {
+          if (role === 'head') {
+            window.location.href = 'admin.html';
+          } else {
+            window.location.href = 'dashboard.html';
+          }
+        }, 700);
+
+      } catch (err) {
+        console.error('[Login] Error:', err);
+        showAlert('error', err.message || 'فشل تسجيل الدخول');
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = originalHtml;
+      }
+    });
+  }
+
+  /* ============================================
+     WAIT FOR SUPABASE
+     ============================================ */
+  function waitForSupabase() {
+    return new Promise((resolve) => {
+      if (window.supabaseClient) {
+        resolve(window.supabaseClient);
+        return;
+      }
+
+      if (typeof window.onSupabaseReady === 'function') {
+        window.onSupabaseReady((c) => resolve(c));
+        // Timeout fallback
+        setTimeout(() => resolve(window.supabaseClient || null), 5000);
+      } else {
+        const start = Date.now();
+        const check = setInterval(() => {
+          if (window.supabaseClient) {
+            clearInterval(check);
+            resolve(window.supabaseClient);
+          } else if (Date.now() - start > 5000) {
+            clearInterval(check);
+            resolve(null);
+          }
+        }, 100);
+      }
+    });
+  }
+
+  /* ============================================
+     TRANSLATE AUTH ERRORS
+     ============================================ */
+  function translateAuthError(msg) {
+    if (!msg) return 'حدث خطأ غير متوقع';
+    const m = msg.toLowerCase();
+
+    if (m.includes('invalid login') || m.includes('invalid credentials')) {
+      return 'البريد أو كلمة المرور غير صحيحة';
+    }
+    if (m.includes('email not confirmed')) {
+      return 'البريد الإلكتروني لم يتم تأكيده بعد';
+    }
+    if (m.includes('too many requests') || m.includes('rate limit')) {
+      return 'محاولات كثيرة، حاول بعد قليل';
+    }
+    if (m.includes('network')) {
+      return 'فشل الاتصال، تحقق من الإنترنت';
+    }
+    return msg;
+  }
+
+  /* ============================================
+     RESTORE REMEMBERED EMAIL
+     ============================================ */
+  try {
+    const remembered = localStorage.getItem('its_remember_email');
+    if (remembered) {
+      const emailInput = document.getElementById('email');
+      const rememberBox = document.getElementById('rememberMe');
+      if (emailInput) emailInput.value = remembered;
+      if (rememberBox) rememberBox.checked = true;
+    }
+  } catch (e) {}
+
+  /* ============================================
+     FORGOT PASSWORD
+     ============================================ */
+  const forgotLink = document.getElementById('forgotLink');
+  if (forgotLink) {
+    forgotLink.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+
+      if (!email) {
+        showAlert('warning', 'أدخل بريدك الإلكتروني أولًا');
+        return;
+      }
+
+      const client = await waitForSupabase();
+      if (!client) {
+        showAlert('error', 'النظام غير جاهز، حاول مرة أخرى');
+        return;
+      }
+
+      try {
+        const { error } = await client.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + '/login.html'
+        });
+
+        if (error) throw error;
+
+        showAlert('success', 'تم إرسال رابط إعادة التعيين إلى بريدك');
+      } catch (err) {
+        console.error('[ForgotPassword] Error:', err);
+        showAlert('error', 'فشل الإرسال: ' + (err.message || ''));
+      }
+    });
+  }
+
+  /* ============================================
+     FOCUS FIRST FIELD
+     ============================================ */
+  window.addEventListener('load', () => {
+    const emailInput = document.getElementById('email');
+    if (emailInput && !emailInput.value) {
+      setTimeout(() => emailInput.focus(), 400);
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>
