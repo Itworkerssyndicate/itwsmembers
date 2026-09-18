@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="neon-dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#000000" />
+<meta name="description" content="تقديم طلب عضوية — نقابة تكنولوجيا المعلومات والبرمجيات" />
+<title>تقديم عضوية — نقابة تكنولوجيا المعلومات والبرمجيات</title>
+
+<!-- FAVICON -->
+<link rel="icon" id="faviconLink" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="css/themes.css" />
+<link rel="stylesheet" href="css/style.css" />
+
+<style>
+  /* ============================================
+     PAGE-SPECIFIC: APPLY
+     ============================================ */
+  .apply-hero {
+    padding: 130px 24px 40px;
+    text-align: center;
+    position: relative;
+    z-index: 10;
+  }
+
+  .apply-hero .section-label {
+    margin-bottom: 12px;
+  }
+
+  .apply-hero h1 {
+    font-family: 'Tajawal', sans-serif;
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 900;
+    background: linear-gradient(
+      90deg,
+      var(--accent),
+      var(--accent-2),
+      var(--accent)
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 3s linear infinite;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  @keyframes shine {
+    to { background-position: 200% center; }
+  }
+
+  .apply-hero p {
+    font-size: 15px;
+    color: var(--text-muted);
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.8;
+  }
+
+  /* Steps indicator */
+  .steps-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    max-width: 720px;
+    margin: 32px auto 0;
+    padding: 0 16px;
+    flex-wrap: wrap;
+  }
+
+  .step-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 100px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-dim);
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+
+  .step-pill.active {
+    background: rgba(var(--accent-rgb), 0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: var(--glow-accent);
+  }
+
+  .step-pill .pill-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .step-pill.active .pill-num {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .step-divider {
+    width: 24px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+  }
+
+  /* Form container */
+  .apply-container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Form section */
+  .form-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 28px 24px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .form-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--accent),
+      transparent
+    );
+    opacity: 0.4;
+  }
+
+  .form-section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .form-section-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(
+      135deg,
+      rgba(var(--accent-rgb), 0.15),
+      rgba(var(--accent-2-rgb), 0.15)
+    );
+    border: 1px solid rgba(var(--accent-rgb), 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: var(--glow-accent);
+  }
+
+  .form-section-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--accent);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .form-section-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .form-section-sub {
+    font-size: 12.5px;
+    color: var(--text-dim);
+  }
+
+  /* Price display */
+  #priceDisplay {
+    margin-top: 14px;
+    display: none;
+  }
+
+  /* File grid */
+  .files-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 8px;
+  }
+
+  /* Terms box */
+  .terms-box {
+    padding: 16px 18px;
+    background: rgba(var(--accent-rgb), 0.04);
+    border: 1px solid rgba(var(--accent-rgb), 0.15);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.75;
+    margin-bottom: 16px;
+  }
+
+  .terms-box strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* Submit area */
+  .submit-area {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+
+  .submit-area .btn {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  /* Info banner */
+  .info-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: rgba(var(--accent-rgb), 0.05);
+    border: 1px solid rgba(var(--accent-rgb), 0.2);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    line-height: 1.7;
+  }
+
+  .info-banner svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--accent);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  .info-banner strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* Draft indicator */
+  .draft-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 90;
+    padding: 8px 14px;
+    background: rgba(var(--accent-rgb), 0.1);
+    border: 1px solid rgba(var(--accent-rgb), 0.3);
+    border-radius: var(--radius-full);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .draft-indicator.visible {
+    opacity: 1;
+  }
+
+  .draft-indicator .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulseDot 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulseDot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.4); opacity: 0.6; }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .files-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .form-section {
+      padding: 22px 18px;
+    }
+
+    .apply-hero {
+      padding: 110px 18px 30px;
+    }
+
+    .steps-indicator {
+      gap: 0;
+    }
+
+    .step-pill {
+      padding: 8px 12px;
+      font-size: 11.5px;
+    }
+
+    .step-pill .pill-label {
+      display: none;
+    }
+
+    .step-divider {
+      width: 12px;
+    }
+
+    .submit-area .btn {
+      min-width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .form-section-icon {
+      width: 36px;
+      height: 36px;
+    }
+
+    .form-section-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .form-section-title {
+      font-size: 16px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND -->
+<canvas id="bgCanvas" class="bg-layer"></canvas>
+<div class="bg-grid"></div>
+<div class="bg-glow glow-1"></div>
+<div class="bg-glow glow-2"></div>
+
+<!-- NAVBAR -->
+<header class="navbar" id="navbar">
+  <div class="nav-container">
+
+    <a href="home.html" class="nav-logo">
+      <div class="logo-badge">
+        <img id="navLogoImg" src="" alt="شعار النقابة" style="display:none;" />
+        <svg class="logo-fallback" id="navLogoFallback" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+          <line x1="14" y1="4" x2="10" y2="20" />
+        </svg>
+      </div>
+      <div class="logo-text">
+        <div class="logo-main" id="navSiteName" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
+        <div class="logo-sub">IT WORKERS SYNDICATE</div>
+      </div>
+    </a>
+
+    <nav class="nav-links" id="navLinks">
+      <a href="home.html">الرئيسية</a>
+      <a href="apply.html" class="active">تقديم عضوية</a>
+      <a href="track.html">تتبع الطلب</a>
+      <a href="login.html" class="btn-login">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+          <polyline points="10 17 15 12 10 7" />
+          <line x1="15" y1="12" x2="3" y2="12" />
+        </svg>
+        <span>دخول الموظفين</span>
+      </a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="icon-btn" onclick="toggleMobileNav()" id="mobileToggle" aria-label="القائمة">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+    </div>
+
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="apply-hero">
+  <div class="section-label">تقديم العضوية</div>
+  <h1>فورم تقديم العضوية</h1>
+  <p>املأ البيانات التالية بعناية، وارفع المستندات المطلوبة. مدة التقديم لا تتجاوز 5 دقائق.</p>
+
+  <!-- Steps indicator -->
+  <div class="steps-indicator">
+    <div class="step-pill active" data-step-pill="1">
+      <span class="pill-num">1</span>
+      <span class="pill-label">البيانات</span>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step-pill" data-step-pill="2">
+      <span class="pill-num">2</span>
+      <span class="pill-label">المرفقات</span>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step-pill" data-step-pill="3">
+      <span class="pill-num">3</span>
+      <span class="pill-label">المراجعة</span>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step-pill" data-step-pill="4">
+      <span class="pill-num">4</span>
+      <span class="pill-label">الإرسال</span>
+    </div>
+  </div>
+</section>
+
+<!-- FORM CONTAINER -->
+<div class="apply-container">
+
+  <!-- Info banner -->
+  <div class="info-banner">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+    <div>
+      <strong>ملاحظة:</strong> تأكد من صحة بياناتك، سيتم مراجعتها من لجنة العضويات. الوقت المتوقع للرد: 24-48 ساعة.
+    </div>
+  </div>
+
+  <!-- Alert box -->
+  <div id="alertBox"></div>
+
+  <!-- FORM -->
+  <form id="applyForm" enctype="multipart/form-data" novalidate>
+
+    <!-- ============ SECTION 1: BASIC INFO ============ -->
+    <div class="form-section">
+      <div class="form-section-header">
+        <div class="form-section-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </div>
+        <div>
+          <div class="form-section-title">البيانات الأساسية</div>
+          <div class="form-section-sub">معلومات التعريف الشخصية</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="full_name">الاسم الرباعي <span class="required">*</span></label>
+          <input
+            type="text"
+            id="full_name"
+            name="full_name"
+            placeholder="مثال: أحمد محمد علي حسن"
+            required
+            minlength="6"
+            autocomplete="name"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="national_id">الرقم القومي (14 رقم) <span class="required">*</span></label>
+          <input
+            type="text"
+            id="national_id"
+            name="national_id"
+            placeholder="29901234567890"
+            required
+            pattern="\d{14}"
+            maxlength="14"
+            inputmode="numeric"
+            dir="ltr"
+            style="text-align:right;"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="phone">رقم الموبايل <span class="required">*</span></label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            placeholder="01xxxxxxxxx"
+            required
+            pattern="01[0125]\d{8}"
+            maxlength="11"
+            inputmode="numeric"
+            dir="ltr"
+            style="text-align:right;"
+            autocomplete="tel"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="email">البريد الإلكتروني</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="example@email.com"
+            dir="ltr"
+            style="text-align:right;"
+            autocomplete="email"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="address">العنوان</label>
+        <input
+          type="text"
+          id="address"
+          name="address"
+          placeholder="المحافظة - المدينة - الشارع"
+          autocomplete="street-address"
+        />
+      </div>
+    </div>
+
+    <!-- ============ SECTION 2: PROFESSIONAL ============ -->
+    <div class="form-section">
+      <div class="form-section-header">
+        <div class="form-section-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="7" width="20" height="14" rx="2" />
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+          </svg>
+        </div>
+        <div>
+          <div class="form-section-title">البيانات المهنية</div>
+          <div class="form-section-sub">معلومات التعليم والعمل</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="membershipType">نوع العضوية <span class="required">*</span></label>
+          <select id="membershipType" name="membership_type_id" required>
+            <option value="">-- جاري التحميل... --</option>
+          </select>
+          <div id="priceDisplay"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="qualification">المؤهل الدراسي</label>
+          <input
+            type="text"
+            id="qualification"
+            name="qualification"
+            placeholder="بكالوريوس حاسبات ومعلومات"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="graduation_year">سنة التخرج</label>
+          <input
+            type="number"
+            id="graduation_year"
+            name="graduation_year"
+            placeholder="2024"
+            min="1970"
+            max="2030"
+            inputmode="numeric"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="employer">جهة العمل / الجامعة</label>
+          <input
+            type="text"
+            id="employer"
+            name="employer"
+            placeholder="اسم الشركة أو الجامعة"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="governorate">المحافظة</label>
+        <select id="governorate" name="governorate">
+          <option value="">-- اختر المحافظة --</option>
+          <option>القاهرة</option>
+          <option>الجيزة</option>
+          <option>الإسكندرية</option>
+          <option>الدقهلية</option>
+          <option>الشرقية</option>
+          <option>القليوبية</option>
+          <option>المنوفية</option>
+          <option>الغربية</option>
+          <option>البحيرة</option>
+          <option>كفر الشيخ</option>
+          <option>دمياط</option>
+          <option>بورسعيد</option>
+          <option>الإسماعيلية</option>
+          <option>السويس</option>
+          <option>شمال سيناء</option>
+          <option>جنوب سيناء</option>
+          <option>الفيوم</option>
+          <option>بني سويف</option>
+          <option>المنيا</option>
+          <option>أسيوط</option>
+          <option>سوهاج</option>
+          <option>قنا</option>
+          <option>الأقصر</option>
+          <option>أسوان</option>
+          <option>البحر الأحمر</option>
+          <option>الوادي الجديد</option>
+          <option>مطروح</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ============ SECTION 3: ATTACHMENTS ============ -->
+    <div class="form-section">
+      <div class="form-section-header">
+        <div class="form-section-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+        </div>
+        <div>
+          <div class="form-section-title">المرفقات المطلوبة</div>
+          <div class="form-section-sub">صور واضحة بصيغة JPG أو PNG أو PDF (حد أقصى 5 ميجا)</div>
+        </div>
+      </div>
+
+      <div class="files-grid">
+
+        <!-- ID Front -->
+        <div class="form-group">
+          <label>بطاقة الرقم القومي (وجه) <span class="required">*</span></label>
+          <label class="file-upload" id="upload-id_front">
+            <input type="file" name="id_front" accept="image/*" required />
+            <div class="icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+            </div>
+            <div class="text">اضغط لاختيار صورة</div>
+            <div class="filename"></div>
+          </label>
+          <div class="ai-check" id="check-id_front"></div>
+        </div>
+
+        <!-- ID Back -->
+        <div class="form-group">
+          <label>بطاقة الرقم القومي (ظهر) <span class="required">*</span></label>
+          <label class="file-upload" id="upload-id_back">
+            <input type="file" name="id_back" accept="image/*" required />
+            <div class="icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+            </div>
+            <div class="text">اضغط لاختيار صورة</div>
+            <div class="filename"></div>
+          </label>
+          <div class="ai-check" id="check-id_back"></div>
+        </div>
+
+        <!-- Certificate -->
+        <div class="form-group">
+          <label>الشهادة الدراسية (صورة أو PDF) <span class="required">*</span></label>
+          <label class="file-upload" id="upload-certificate">
+            <input type="file" name="certificate" accept="image/*,application/pdf" required />
+            <div class="icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+            </div>
+            <div class="text">اضغط لاختيار ملف</div>
+            <div class="filename"></div>
+          </label>
+          <div class="ai-check" id="check-certificate"></div>
+        </div>
+
+        <!-- Photo -->
+        <div class="form-group">
+          <label>الصورة الشخصية <span class="required">*</span></label>
+          <label class="file-upload" id="upload-photo">
+            <input type="file" name="photo" accept="image/*" required />
+            <div class="icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div>
+            <div class="text">اضغط لاختيار صورة</div>
+            <div class="filename"></div>
+          </label>
+          <div class="ai-check" id="check-photo"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============ SECTION 4: TERMS ============ -->
+    <div class="form-section">
+      <div class="form-section-header">
+        <div class="form-section-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+        </div>
+        <div>
+          <div class="form-section-title">الإقرار والموافقة</div>
+          <div class="form-section-sub">يرجى قراءة الشروط قبل الإرسال</div>
+        </div>
+      </div>
+
+      <div class="terms-box" data-terms-text>
+        أقر بأن جميع البيانات والمستندات المقدمة صحيحة، وأتحمل المسؤولية القانونية عن أي بيانات خاطئة.
+      </div>
+
+      <label class="form-check">
+        <input type="checkbox" id="agreeTerms" name="agree_terms" required />
+        <span>أوافق على جميع الشروط والأحكام، وأقر بصحة البيانات والمستندات المقدمة.</span>
+      </label>
+
+    </div>
+
+    <!-- ============ SUBMIT ============ -->
+    <div class="submit-area">
+      <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="22" y1="2" x2="11" y2="13" />
+          <polygon points="22 2 15 22 11 13 2 9 22 2" />
+        </svg>
+        <span>إرسال الطلب</span>
+      </button>
+
+      <a href="home.html" class="btn btn-outline btn-lg">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
+        </svg>
+        <span>إلغاء</span>
+      </a>
+    </div>
+
+  </form>
+
+</div>
+
+<!-- Draft indicator -->
+<div class="draft-indicator" id="draftIndicator">
+  <span class="dot"></span>
+  <span>تم حفظ المسودة تلقائيًا</span>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-bottom" style="border-top:none;padding-top:0;justify-content:center;">
+      <div>© 2026 <span data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</span> — جميع الحقوق محفوظة</div>
+    </div>
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="js/supabase-config.js"></script>
+<script src="js/theme-manager.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/realtime.js"></script>
+<script src="js/apply.js"></script>
+
+<script>
+  /* ============================================
+     MOBILE NAV
+     ============================================ */
+  window.toggleMobileNav = function () {
+    const nav = document.getElementById('navLinks');
+    if (nav) nav.classList.toggle('open');
+  };
+
+  /* ============================================
+     NAVBAR SCROLL
+     ============================================ */
+  (function () {
+    const navbar = document.getElementById('navbar');
+    if (!navbar) return;
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 30) navbar.classList.add('scrolled');
+      else navbar.classList.remove('scrolled');
+    }, { passive: true });
+  })();
+
+  /* ============================================
+     BACKGROUND PARTICLES
+     ============================================ */
+  (function () {
+    const canvas = document.getElementById('bgCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0, dots = [];
+
+    function accentRgb() {
+      const raw = getComputedStyle(document.documentElement)
+        .getPropertyValue('--accent-rgb').trim();
+      if (raw) {
+        const parts = raw.split(',').map(s => parseInt(s.trim()));
+        return { r: parts[0] || 0, g: parts[1] || 240, b: parts[2] || 255 };
+      }
+      return { r: 0, g: 240, b: 255 };
+    }
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      init();
+    }
+
+    function init() {
+      const count = Math.min(55, Math.max(20, Math.floor(W / 32)));
+      dots = [];
+      for (let i = 0; i < count; i++) {
+        dots.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3,
+          r: Math.random() * 1.4 + 0.5
+        });
+      }
+    }
+
+    function loop() {
+      const rgb = accentRgb();
+      ctx.clearRect(0, 0, W, H);
+
+      dots.forEach((d, i) => {
+        d.x += d.vx;
+        d.y += d.vy;
+        if (d.x < 0 || d.x > W) d.vx *= -1;
+        if (d.y < 0 || d.y > H) d.vy *= -1;
+
+        ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.5)`;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        for (let j = i + 1; j < dots.length; j++) {
+          const dx = d.x - dots[j].x;
+          const dy = d.y - dots[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 130) {
+            ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.09 * (1 - dist / 130)})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(d.x, d.y);
+            ctx.lineTo(dots[j].x, dots[j].y);
+            ctx.stroke();
+          }
+        }
+      });
+
+      requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('resize', () => {
+      clearTimeout(window.__applyResizeT);
+      window.__applyResizeT = setTimeout(resize, 200);
+    });
+
+    resize();
+    loop();
+  })();
+
+  /* ============================================
+     STEP INDICATOR — Visual Feedback on Scroll
+     ============================================ */
+  (function () {
+    const sections = document.querySelectorAll('.form-section');
+    const pills = document.querySelectorAll('[data-step-pill]');
+    if (!sections.length || !pills.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const idx = Array.from(sections).indexOf(entry.target);
+          pills.forEach((p, i) => {
+            p.classList.toggle('active', i <= idx);
+          });
+        }
+      });
+    }, { threshold: 0.4 });
+
+    sections.forEach(s => observer.observe(s));
+  })();
+
+  /* ============================================
+     DRAFT INDICATOR
+     ============================================ */
+  (function () {
+    const indicator = document.getElementById('draftIndicator');
+    if (!indicator) return;
+
+    let timer = null;
+
+    // Listen for input events to show indicator
+    document.addEventListener('input', (e) => {
+      if (!e.target.closest('#applyForm')) return;
+      if (e.target.type === 'file') return;
+      indicator.classList.add('visible');
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        indicator.classList.remove('visible');
+      }, 2000);
+    });
+  })();
+
+  /* ============================================
+     NATIONAL ID / PHONE — Force numeric
+     ============================================ */
+  (function () {
+    const nationalId = document.getElementById('national_id');
+    const phone = document.getElementById('phone');
+
+    if (nationalId) {
+      nationalId.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 14);
+      });
+    }
+
+    if (phone) {
+      phone.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 11);
+      });
+    }
+  })();
+
+</script>
+
+</body>
+</html>
