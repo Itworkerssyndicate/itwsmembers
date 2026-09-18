@@ -30,6 +30,164 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="css/themes.css" />
 <link rel="stylesheet" href="css/style.css" />
+
+<style>
+  /* ============================================
+     PAGE-SPECIFIC: ABOUT CARD
+     ============================================ */
+  .about-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 32px;
+    align-items: center;
+    padding: 40px;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-xl);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .about-card::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgba(var(--accent-rgb), 0.15),
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+
+  .about-logo {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    border-radius: var(--radius-xl);
+    background: radial-gradient(
+      circle at 30% 30%,
+      rgba(var(--accent-rgb), 0.15),
+      rgba(0, 0, 0, 0.4) 70%
+    );
+    border: 2px solid rgba(var(--accent-rgb), 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: var(--glow-accent);
+    z-index: 1;
+  }
+
+  .about-logo img {
+    width: 82%;
+    height: 82%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 12px var(--accent));
+  }
+
+  .about-logo svg.logo-fallback {
+    width: 55%;
+    height: 55%;
+    stroke: var(--accent);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .about-content {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+  }
+
+  .about-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: clamp(22px, 3vw, 30px);
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.35;
+    background: linear-gradient(
+      90deg,
+      var(--accent),
+      var(--accent-2),
+      var(--accent)
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 3s linear infinite;
+  }
+
+  @keyframes shine {
+    to { background-position: 200% center; }
+  }
+
+  .about-text {
+    font-size: 15px;
+    line-height: 1.85;
+    color: var(--text-muted);
+    white-space: pre-line;
+  }
+
+  /* Feature card with logo */
+  .feature-icon img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 8px var(--accent));
+  }
+
+  /* Feature card animation */
+  .feature-card {
+    animation: fadeUp 0.6s both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Code card body (text mode) */
+  .code-body.text-mode {
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .about-card {
+      grid-template-columns: 1fr;
+      gap: 20px;
+      padding: 28px 22px;
+      text-align: center;
+    }
+
+    .about-logo {
+      width: 110px;
+      height: 110px;
+      margin: 0 auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .about-card {
+      padding: 22px 18px;
+    }
+  }
+</style>
 </head>
 <body>
 
@@ -116,7 +274,9 @@
   </button>
 </div>
 
-<!-- HERO -->
+<!-- ============================================
+     HERO SECTION
+     ============================================ -->
 <section class="hero">
   <div class="hero-inner">
 
@@ -132,7 +292,7 @@
         <span class="gradient-text">بخطوات رقمية</span>
       </h1>
 
-      <p class="hero-desc">
+      <p class="hero-desc" data-setting="hero_description">
         قدّم طلب عضويتك إلكترونيًا، ارفع مستنداتك، وتابع حالة طلبك لحظة بلحظة.
         منظومة سريعة، آمنة، وشفافة بالكامل.
       </p>
@@ -153,23 +313,6 @@
           <span>تتبع طلبك</span>
         </a>
       </div>
-
-      <div class="hero-trust">
-        <div class="trust-item">
-          <div class="trust-num" data-target="5000">0</div>
-          <div class="trust-label">عضو مسجل</div>
-        </div>
-        <div class="trust-divider"></div>
-        <div class="trust-item">
-          <div class="trust-num" data-target="98">0</div>
-          <div class="trust-label">نسبة الرضا</div>
-        </div>
-        <div class="trust-divider"></div>
-        <div class="trust-item">
-          <div class="trust-num" data-target="24">0</div>
-          <div class="trust-label">ساعة استجابة</div>
-        </div>
-      </div>
     </div>
 
     <div class="hero-visual">
@@ -182,9 +325,9 @@
           <div class="code-dots">
             <span></span><span></span><span></span>
           </div>
-          <div class="code-title">member.js</div>
+          <div class="code-title" id="codeCardName" data-setting="code_card_name">member.js</div>
         </div>
-        <pre class="code-body"><code><span class="c-key">const</span> <span class="c-var">member</span> = {
+        <pre class="code-body" id="codeCardBody"><code><span class="c-key">const</span> <span class="c-var">member</span> = {
   <span class="c-prop">name</span>: <span class="c-str">"أحمد محمد"</span>,
   <span class="c-prop">type</span>: <span class="c-str">"خريج"</span>,
   <span class="c-prop">status</span>: <span class="c-ok">"APPROVED"</span>,
@@ -195,7 +338,10 @@
 <span class="c-cmt">// Real-time synced</span>
 <span class="c-key">await</span> <span class="c-fn">notify</span>(<span class="c-var">member</span>);</code></pre>
         <div class="code-footer">
-          <span class="code-status"><span class="dot-live"></span> LIVE</span>
+          <span class="code-status">
+            <span class="dot-live"></span>
+            <span id="codeCardStatus" data-setting="code_card_status">LIVE</span>
+          </span>
           <span class="code-time" id="liveClock">--:--:--</span>
         </div>
       </div>
@@ -204,97 +350,59 @@
   </div>
 </section>
 
-<!-- FEATURES -->
-<section class="section features-section">
+<!-- ============================================
+     ABOUT CARD (Optional — from settings)
+     ============================================ -->
+<section class="section about-section" id="aboutSection" style="display:none;padding-top:0;">
   <div class="container">
-
-    <div class="section-head">
-      <div class="section-label">المميزات</div>
-      <h2 class="section-title">لماذا منصتنا؟</h2>
-      <p class="section-desc">منظومة متكاملة صُمّمت خصيصًا لنقابة تكنولوجيا المعلومات</p>
-    </div>
-
-    <div class="features-grid">
-
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-          </svg>
-        </div>
-        <h3>تقديم في دقائق</h3>
-        <p>فورم ذكي يوجهك خطوة بخطوة لإتمام طلبك بأسرع وقت ممكن.</p>
+    <div class="about-card">
+      <div class="about-logo" id="aboutLogoBox">
+        <img id="aboutLogoImg" src="" alt="" style="display:none;" />
+        <svg class="logo-fallback" id="aboutLogoFallback" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+          <line x1="14" y1="4" x2="10" y2="20" />
+        </svg>
       </div>
-
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-            <circle cx="12" cy="12" r="3" />
-          </svg>
-        </div>
-        <h3>فحص تلقائي</h3>
-        <p>تحقق ذكي من صحة وجودة مستنداتك قبل الإرسال مباشرة.</p>
+      <div class="about-content">
+        <h2 class="about-title" id="aboutTitle">عن النقابة</h2>
+        <p class="about-text" id="aboutText"></p>
       </div>
-
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-          </svg>
-        </div>
-        <h3>تتبع مباشر</h3>
-        <p>تابع حالة طلبك لحظة بلحظة بدون تحديث الصفحة.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <rect x="3" y="11" width="18" height="11" rx="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-        </div>
-        <h3>أمان كامل</h3>
-        <p>تشفير البيانات وصلاحيات دقيقة لكل مستخدم في النظام.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="13.5" cy="6.5" r="2.5" />
-            <circle cx="17.5" cy="10.5" r="2.5" />
-            <circle cx="8.5" cy="7.5" r="2.5" />
-            <circle cx="6.5" cy="12.5" r="2.5" />
-            <path d="M12 2a10 10 0 1 0 0 20 2 2 0 0 0 0-4 6 6 0 0 1 0-12 2 2 0 0 0 0-4z" />
-          </svg>
-        </div>
-        <h3>ثيمات متعددة</h3>
-        <p>اختر الثيم اللي يريحك، أو استخدم ثيم النقابة الرسمي.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <rect x="5" y="2" width="14" height="20" rx="2" />
-            <line x1="12" y1="18" x2="12.01" y2="18" />
-          </svg>
-        </div>
-        <h3>يعمل على كل الأجهزة</h3>
-        <p>تجربة سلسة على الموبايل والتابلت والكمبيوتر.</p>
-      </div>
-
     </div>
   </div>
 </section>
 
-<!-- MEMBERSHIP TYPES (Realtime) -->
+<!-- ============================================
+     FEATURES SECTION (Dynamic from settings)
+     ============================================ -->
+<section class="section features-section">
+  <div class="container">
+
+    <div class="section-head">
+      <div class="section-label" data-setting="features_label">المميزات</div>
+      <h2 class="section-title" data-setting="features_title">لماذا منصتنا؟</h2>
+      <p class="section-desc" data-setting="features_subtitle">منظومة متكاملة صُمّمت خصيصًا لنقابة تكنولوجيا المعلومات</p>
+    </div>
+
+    <div class="features-grid" id="featuresGrid">
+      <div class="skeleton-card" style="height:200px;"></div>
+      <div class="skeleton-card" style="height:200px;"></div>
+      <div class="skeleton-card" style="height:200px;"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================
+     MEMBERSHIP TYPES (Realtime)
+     ============================================ -->
 <section class="section types-section">
   <div class="container">
 
     <div class="section-head">
-      <div class="section-label">العضويات</div>
-      <h2 class="section-title">أنواع العضوية</h2>
-      <p class="section-desc">اختر النوع المناسب لك وابدأ التقديم فورًا</p>
+      <div class="section-label" data-setting="types_label">العضويات</div>
+      <h2 class="section-title" data-setting="types_title">أنواع العضوية</h2>
+      <p class="section-desc" data-setting="types_subtitle">اختر النوع المناسب لك وابدأ التقديم فورًا</p>
     </div>
 
     <div class="types-grid" id="typesGrid">
@@ -307,14 +415,16 @@
   </div>
 </section>
 
-<!-- STEPS -->
+<!-- ============================================
+     STEPS SECTION
+     ============================================ -->
 <section class="section steps-section">
   <div class="container">
 
     <div class="section-head">
-      <div class="section-label">الخطوات</div>
-      <h2 class="section-title">كيف تقدم؟</h2>
-      <p class="section-desc">4 خطوات بسيطة تفصلك عن عضويتك</p>
+      <div class="section-label" data-setting="steps_label">الخطوات</div>
+      <h2 class="section-title" data-setting="steps_title">كيف تقدم؟</h2>
+      <p class="section-desc" data-setting="steps_subtitle">4 خطوات بسيطة تفصلك عن عضويتك</p>
     </div>
 
     <div class="steps-grid">
@@ -377,13 +487,15 @@
   </div>
 </section>
 
-<!-- CTA -->
+<!-- ============================================
+     CTA SECTION
+     ============================================ -->
 <section class="section cta-section">
   <div class="container">
     <div class="cta-box">
       <div class="cta-glow"></div>
-      <h2>جاهز تبدأ رحلتك مع نقابتك؟</h2>
-      <p>سجّل عضويتك الآن واستمتع بكل المزايا والخدمات</p>
+      <h2 data-setting="cta_title">جاهز تبدأ رحلتك مع نقابتك؟</h2>
+      <p data-setting="cta_subtitle">سجّل عضويتك الآن واستمتع بكل المزايا والخدمات</p>
       <div class="cta-actions">
         <a href="apply.html" class="btn btn-primary btn-lg">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -397,7 +509,9 @@
   </div>
 </section>
 
-<!-- FOOTER -->
+<!-- ============================================
+     FOOTER
+     ============================================ -->
 <footer class="footer">
   <div class="container">
 
@@ -418,7 +532,7 @@
             <div class="footer-logo-sub">IT WORKERS SYNDICATE</div>
           </div>
         </div>
-        <p class="footer-desc">
+        <p class="footer-desc" data-setting="footer_description">
           منظومة رقمية متكاملة لتقديم وإدارة عضويات نقابة تكنولوجيا المعلومات والبرمجيات.
         </p>
       </div>
@@ -479,7 +593,7 @@
 
 <script>
 /* ============================================
-   UI: MOBILE NAV + THEME PANEL + CLOCK + COUNTERS
+   UI: MOBILE NAV + THEME PANEL + CLOCK
    ============================================ */
 (function () {
   'use strict';
@@ -519,31 +633,6 @@
   }
   tickClock();
   setInterval(tickClock, 1000);
-
-  /* Counter Animation */
-  const counters = document.querySelectorAll('[data-target]');
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const el = entry.target;
-        const target = +el.dataset.target;
-        const duration = 1500;
-        const start = performance.now();
-        function animate(now) {
-          const t = Math.min(1, (now - start) / duration);
-          const eased = 1 - Math.pow(1 - t, 3);
-          const cur = Math.floor(target * eased);
-          el.textContent = cur.toLocaleString('en-US');
-          if (t < 1) requestAnimationFrame(animate);
-          else el.textContent = target.toLocaleString('en-US');
-        }
-        requestAnimationFrame(animate);
-        obs.unobserve(el);
-      }
-    });
-  }, { threshold: 0.4 });
-
-  counters.forEach(c => obs.observe(c));
 
   /* Navbar scroll effect */
   const navbar = document.getElementById('navbar');
@@ -641,6 +730,227 @@
 
 <script>
 /* ============================================
+   DYNAMIC CONTENT — Features + About Card + Code Card
+   ============================================ */
+(function () {
+  'use strict';
+
+  /* ============================================
+     ICON LIBRARY
+     ============================================ */
+  const ICONS = {
+    zap: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+    eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    palette: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2a10 10 0 1 0 0 20 2 2 0 0 0 0-4 6 6 0 0 1 0-12 2 2 0 0 0 0-4z"/></svg>',
+    smartphone: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+    code: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+    users: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    star: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    briefcase: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+    graduation: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+    activity: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+    award: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>',
+    trending: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+  };
+
+  const DEFAULT_ICON_KEY = 'check';
+
+  function getIconSvg(name) {
+    return ICONS[name] || ICONS[DEFAULT_ICON_KEY];
+  }
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  /* ============================================
+     DEFAULT FEATURES CARDS
+     ============================================ */
+  const DEFAULT_FEATURES = [
+    { icon: 'zap', title: 'تقديم في دقائق', text: 'فورم ذكي يوجهك خطوة بخطوة لإتمام طلبك بأسرع وقت ممكن.' },
+    { icon: 'activity', title: 'فحص تلقائي', text: 'تحقق ذكي من صحة وجودة مستنداتك قبل الإرسال مباشرة.' },
+    { icon: 'trending', title: 'تتبع مباشر', text: 'تابع حالة طلبك لحظة بلحظة بدون تحديث الصفحة.' },
+    { icon: 'shield', title: 'أمان كامل', text: 'تشفير البيانات وصلاحيات دقيقة لكل مستخدم في النظام.' },
+    { icon: 'palette', title: 'ثيمات متعددة', text: 'اختر الثيم اللي يريحك، أو استخدم ثيم النقابة الرسمي.' },
+    { icon: 'smartphone', title: 'يعمل على كل الأجهزة', text: 'تجربة سلسة على الموبايل والتابلت والكمبيوتر.' }
+  ];
+
+  /* ============================================
+     RENDER FEATURES
+     ============================================ */
+  function renderFeatures(cards) {
+    const grid = document.getElementById('featuresGrid');
+    if (!grid) return;
+
+    if (!Array.isArray(cards) || !cards.length) {
+      grid.innerHTML = '<div class="empty-state">لا توجد مميزات مضافة حالياً</div>';
+      return;
+    }
+
+    grid.innerHTML = cards.map((c, i) => {
+      const iconHTML = c.logo
+        ? `<img src="${escapeHtml(c.logo)}" alt="${escapeHtml(c.title || '')}" />`
+        : getIconSvg(c.icon);
+
+      return `
+        <div class="feature-card" style="animation-delay:${i * 0.06}s">
+          <div class="feature-icon">${iconHTML}</div>
+          <h3>${escapeHtml(c.title || '')}</h3>
+          <p>${escapeHtml(c.text || '')}</p>
+        </div>
+      `;
+    }).join('');
+  }
+
+  /* ============================================
+     RENDER ABOUT CARD
+     ============================================ */
+  function renderAbout(settings) {
+    const section = document.getElementById('aboutSection');
+    if (!section) return;
+
+    const enabled = settings.about_card_enabled === 'true' ||
+                    settings.about_card_enabled === true;
+
+    if (!enabled) {
+      section.style.display = 'none';
+      return;
+    }
+
+    const title = settings.about_card_title || 'عن النقابة';
+    const text = settings.about_card_text || '';
+    const logo = settings.about_card_logo || '';
+
+    const titleEl = document.getElementById('aboutTitle');
+    const textEl = document.getElementById('aboutText');
+    const imgEl = document.getElementById('aboutLogoImg');
+    const fbEl = document.getElementById('aboutLogoFallback');
+
+    if (titleEl) titleEl.textContent = title;
+    if (textEl) textEl.textContent = text;
+
+    if (logo && imgEl && fbEl) {
+      imgEl.onload = () => {
+        imgEl.style.display = 'block';
+        fbEl.style.display = 'none';
+      };
+      imgEl.onerror = () => {
+        imgEl.style.display = 'none';
+        fbEl.style.display = 'block';
+      };
+      imgEl.src = logo;
+    } else if (imgEl && fbEl) {
+      imgEl.style.display = 'none';
+      fbEl.style.display = 'block';
+    }
+
+    section.style.display = 'block';
+  }
+
+  /* ============================================
+     APPLY SETTINGS TO PAGE
+     ============================================ */
+  function applyCustomSettings(settings) {
+    if (!settings) return;
+
+    /* 1. Features Cards */
+    let cards = [];
+    try {
+      const raw = settings.features_cards;
+      if (raw) {
+        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (Array.isArray(parsed) && parsed.length) cards = parsed;
+      }
+    } catch (e) {
+      console.warn('[Home] Invalid features_cards JSON, using defaults');
+    }
+    if (!cards.length) cards = DEFAULT_FEATURES;
+
+    renderFeatures(cards);
+
+    /* 2. About Card */
+    renderAbout(settings);
+
+    /* 3. Code Card Content */
+    const codeBody = document.getElementById('codeCardBody');
+    if (codeBody && settings.code_card_content) {
+      // Use textContent to preserve any admin-provided code as plain text
+      codeBody.textContent = settings.code_card_content;
+      codeBody.classList.add('text-mode');
+    }
+
+    /* 4. Code Card Status (color fallback) */
+    const statusEl = document.getElementById('codeCardStatus');
+    if (statusEl && settings.code_card_status) {
+      statusEl.textContent = settings.code_card_status;
+    }
+
+    /* 5. Hero Description (already handled by [data-setting], but textContent with newlines) */
+    const heroDesc = document.querySelector('[data-setting="hero_description"]');
+    if (heroDesc) {
+      heroDesc.style.whiteSpace = 'pre-line';
+    }
+
+    /* 6. Footer description */
+    const footerDesc = document.querySelector('[data-setting="footer_description"]');
+    if (footerDesc) {
+      footerDesc.style.whiteSpace = 'pre-line';
+    }
+  }
+
+  /* ============================================
+     INIT — Wait for settings-ready
+     ============================================ */
+  function init() {
+    // Render defaults first (fast paint)
+    renderFeatures(DEFAULT_FEATURES);
+
+    // When settings.js is ready, apply custom
+    window.addEventListener('settings-ready', (e) => {
+      const s = e.detail?.settings || null;
+      applyCustomSettings(s || (window.SettingsManager?.getAll?.() || null));
+    });
+
+    // Fallback: if settings already loaded before our listener
+    if (window.SettingsManager && typeof window.SettingsManager.getAll === 'function') {
+      const s = window.SettingsManager.getAll();
+      if (s && (s.features_cards || s.site_name)) {
+        setTimeout(() => applyCustomSettings(s), 50);
+      }
+    }
+
+    // Also listen to settings changes (from admin panel in another tab)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'its_site_settings' && e.newValue) {
+        try {
+          const data = JSON.parse(e.newValue);
+          applyCustomSettings(data);
+        } catch (err) {}
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>
+
+<script>
+/* ============================================
    MEMBERSHIP TYPES (Realtime)
    ============================================ */
 (function () {
@@ -711,7 +1021,11 @@
           .order('id', { ascending: true });
 
         if (error) {
-          console.error('Load types error:', error);
+          console.error('[Home] Load types error:', error);
+          const grid = document.getElementById('typesGrid');
+          if (grid) {
+            grid.innerHTML = '<div class="empty-state">تعذّر تحميل أنواع العضوية. حاول تحديث الصفحة.</div>';
+          }
           return;
         }
         renderTypes(data);
@@ -719,7 +1033,6 @@
 
       await load();
 
-      // Realtime
       if (window.Realtime) {
         window.Realtime.watch('membership_types', () => load());
       }
