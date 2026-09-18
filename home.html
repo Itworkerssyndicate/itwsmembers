@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="neon-dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#000000" />
+<meta name="description" content="منظومة العضوية الرقمية لنقابة تكنولوجيا المعلومات والبرمجيات — قدّم طلب عضويتك وتابع حالة طلبك إلكترونيًا." />
+
+<title>نقابة تكنولوجيا المعلومات والبرمجيات</title>
+
+<!-- OPEN GRAPH -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="نقابة تكنولوجيا المعلومات والبرمجيات" />
+<meta property="og:title" content="نقابة تكنولوجيا المعلومات والبرمجيات" />
+<meta property="og:description" content="منظومة العضوية الرقمية — قدّم طلب عضويتك وتابع حالة طلبك إلكترونيًا." />
+<meta property="og:image" content="https://zenhokbsuxgiyptmdphs.supabase.co/storage/v1/object/public/branding/logo.png" />
+<meta property="og:locale" content="ar_EG" />
+
+<!-- TWITTER -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="نقابة تكنولوجيا المعلومات والبرمجيات" />
+<meta name="twitter:image" content="https://zenhokbsuxgiyptmdphs.supabase.co/storage/v1/object/public/branding/logo.png" />
+
+<!-- FAVICON -->
+<link rel="icon" id="faviconLink" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/themes.css" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- BACKGROUND LAYERS -->
+<canvas id="bgCanvas"></canvas>
+<div class="bg-grid"></div>
+<div class="bg-glow glow-1"></div>
+<div class="bg-glow glow-2"></div>
+
+<!-- NAVBAR -->
+<header class="navbar" id="navbar">
+  <div class="nav-container">
+
+    <a href="home.html" class="nav-logo">
+      <div class="logo-badge" id="navLogoBadge">
+        <img id="navLogoImg" src="" alt="شعار النقابة" style="display:none;" />
+        <svg class="logo-fallback" id="navLogoFallback" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+          <line x1="14" y1="4" x2="10" y2="20" />
+        </svg>
+      </div>
+      <div class="logo-text">
+        <div class="logo-main" id="navSiteName" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
+        <div class="logo-sub">IT WORKERS SYNDICATE</div>
+      </div>
+    </a>
+
+    <nav class="nav-links" id="navLinks">
+      <a href="home.html" class="active">الرئيسية</a>
+      <a href="apply.html">تقديم عضوية</a>
+      <a href="track.html">تتبع الطلب</a>
+      <a href="login.html" class="btn-login">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+          <polyline points="10 17 15 12 10 7" />
+          <line x1="15" y1="12" x2="3" y2="12" />
+        </svg>
+        <span>دخول الموظفين</span>
+      </a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="icon-btn" onclick="toggleThemePanel()" aria-label="الثيمات">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="13.5" cy="6.5" r="2.5" />
+          <circle cx="17.5" cy="10.5" r="2.5" />
+          <circle cx="8.5" cy="7.5" r="2.5" />
+          <circle cx="6.5" cy="12.5" r="2.5" />
+          <path d="M12 2a10 10 0 1 0 0 20 2 2 0 0 0 0-4 6 6 0 0 1 0-12 2 2 0 0 0 0-4z" />
+        </svg>
+      </button>
+
+      <button class="icon-btn" onclick="toggleMobileNav()" id="mobileToggle" aria-label="القائمة">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+    </div>
+
+  </div>
+</header>
+
+<!-- THEME PANEL -->
+<div id="themePanel" class="theme-panel">
+  <div class="theme-panel-header">
+    <h4>اختر الثيم</h4>
+    <button class="icon-btn-sm" onclick="toggleThemePanel()" aria-label="إغلاق">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+  </div>
+  <div class="theme-grid" id="themeGrid"></div>
+  <button class="btn btn-sm btn-outline w-full" onclick="resetTheme()">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <polyline points="1 4 1 10 7 10" />
+      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+    </svg>
+    <span>إعادة تعيين</span>
+  </button>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="dot-pulse"></span>
+        <span>منظومة رقمية متكاملة</span>
+      </div>
+
+      <h1 class="hero-title">
+        <span class="glitch" data-text="انضم إلى نقابتك">انضم إلى نقابتك</span>
+        <br />
+        <span class="gradient-text">بخطوات رقمية</span>
+      </h1>
+
+      <p class="hero-desc">
+        قدّم طلب عضويتك إلكترونيًا، ارفع مستنداتك، وتابع حالة طلبك لحظة بلحظة.
+        منظومة سريعة، آمنة، وشفافة بالكامل.
+      </p>
+
+      <div class="hero-actions">
+        <a href="apply.html" class="btn btn-primary btn-lg">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+          </svg>
+          <span>ابدأ التقديم</span>
+        </a>
+        <a href="track.html" class="btn btn-outline btn-lg">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <span>تتبع طلبك</span>
+        </a>
+      </div>
+
+      <div class="hero-trust">
+        <div class="trust-item">
+          <div class="trust-num" data-target="5000">0</div>
+          <div class="trust-label">عضو مسجل</div>
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+          <div class="trust-num" data-target="98">0</div>
+          <div class="trust-label">نسبة الرضا</div>
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+          <div class="trust-num" data-target="24">0</div>
+          <div class="trust-label">ساعة استجابة</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+
+      <div class="code-card">
+        <div class="code-header">
+          <div class="code-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="code-title">member.js</div>
+        </div>
+        <pre class="code-body"><code><span class="c-key">const</span> <span class="c-var">member</span> = {
+  <span class="c-prop">name</span>: <span class="c-str">"أحمد محمد"</span>,
+  <span class="c-prop">type</span>: <span class="c-str">"خريج"</span>,
+  <span class="c-prop">status</span>: <span class="c-ok">"APPROVED"</span>,
+  <span class="c-prop">tracking</span>: <span class="c-str">"ITS-202601-12345"</span>,
+  <span class="c-prop">joined</span>: <span class="c-num">2026</span>
+};
+
+<span class="c-cmt">// Real-time synced</span>
+<span class="c-key">await</span> <span class="c-fn">notify</span>(<span class="c-var">member</span>);</code></pre>
+        <div class="code-footer">
+          <span class="code-status"><span class="dot-live"></span> LIVE</span>
+          <span class="code-time" id="liveClock">--:--:--</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section features-section">
+  <div class="container">
+
+    <div class="section-head">
+      <div class="section-label">المميزات</div>
+      <h2 class="section-title">لماذا منصتنا؟</h2>
+      <p class="section-desc">منظومة متكاملة صُمّمت خصيصًا لنقابة تكنولوجيا المعلومات</p>
+    </div>
+
+    <div class="features-grid">
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+        </div>
+        <h3>تقديم في دقائق</h3>
+        <p>فورم ذكي يوجهك خطوة بخطوة لإتمام طلبك بأسرع وقت ممكن.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </div>
+        <h3>فحص تلقائي</h3>
+        <p>تحقق ذكي من صحة وجودة مستنداتك قبل الإرسال مباشرة.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+          </svg>
+        </div>
+        <h3>تتبع مباشر</h3>
+        <p>تابع حالة طلبك لحظة بلحظة بدون تحديث الصفحة.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+        </div>
+        <h3>أمان كامل</h3>
+        <p>تشفير البيانات وصلاحيات دقيقة لكل مستخدم في النظام.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="13.5" cy="6.5" r="2.5" />
+            <circle cx="17.5" cy="10.5" r="2.5" />
+            <circle cx="8.5" cy="7.5" r="2.5" />
+            <circle cx="6.5" cy="12.5" r="2.5" />
+            <path d="M12 2a10 10 0 1 0 0 20 2 2 0 0 0 0-4 6 6 0 0 1 0-12 2 2 0 0 0 0-4z" />
+          </svg>
+        </div>
+        <h3>ثيمات متعددة</h3>
+        <p>اختر الثيم اللي يريحك، أو استخدم ثيم النقابة الرسمي.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <rect x="5" y="2" width="14" height="20" rx="2" />
+            <line x1="12" y1="18" x2="12.01" y2="18" />
+          </svg>
+        </div>
+        <h3>يعمل على كل الأجهزة</h3>
+        <p>تجربة سلسة على الموبايل والتابلت والكمبيوتر.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- MEMBERSHIP TYPES (Realtime) -->
+<section class="section types-section">
+  <div class="container">
+
+    <div class="section-head">
+      <div class="section-label">العضويات</div>
+      <h2 class="section-title">أنواع العضوية</h2>
+      <p class="section-desc">اختر النوع المناسب لك وابدأ التقديم فورًا</p>
+    </div>
+
+    <div class="types-grid" id="typesGrid">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- STEPS -->
+<section class="section steps-section">
+  <div class="container">
+
+    <div class="section-head">
+      <div class="section-label">الخطوات</div>
+      <h2 class="section-title">كيف تقدم؟</h2>
+      <p class="section-desc">4 خطوات بسيطة تفصلك عن عضويتك</p>
+    </div>
+
+    <div class="steps-grid">
+
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="9" y1="13" x2="15" y2="13" />
+            <line x1="9" y1="17" x2="15" y2="17" />
+          </svg>
+        </div>
+        <h3>املأ الفورم</h3>
+        <p>بياناتك الأساسية والمهنية في دقائق</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+        </div>
+        <h3>ارفع المرفقات</h3>
+        <p>بطاقة + شهادة + صورة شخصية</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+        </div>
+        <h3>فحص تلقائي</h3>
+        <p>تحقق فوري من صحة وجودة المستندات</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <div class="step-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+            <path d="M9 16l2 2 4-4" />
+          </svg>
+        </div>
+        <h3>استلم إيصالك</h3>
+        <p>رقم تتبع + QR لمتابعة الطلب</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section cta-section">
+  <div class="container">
+    <div class="cta-box">
+      <div class="cta-glow"></div>
+      <h2>جاهز تبدأ رحلتك مع نقابتك؟</h2>
+      <p>سجّل عضويتك الآن واستمتع بكل المزايا والخدمات</p>
+      <div class="cta-actions">
+        <a href="apply.html" class="btn btn-primary btn-lg">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
+          <span>قدّم عضويتك الآن</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+
+    <div class="footer-grid">
+
+      <div class="footer-col">
+        <div class="footer-logo">
+          <div class="logo-badge" id="footerLogoBadge">
+            <img id="footerLogoImg" src="" alt="شعار النقابة" style="display:none;" />
+            <svg class="logo-fallback" id="footerLogoFallback" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+              <line x1="14" y1="4" x2="10" y2="20" />
+            </svg>
+          </div>
+          <div>
+            <div class="footer-logo-main" id="footerSiteName" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
+            <div class="footer-logo-sub">IT WORKERS SYNDICATE</div>
+          </div>
+        </div>
+        <p class="footer-desc">
+          منظومة رقمية متكاملة لتقديم وإدارة عضويات نقابة تكنولوجيا المعلومات والبرمجيات.
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h4>روابط سريعة</h4>
+        <ul class="footer-links">
+          <li><a href="home.html">الرئيسية</a></li>
+          <li><a href="apply.html">تقديم عضوية</a></li>
+          <li><a href="track.html">تتبع طلب</a></li>
+          <li><a href="login.html">دخول الموظفين</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>تواصل معنا</h4>
+        <ul class="footer-contact">
+          <li>
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+            <span data-contact-email>info@itsyndicate.eg</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+            <span data-contact-phone>+20 100 000 0000</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span data-contact-address>القاهرة، مصر</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <div>© 2026 <span data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</span> — جميع الحقوق محفوظة</div>
+      <div class="footer-head">
+        النقيب العام: <strong data-head-name>م / محمود جميل</strong>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="js/supabase-config.js"></script>
+<script src="js/theme-manager.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/realtime.js"></script>
+
+<script>
+/* ============================================
+   UI: MOBILE NAV + THEME PANEL + CLOCK + COUNTERS
+   ============================================ */
+(function () {
+  'use strict';
+
+  /* Mobile Nav */
+  window.toggleMobileNav = function () {
+    const nav = document.getElementById('navLinks');
+    if (nav) nav.classList.toggle('open');
+  };
+
+  /* Theme Panel */
+  window.toggleThemePanel = function () {
+    const panel = document.getElementById('themePanel');
+    if (panel) panel.classList.toggle('open');
+  };
+
+  /* Close on outside click */
+  document.addEventListener('click', (e) => {
+    const panel = document.getElementById('themePanel');
+    if (!panel) return;
+    const isInPanel = panel.contains(e.target);
+    const isToggleBtn = e.target.closest('button[onclick*="toggleThemePanel"]');
+    if (panel.classList.contains('open') && !isInPanel && !isToggleBtn) {
+      panel.classList.remove('open');
+    }
+  });
+
+  /* Live Clock */
+  const clock = document.getElementById('liveClock');
+  function tickClock() {
+    if (!clock) return;
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    clock.textContent = `${hh}:${mm}:${ss}`;
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  /* Counter Animation */
+  const counters = document.querySelectorAll('[data-target]');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const target = +el.dataset.target;
+        const duration = 1500;
+        const start = performance.now();
+        function animate(now) {
+          const t = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - t, 3);
+          const cur = Math.floor(target * eased);
+          el.textContent = cur.toLocaleString('en-US');
+          if (t < 1) requestAnimationFrame(animate);
+          else el.textContent = target.toLocaleString('en-US');
+        }
+        requestAnimationFrame(animate);
+        obs.unobserve(el);
+      }
+    });
+  }, { threshold: 0.4 });
+
+  counters.forEach(c => obs.observe(c));
+
+  /* Navbar scroll effect */
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    if (!navbar) return;
+    if (window.scrollY > 30) navbar.classList.add('scrolled');
+    else navbar.classList.remove('scrolled');
+  }, { passive: true });
+
+  /* Background Particles */
+  const canvas = document.getElementById('bgCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0, dots = [];
+
+  function accentRgb() {
+    const raw = getComputedStyle(document.documentElement)
+      .getPropertyValue('--accent-rgb').trim();
+    if (raw) {
+      const parts = raw.split(',').map(s => parseInt(s.trim()));
+      return { r: parts[0] || 0, g: parts[1] || 240, b: parts[2] || 255 };
+    }
+    return { r: 0, g: 240, b: 255 };
+  }
+
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    init();
+  }
+
+  function init() {
+    const count = Math.min(60, Math.max(25, Math.floor(W / 30)));
+    dots = [];
+    for (let i = 0; i < count; i++) {
+      dots.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        r: Math.random() * 1.5 + 0.5
+      });
+    }
+  }
+
+  function loop() {
+    const rgb = accentRgb();
+    ctx.clearRect(0, 0, W, H);
+
+    dots.forEach((d, i) => {
+      d.x += d.vx;
+      d.y += d.vy;
+      if (d.x < 0 || d.x > W) d.vx *= -1;
+      if (d.y < 0 || d.y > H) d.vy *= -1;
+
+      ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.55)`;
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fill();
+
+      for (let j = i + 1; j < dots.length; j++) {
+        const dx = d.x - dots[j].x;
+        const dy = d.y - dots[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 130) {
+          ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.12 * (1 - dist / 130)})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(d.x, d.y);
+          ctx.lineTo(dots[j].x, dots[j].y);
+          ctx.stroke();
+        }
+      }
+    });
+
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener('resize', () => {
+    clearTimeout(window.__bgResizeT);
+    window.__bgResizeT = setTimeout(resize, 200);
+  });
+
+  resize();
+  loop();
+
+})();
+</script>
+
+<script>
+/* ============================================
+   MEMBERSHIP TYPES (Realtime)
+   ============================================ */
+(function () {
+  'use strict';
+
+  const ICONS = {
+    STUDENT: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+    GRADUATE: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+    WORKER: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+    COMPANY: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><line x1="9" y1="9" x2="9" y2="9.01"/><line x1="9" y1="12" x2="9" y2="12.01"/><line x1="9" y1="15" x2="9" y2="15.01"/><line x1="9" y1="18" x2="9" y2="18.01"/></svg>'
+  };
+
+  const DEFAULT_ICON = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>';
+
+  function escapeHtml(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function renderTypes(data) {
+    const grid = document.getElementById('typesGrid');
+    if (!grid) return;
+
+    if (!data || !data.length) {
+      grid.innerHTML = '<div class="empty-state">لا توجد أنواع عضوية متاحة حاليًا</div>';
+      return;
+    }
+
+    grid.innerHTML = data.map((t, i) => {
+      const icon = ICONS[t.code] || DEFAULT_ICON;
+      return `
+        <div class="type-card" style="animation-delay:${i * 0.08}s">
+          <div class="type-glow"></div>
+          <div class="type-icon">${icon}</div>
+          <h3 class="type-name">${escapeHtml(t.name)}</h3>
+          <p class="type-desc">${escapeHtml(t.description || '')}</p>
+          <div class="type-price">
+            <span class="type-amount">${t.fee ?? 0}</span>
+            <span class="type-currency">جنيه / سنة</span>
+          </div>
+          <a href="apply.html?type=${t.id}" class="btn btn-primary btn-sm type-btn">
+            <span>قدّم الآن</span>
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+          </a>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function start() {
+    if (typeof window.onSupabaseReady !== 'function') {
+      setTimeout(start, 100);
+      return;
+    }
+
+    window.onSupabaseReady(async (client) => {
+      async function load() {
+        const { data, error } = await client
+          .from('membership_types')
+          .select('*')
+          .order('id', { ascending: true });
+
+        if (error) {
+          console.error('Load types error:', error);
+          return;
+        }
+        renderTypes(data);
+      }
+
+      await load();
+
+      // Realtime
+      if (window.Realtime) {
+        window.Realtime.watch('membership_types', () => load());
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
+  }
+
+})();
+</script>
+
+</body>
+</html>
