@@ -13,150 +13,159 @@
     font-family: 'Cairo', sans-serif;
     min-height: 100vh;
     padding: 40px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     position: relative;
-    overflow-x: hidden;
   }
   body::before {
     content: '';
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background-image:
       linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px);
     background-size: 55px 55px;
-    animation: gridMove 25s linear infinite;
     pointer-events: none;
     z-index: 0;
   }
-  @keyframes gridMove {
-    from { background-position: 0 0, 0 0; }
-    to { background-position: 55px 55px, 55px 55px; }
-  }
-  body::after {
-    content: '';
-    position: fixed;
-    top: -200px; right: -200px;
-    width: 500px; height: 500px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(0,240,255,0.15), transparent 70%);
-    filter: blur(80px);
-    pointer-events: none;
-    z-index: 0;
-  }
-
   .wrap {
-    max-width: 720px;
-    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
     position: relative;
     z-index: 10;
   }
-
-  .logo-stage {
+  .header {
     text-align: center;
     margin-bottom: 32px;
   }
   .logo-icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 18px;
+    width: 70px; height: 70px;
+    margin: 0 auto 16px;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%,
-      rgba(0,240,255,0.15), rgba(0,0,0,0.5) 70%);
+    background: radial-gradient(circle at 30% 30%, rgba(0,240,255,0.15), rgba(0,0,0,0.5) 70%);
     border: 2px solid rgba(0,240,255,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     box-shadow: 0 0 40px rgba(0,240,255,0.3);
-    animation: logoPulse 3s ease-in-out infinite;
-  }
-  @keyframes logoPulse {
-    0%,100% { box-shadow: 0 0 40px rgba(0,240,255,0.3); }
-    50% { box-shadow: 0 0 60px rgba(0,240,255,0.6); }
   }
   .logo-icon svg {
-    width: 38px; height: 38px;
+    width: 32px; height: 32px;
     stroke: #00f0ff; fill: none;
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
-  .logo-title {
-    font-size: 28px;
-    font-weight: 900;
+  .header h1 {
+    font-size: 28px; font-weight: 900;
     background: linear-gradient(90deg, #00f0ff, #b026ff);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 6px;
   }
-  .logo-sub {
-    font-size: 13px;
-    color: rgba(255,255,255,0.45);
-    letter-spacing: 2px;
-  }
+  .header p { color: rgba(255,255,255,0.5); font-size: 14px; }
 
-  .card {
+  .step {
     background: rgba(10,12,20,0.85);
     border: 1.5px solid rgba(0,240,255,0.2);
-    border-radius: 20px;
-    padding: 32px 28px;
+    border-radius: 18px;
+    padding: 26px 24px;
+    margin-bottom: 20px;
     backdrop-filter: blur(20px);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-    position: relative;
-    overflow: hidden;
   }
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #00f0ff, #b026ff, #00f0ff);
-    background-size: 200% auto;
-    animation: shine 3s linear infinite;
+  .step.done {
+    border-color: #00ff9d;
+    box-shadow: 0 0 30px rgba(0,255,157,0.15);
   }
-  @keyframes shine {
-    to { background-position: 200% center; }
-  }
-
-  .step-section {
-    margin-bottom: 24px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid rgba(0,240,255,0.1);
-  }
-  .step-section:last-child {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
-  }
-
-  .step-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 15px;
-    font-weight: 800;
-    color: #00f0ff;
+  .step-header {
+    display: flex; align-items: center; gap: 12px;
     margin-bottom: 16px;
   }
   .step-num {
-    width: 26px; height: 26px;
+    width: 34px; height: 34px;
     border-radius: 50%;
     background: rgba(0,240,255,0.15);
     border: 1.5px solid #00f0ff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 14px; font-weight: 700;
+    color: #00f0ff;
+    flex-shrink: 0;
+  }
+  .step.done .step-num {
+    background: rgba(0,255,157,0.15);
+    border-color: #00ff9d;
+    color: #00ff9d;
+  }
+  .step-title {
+    font-size: 17px; font-weight: 800;
+    color: #fff;
+  }
+  .step-desc {
+    font-size: 13.5px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 16px;
+    line-height: 1.7;
+  }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none; border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-decoration: none;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #00f0ff, #b026ff);
+    color: #000;
+    box-shadow: 0 4px 20px rgba(0,240,255,0.35);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,240,255,0.55);
+  }
+  .btn-outline {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(0,240,255,0.4);
     color: #00f0ff;
   }
+  .btn-outline:hover {
+    background: rgba(0,240,255,0.1);
+  }
+  .btn-success {
+    background: rgba(0,255,157,0.15);
+    border: 1.5px solid #00ff9d;
+    color: #00ff9d;
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn-row {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
 
-  .field { margin-bottom: 14px; }
+  .code-box {
+    background: #000;
+    border: 1px solid rgba(0,240,255,0.2);
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    line-height: 1.7;
+    color: #00f0ff;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre;
+    direction: ltr;
+    text-align: left;
+    margin-bottom: 12px;
+    position: relative;
+  }
+
+  .field {
+    margin-bottom: 14px;
+  }
   .field label {
     display: block;
-    font-size: 12.5px;
+    font-size: 13px;
     font-weight: 600;
     color: rgba(255,255,255,0.75);
     margin-bottom: 6px;
@@ -176,158 +185,152 @@
   .field input:focus {
     border-color: #00f0ff;
     background: rgba(0,240,255,0.04);
-    box-shadow: 0 0 0 4px rgba(0,240,255,0.08);
   }
-  .field input::placeholder { color: rgba(255,255,255,0.25); }
+  .field .hint {
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 5px;
+  }
 
-  .btn {
-    width: 100%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 15px 28px;
-    border: none;
-    border-radius: 12px;
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: all 0.3s;
-    background: linear-gradient(135deg, #00f0ff, #b026ff);
-    color: #000;
-    box-shadow: 0 4px 20px rgba(0,240,255,0.35);
-    margin-top: 8px;
+  .notice {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    line-height: 1.7;
+    margin-bottom: 14px;
   }
-  .btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0,240,255,0.55);
+  .notice.info {
+    background: rgba(0,240,255,0.08);
+    border: 1px solid rgba(0,240,255,0.3);
+    color: #00f0ff;
   }
-  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .notice.warn {
+    background: rgba(255,184,0,0.08);
+    border: 1px solid rgba(255,184,0,0.4);
+    color: #ffb800;
+  }
+  .notice.success {
+    background: rgba(0,255,157,0.08);
+    border: 1px solid rgba(0,255,157,0.4);
+    color: #00ff9d;
+  }
+  .notice.error {
+    background: rgba(255,85,85,0.08);
+    border: 1px solid rgba(255,85,85,0.4);
+    color: #ff5555;
+  }
+
+  .success-box {
+    background: rgba(0,255,157,0.08);
+    border: 2px solid #00ff9d;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    margin-top: 20px;
+    display: none;
+  }
+  .success-box.show {
+    display: block;
+    animation: popIn 0.4s;
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .success-box h3 {
+    font-size: 22px;
+    color: #00ff9d;
+    margin-bottom: 14px;
+  }
+  .credential {
+    background: rgba(0,0,0,0.5);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 14px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    direction: ltr;
+    text-align: right;
+  }
+  .credential div {
+    margin-bottom: 6px;
+    color: #fff;
+  }
+  .credential strong { color: #00f0ff; }
+
+  .progress-bar {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 20px;
+  }
+  .progress-step {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 4px;
+    transition: all 0.4s;
+  }
+  .progress-step.done { background: #00ff9d; box-shadow: 0 0 10px #00ff9d; }
 
   .spinner {
     display: inline-block;
-    width: 16px; height: 16px;
+    width: 14px; height: 14px;
     border: 2px solid rgba(0,0,0,0.3);
-    border-top-color: #000;
+    border-top-color: currentColor;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .progress-wrap {
-    margin-top: 20px;
-    display: none;
+  .toast {
+    position: fixed;
+    top: 24px; left: 50%;
+    transform: translateX(-50%) translateY(-30px);
+    z-index: 9999;
+    background: rgba(0,240,255,0.15);
+    border: 1.5px solid #00f0ff;
+    color: #00f0ff;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
   }
-  .progress-wrap.show { display: block; }
-  .progress-bar {
-    height: 6px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 100px;
-    overflow: hidden;
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
-  .progress-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, #00f0ff, #b026ff);
-    border-radius: 100px;
-    transition: width 0.4s;
-    box-shadow: 0 0 15px #00f0ff;
-  }
-  .progress-text {
-    margin-top: 10px;
-    font-size: 12.5px;
-    color: rgba(255,255,255,0.6);
-    font-family: 'JetBrains Mono', monospace;
-    text-align: center;
-  }
-
-  .log {
-    margin-top: 16px;
-    background: #000;
-    border: 1px solid rgba(0,240,255,0.15);
-    border-radius: 12px;
-    padding: 16px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    line-height: 1.8;
-    max-height: 280px;
-    overflow-y: auto;
-    display: none;
-  }
-  .log.show { display: block; }
-  .log-line {
-    padding: 2px 0;
-    display: flex;
-    gap: 8px;
-  }
-  .log-time { color: rgba(255,255,255,0.3); flex-shrink: 0; }
-  .log-msg { flex: 1; word-break: break-word; }
-  .log-msg.ok { color: #00ff9d; }
-  .log-msg.err { color: #ff5555; }
-  .log-msg.info { color: #00f0ff; }
-  .log-msg.warn { color: #ffb800; }
-
-  .result {
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 14px;
-    display: none;
-    font-size: 14px;
-    line-height: 1.8;
-  }
-  .result.show { display: block; }
-  .result.success {
-    background: rgba(0,255,157,0.08);
-    border: 1.5px solid #00ff9d;
+  .toast.success {
+    background: rgba(0,255,157,0.15);
+    border-color: #00ff9d;
     color: #00ff9d;
   }
-  .result.error {
-    background: rgba(255,85,85,0.08);
-    border: 1.5px solid #ff5555;
+  .toast.error {
+    background: rgba(255,85,85,0.15);
+    border-color: #ff5555;
     color: #ff5555;
   }
-  .result-title {
-    font-size: 16px;
-    font-weight: 800;
-    margin-bottom: 12px;
-  }
-  .result-body {
-    font-size: 13px;
-    color: rgba(255,255,255,0.85);
-    font-weight: 500;
-  }
-  .result-body code {
-    background: rgba(0,0,0,0.4);
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-family: 'JetBrains Mono', monospace;
-    direction: ltr;
-    display: inline-block;
-    color: #00f0ff;
-  }
-  .result-body .row {
-    padding: 6px 0;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
 
-  .warning-box {
-    padding: 14px 18px;
-    background: rgba(255,184,0,0.08);
-    border: 1.5px solid rgba(255,184,0,0.4);
-    border-radius: 12px;
-    color: #ffb800;
-    font-size: 12.5px;
-    line-height: 1.7;
-    margin-bottom: 20px;
+  .toast-msg {
+    position: fixed;
+    top: 24px; left: 50%;
+    transform: translateX(-50%) translateY(-50px);
+    z-index: 99999;
+    background: rgba(0,255,157,0.15);
+    border: 1.5px solid #00ff9d;
+    color: #00ff9d;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
   }
-  .warning-box strong { color: #fff; }
-
-  @media (max-width: 480px) {
-    .card { padding: 24px 18px; }
-    .logo-title { font-size: 22px; }
+  .toast-msg.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 </style>
 </head>
@@ -335,7 +338,7 @@
 
 <div class="wrap">
 
-  <div class="logo-stage">
+  <div class="header">
     <div class="logo-icon">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <polyline points="16 18 22 12 16 6"/>
@@ -343,236 +346,600 @@
         <line x1="14" y1="4" x2="10" y2="20"/>
       </svg>
     </div>
-    <div class="logo-title">Setup — الإعداد الكامل</div>
-    <div class="logo-sub">IT WORKERS SYNDICATE</div>
+    <h1>Setup — إعداد المنصة</h1>
+    <p>اتبع الخطوات بالترتيب — كل خطوة هتتعلّم عليها ✓ لما تخلص</p>
   </div>
 
-  <div class="card">
+  <!-- Progress bar -->
+  <div class="progress-bar">
+    <div class="progress-step" data-step="1"></div>
+    <div class="progress-step" data-step="2"></div>
+    <div class="progress-step" data-step="3"></div>
+    <div class="progress-step" data-step="4"></div>
+  </div>
 
-    <div class="warning-box">
-      <strong>⚠️ ملاحظة:</strong> شغّل الصفحة دي <strong>مرة واحدة فقط</strong> من جهازك، وامسحها بعد ما تخلص.
+  <!-- ============================================
+       STEP 1: SQL Editor → exec_sql
+       ============================================ -->
+  <div class="step" id="step1" style="margin-top:20px;">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-title">تحضير دالة SQL المؤقتة</div>
     </div>
-
-    <!-- STEP 1 -->
-    <div class="step-section">
-      <div class="step-title">
-        <span class="step-num">1</span>
-        <span>مفتاح الإعداد (Service Role Key)</span>
-      </div>
-
-      <div class="field">
-        <label>Service Role Key</label>
-        <input type="password" id="serviceKey" placeholder="sb_secret_..." dir="ltr" />
-        <div style="font-size:11.5px; color:rgba(255,255,255,0.4); margin-top:5px;">
-          هتلاقيه في: Project Settings → API → Secret keys
-        </div>
-      </div>
+    <div class="step-desc">
+      افتح <strong>SQL Editor</strong> في Supabase، والصق الكود ده، ودوس <strong>Run</strong>.
     </div>
+    <div class="code-box" id="code1">CREATE OR REPLACE FUNCTION exec_sql(sql text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  EXECUTE sql;
+END;
+$$;
 
-    <!-- STEP 2 -->
-    <div class="step-section">
-      <div class="step-title">
-        <span class="step-num">2</span>
-        <span>بيانات النقيب العام</span>
-      </div>
-
-      <div class="field">
-        <label>الاسم الكامل</label>
-        <input type="text" id="adminName" value="م / محمود جميل" />
-      </div>
-
-      <div class="field">
-        <label>البريد الإلكتروني (هتسجل بيه)</label>
-        <input type="email" id="adminEmail" placeholder="head@itsyndicate.eg" dir="ltr" />
-      </div>
-
-      <div class="field">
-        <label>كلمة المرور (6 أحرف على الأقل)</label>
-        <input type="password" id="adminPassword" placeholder="••••••••" dir="ltr" />
-      </div>
+GRANT EXECUTE ON FUNCTION exec_sql(text) TO service_role;
+GRANT EXECUTE ON FUNCTION exec_sql(text) TO authenticated;</div>
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="copyCode('code1', this)">
+        📋 نسخ الكود
+      </button>
+      <a href="https://supabase.com/dashboard/project/zenhokbsuxgiyptmdphs/sql/new" target="_blank" class="btn btn-primary">
+        🔗 افتح SQL Editor
+      </a>
+      <button class="btn btn-success" onclick="markStep(1)">
+        ✓ تم
+      </button>
     </div>
+  </div>
 
-    <!-- SUBMIT -->
-    <button class="btn" id="runBtn" onclick="runSetup()">
-      <span id="btnText">🚀 نفّذ الإعداد الكامل</span>
+  <!-- ============================================
+       STEP 2: SQL Editor → Full Setup
+       ============================================ -->
+  <div class="step" id="step2">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-title">تنفيذ الإعداد الكامل</div>
+    </div>
+    <div class="step-desc">
+      في <strong>نفس الصفحة</strong> (SQL Editor)، الصق الكود ده كله، ودوس <strong>Run</strong>.
+      هيعمل كل الجداول والإعدادات والصلاحيات.
+    </div>
+    <div class="code-box" id="code2"></div>
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="copyCode('code2', this)">
+        📋 نسخ الكود الكامل
+      </button>
+      <button class="btn btn-success" onclick="markStep(2)">
+        ✓ تم
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================
+       STEP 3: Create Admin User
+       ============================================ -->
+  <div class="step" id="step3">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div class="step-title">إنشاء حساب النقيب العام</div>
+    </div>
+    <div class="step-desc">
+      اذهب إلى <strong>Authentication → Users</strong>، ودوس <strong>Add user → Create new user</strong>.
+      املأ البيانات واضغط <strong>Create user</strong>، وبعدها <strong>انسخ الـ UID</strong> بتاعه.
+    </div>
+    <div class="notice info">
+      <strong>البيانات المقترحة:</strong><br>
+      📧 الإيميل: <code style="color:#00f0ff;">head@itsyndicate.eg</code><br>
+      🔒 الباسورد: اختر كلمة قوية (احفظها!)<br>
+      ✅ <strong>Auto Confirm User</strong>: فعّلها
+    </div>
+    <div class="btn-row">
+      <a href="https://supabase.com/dashboard/project/zenhokbsuxgiyptmdphs/auth/users" target="_blank" class="btn btn-primary">
+        🔗 افتح Users
+      </a>
+      <button class="btn btn-success" onclick="markStep(3)">
+        ✓ تم
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================
+       STEP 4: Add Admin to users table
+       ============================================ -->
+  <div class="step" id="step4">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <div class="step-title">تعيين النقيب كـ Head</div>
+    </div>
+    <div class="step-desc">
+      اذهب إلى <strong>Table Editor → users → Insert row</strong>، واملأ الحقول بالبيانات اللي تحت.
+    </div>
+    <div class="notice info">
+      <strong>البيانات المطلوبة:</strong><br>
+      🆔 <strong>id</strong>: (الصق الـ UID اللي نسخته من الخطوة 3)<br>
+      📧 <strong>email</strong>: <code>head@itsyndicate.eg</code><br>
+      👤 <strong>full_name</strong>: <code>م / محمود جميل</code><br>
+      👑 <strong>role</strong>: <code>head</code>
+    </div>
+    <div class="btn-row">
+      <a href="https://supabase.com/dashboard/project/zenhokbsuxgiyptmdphs/editor" target="_blank" class="btn btn-primary">
+        🔗 افتح Table Editor
+      </a>
+      <button class="btn btn-success" onclick="markStep(4)">
+        ✓ تم
+      </button>
+    </div>
+  </div>
+
+  <!-- Success Box -->
+  <div class="success-box" id="successBox">
+    <h3>🎉 تم الإعداد بنجاح!</h3>
+    <p style="color:rgba(255,255,255,0.7); font-size:14px; margin-bottom:14px;">
+      المنصة جاهزة للاستخدام
+    </p>
+    <div class="credential">
+      <div>📧 <strong>الإيميل:</strong> head@itsyndicate.eg</div>
+      <div>🔒 <strong>الباسورد:</strong> (اللي كتبته في Supabase)</div>
+      <div>🔗 <strong>صفحة الدخول:</strong> login.html</div>
+    </div>
+    <div class="btn-row" style="justify-content:center;">
+      <a href="login.html" class="btn btn-primary">
+        🚀 افتح صفحة الدخول
+      </a>
+    </div>
+  </div>
+
+  <!-- Reset Button -->
+  <div style="text-align:center; margin-top:20px;">
+    <button class="btn btn-outline" onclick="resetSteps()">
+      🔄 إعادة تعيين الخطوات
     </button>
-
-    <!-- PROGRESS -->
-    <div class="progress-wrap" id="progressWrap">
-      <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
-      </div>
-      <div class="progress-text" id="progressText">جاري التنفيذ...</div>
-    </div>
-
-    <!-- LOG -->
-    <div class="log" id="logBox"></div>
-
-    <!-- RESULT -->
-    <div class="result" id="resultBox"></div>
-
   </div>
 
 </div>
 
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
 <script>
 /* ============================================
-   CONFIG
+   FULL SETUP SQL
    ============================================ */
-const PROJECT_URL = 'https://zenhokbsuxgiyptmdphs.supabase.co';
-const FUNCTIONS_URL = PROJECT_URL + '/functions/v1/swift-api';
+const FULL_SQL = `-- ============================================
+-- IT SYNDICATE — Complete Setup
+-- ============================================
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- TABLES
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT UNIQUE,
+  full_name TEXT,
+  role TEXT DEFAULT 'committee' CHECK (role IN ('head', 'committee')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS settings (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  key TEXT UNIQUE NOT NULL,
+  value TEXT,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS user_preferences (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  theme TEXT DEFAULT 'neon-dark',
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS membership_types (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  code TEXT NOT NULL UNIQUE,
+  description TEXT,
+  fee NUMERIC(10,2) DEFAULT 0,
+  duration_months INT DEFAULT 12,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS members (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  full_name TEXT NOT NULL,
+  national_id TEXT UNIQUE NOT NULL,
+  phone TEXT NOT NULL,
+  email TEXT,
+  address TEXT,
+  membership_no TEXT UNIQUE,
+  membership_type_id BIGINT REFERENCES membership_types(id),
+  membership_start DATE,
+  membership_end DATE,
+  card_status TEXT DEFAULT 'not_issued',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS applications (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  tracking_no TEXT UNIQUE NOT NULL,
+  member_id UUID REFERENCES members(id) ON DELETE CASCADE,
+  membership_type_id BIGINT REFERENCES membership_types(id),
+  full_name TEXT NOT NULL,
+  national_id TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  email TEXT,
+  address TEXT,
+  qualification TEXT,
+  graduation_year INT,
+  employer TEXT,
+  governorate TEXT,
+  status TEXT DEFAULT 'pending' CHECK (status IN (
+    'pending','ai_review','under_review','needs_docs',
+    'approved','rejected','paid','card_processing',
+    'card_ready','delivered','cancelled'
+  )),
+  ai_score NUMERIC(5,2),
+  ai_notes TEXT,
+  reviewer_notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS attachments (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  application_id BIGINT REFERENCES applications(id) ON DELETE CASCADE,
+  file_path TEXT NOT NULL,
+  file_type TEXT,
+  file_size BIGINT,
+  doc_type TEXT,
+  ai_verified BOOLEAN DEFAULT FALSE,
+  ai_notes TEXT,
+  uploaded_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS status_history (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  application_id BIGINT REFERENCES applications(id) ON DELETE CASCADE,
+  old_status TEXT,
+  new_status TEXT NOT NULL,
+  notes TEXT,
+  changed_by TEXT,
+  changed_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  application_id BIGINT REFERENCES applications(id) ON DELETE CASCADE,
+  amount NUMERIC(10,2) NOT NULL,
+  payment_method TEXT,
+  receipt_path TEXT,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending','confirmed','rejected')),
+  paid_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS audit_log (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  user_email TEXT,
+  action TEXT NOT NULL,
+  entity TEXT,
+  entity_id TEXT,
+  old_value TEXT,
+  new_value TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- INDEXES
+CREATE INDEX IF NOT EXISTS idx_apps_national_id ON applications(national_id);
+CREATE INDEX IF NOT EXISTS idx_apps_phone ON applications(phone);
+CREATE INDEX IF NOT EXISTS idx_apps_status ON applications(status);
+CREATE INDEX IF NOT EXISTS idx_apps_tracking ON applications(tracking_no);
+CREATE INDEX IF NOT EXISTS idx_apps_created ON applications(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_attachments_app ON attachments(application_id);
+CREATE INDEX IF NOT EXISTS idx_history_app ON status_history(application_id);
+CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at DESC);
+
+-- FUNCTIONS
+CREATE OR REPLACE FUNCTION generate_tracking_no()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.tracking_no IS NULL OR NEW.tracking_no = '' THEN
+    NEW.tracking_no := 'ITS-' || TO_CHAR(NOW(), 'YYYYMM') || '-' ||
+                       LPAD(FLOOR(RANDOM() * 100000)::TEXT, 5, '0');
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_generate_tracking ON applications;
+CREATE TRIGGER trg_generate_tracking
+BEFORE INSERT ON applications
+FOR EACH ROW EXECUTE FUNCTION generate_tracking_no();
+
+CREATE OR REPLACE FUNCTION update_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at := NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_update_apps ON applications;
+CREATE TRIGGER trg_update_apps BEFORE UPDATE ON applications
+FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
+DROP TRIGGER IF EXISTS trg_update_members ON members;
+CREATE TRIGGER trg_update_members BEFORE UPDATE ON members
+FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
+DROP TRIGGER IF EXISTS trg_update_users ON users;
+CREATE TRIGGER trg_update_users BEFORE UPDATE ON users
+FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
+CREATE OR REPLACE FUNCTION log_status_change()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF (OLD.status IS DISTINCT FROM NEW.status) THEN
+    INSERT INTO status_history(application_id, old_status, new_status, notes, changed_by)
+    VALUES (NEW.id, OLD.status, NEW.status, 'Auto logged', 'system');
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trg_log_status ON applications;
+CREATE TRIGGER trg_log_status AFTER UPDATE ON applications
+FOR EACH ROW EXECUTE FUNCTION log_status_change();
+
+CREATE OR REPLACE FUNCTION is_head()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM users WHERE id = auth.uid() AND role = 'head'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+-- SEED: TYPES
+INSERT INTO membership_types (name, code, description, fee, duration_months) VALUES
+  ('طالب', 'STUDENT', 'عضوية طالب في تخصص تكنولوجيا المعلومات', 100, 12),
+  ('خريج', 'GRADUATE', 'عضوية خريج جديد', 200, 12),
+  ('عامل', 'WORKER', 'عضوية عامل في مجال تكنولوجيا المعلومات', 300, 12),
+  ('شركة', 'COMPANY', 'عضوية شركة أو مؤسسة', 1000, 12)
+ON CONFLICT (code) DO NOTHING;
+
+-- SEED: SETTINGS
+INSERT INTO settings (key, value) VALUES
+  ('site_name', 'نقابة تكنولوجيا المعلومات والبرمجيات'),
+  ('site_name_en', 'IT WORKERS SYNDICATE'),
+  ('site_logo_url', ''),
+  ('head_name', 'م / محمود جميل'),
+  ('head_title', 'النقيب العام'),
+  ('contact_email', 'info@itsyndicate.eg'),
+  ('contact_phone', '+20 100 000 0000'),
+  ('contact_address', 'القاهرة، مصر'),
+  ('default_theme', 'neon-dark'),
+  ('splash_duration', '5000'),
+  ('max_file_size', '5'),
+  ('allow_registration', 'true'),
+  ('maintenance_mode', 'false'),
+  ('hero_description', 'قدّم طلب عضويتك إلكترونيًا، ارفع مستنداتك، وتابع حالة طلبك لحظة بلحظة. منظومة سريعة، آمنة، وشفافة بالكامل.'),
+  ('features_label', 'المميزات'),
+  ('features_title', 'لماذا منصتنا؟'),
+  ('features_subtitle', 'منظومة متكاملة صُمّمت خصيصًا لنقابة تكنولوجيا المعلومات'),
+  ('features_cards', '[{"icon":"zap","title":"تقديم في دقائق","text":"فورم ذكي يوجهك خطوة بخطوة لإتمام طلبك."},{"icon":"activity","title":"فحص تلقائي","text":"تحقق ذكي من صحة وجودة مستنداتك."},{"icon":"trending","title":"تتبع مباشر","text":"تابع حالة طلبك لحظة بلحظة."},{"icon":"shield","title":"أمان كامل","text":"تشفير البيانات وصلاحيات دقيقة."},{"icon":"palette","title":"ثيمات متعددة","text":"اختر الثيم اللي يريحك."},{"icon":"smartphone","title":"يعمل على كل الأجهزة","text":"تجربة سلسة على كل الأجهزة."}]'),
+  ('about_card_enabled', 'false'),
+  ('about_card_title', 'عن النقابة'),
+  ('about_card_text', ''),
+  ('about_card_logo', ''),
+  ('types_label', 'العضويات'),
+  ('types_title', 'أنواع العضوية'),
+  ('types_subtitle', 'اختر النوع المناسب لك وابدأ التقديم فورًا'),
+  ('steps_label', 'الخطوات'),
+  ('steps_title', 'كيف تقدم؟'),
+  ('steps_subtitle', '4 خطوات بسيطة تفصلك عن عضويتك'),
+  ('code_card_name', 'member.js'),
+  ('code_card_content', 'const member = { name: "أحمد محمد", type: "خريج", status: "APPROVED" };'),
+  ('code_card_status', 'LIVE'),
+  ('cta_title', 'جاهز تبدأ رحلتك مع نقابتك؟'),
+  ('cta_subtitle', 'سجّل عضويتك الآن واستمتع بكل المزايا'),
+  ('footer_description', 'منظومة رقمية متكاملة لتقديم وإدارة عضويات نقابة تكنولوجيا المعلومات والبرمجيات.'),
+  ('terms_text', 'أقر بأن جميع البيانات والمستندات المقدمة صحيحة، وأتحمل المسؤولية القانونية عن أي بيانات خاطئة.'),
+  ('footer_text', 'نقابة تكنولوجيا المعلومات والبرمجيات — جميع الحقوق محفوظة')
+ON CONFLICT (key) DO NOTHING;
+
+-- RLS
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE applications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE attachments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE status_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE membership_types ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
+
+-- DROP OLD POLICIES
+DO $$ BEGIN
+  DROP POLICY IF EXISTS "settings_read" ON settings;
+  DROP POLICY IF EXISTS "settings_write" ON settings;
+  DROP POLICY IF EXISTS "prefs_own" ON user_preferences;
+  DROP POLICY IF EXISTS "users_read_own" ON users;
+  DROP POLICY IF EXISTS "users_head_write" ON users;
+  DROP POLICY IF EXISTS "users_insert_self" ON users;
+  DROP POLICY IF EXISTS "apps_insert_anon" ON applications;
+  DROP POLICY IF EXISTS "apps_read_all" ON applications;
+  DROP POLICY IF EXISTS "apps_update_staff" ON applications;
+  DROP POLICY IF EXISTS "apps_delete_head" ON applications;
+  DROP POLICY IF EXISTS "att_read" ON attachments;
+  DROP POLICY IF EXISTS "att_insert" ON attachments;
+  DROP POLICY IF EXISTS "att_update_staff" ON attachments;
+  DROP POLICY IF EXISTS "history_read" ON status_history;
+  DROP POLICY IF EXISTS "history_insert_auth" ON status_history;
+  DROP POLICY IF EXISTS "payments_read" ON payments;
+  DROP POLICY IF EXISTS "payments_insert_auth" ON payments;
+  DROP POLICY IF EXISTS "types_read" ON membership_types;
+  DROP POLICY IF EXISTS "types_write_head" ON membership_types;
+  DROP POLICY IF EXISTS "audit_read_head" ON audit_log;
+  DROP POLICY IF EXISTS "audit_insert_auth" ON audit_log;
+  DROP POLICY IF EXISTS "att_storage_upload" ON storage.objects;
+  DROP POLICY IF EXISTS "att_storage_read" ON storage.objects;
+  DROP POLICY IF EXISTS "att_storage_staff_update" ON storage.objects;
+  DROP POLICY IF EXISTS "branding_public_read" ON storage.objects;
+  DROP POLICY IF EXISTS "branding_auth_upload" ON storage.objects;
+  DROP POLICY IF EXISTS "branding_auth_update" ON storage.objects;
+  DROP POLICY IF EXISTS "branding_auth_delete" ON storage.objects;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
+
+-- CREATE POLICIES
+CREATE POLICY "settings_read" ON settings FOR SELECT TO anon, authenticated USING (TRUE);
+CREATE POLICY "settings_write" ON settings FOR ALL TO authenticated USING (is_head()) WITH CHECK (is_head());
+CREATE POLICY "prefs_own" ON user_preferences FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "users_read_own" ON users FOR SELECT TO authenticated USING (auth.uid() = id OR is_head());
+CREATE POLICY "users_head_write" ON users FOR ALL TO authenticated USING (is_head()) WITH CHECK (is_head());
+CREATE POLICY "users_insert_self" ON users FOR INSERT TO authenticated WITH CHECK (auth.uid() = id);
+CREATE POLICY "apps_insert_anon" ON applications FOR INSERT TO anon, authenticated WITH CHECK (TRUE);
+CREATE POLICY "apps_read_all" ON applications FOR SELECT TO anon, authenticated USING (TRUE);
+CREATE POLICY "apps_update_staff" ON applications FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM users WHERE id = auth.uid())) WITH CHECK (EXISTS (SELECT 1 FROM users WHERE id = auth.uid()));
+CREATE POLICY "apps_delete_head" ON applications FOR DELETE TO authenticated USING (is_head());
+CREATE POLICY "att_read" ON attachments FOR SELECT TO anon, authenticated USING (TRUE);
+CREATE POLICY "att_insert" ON attachments FOR INSERT TO anon, authenticated WITH CHECK (TRUE);
+CREATE POLICY "att_update_staff" ON attachments FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM users WHERE id = auth.uid())) WITH CHECK (EXISTS (SELECT 1 FROM users WHERE id = auth.uid()));
+CREATE POLICY "history_read" ON status_history FOR SELECT TO anon, authenticated USING (TRUE);
+CREATE POLICY "history_insert_auth" ON status_history FOR INSERT TO authenticated WITH CHECK (TRUE);
+CREATE POLICY "payments_read" ON payments FOR SELECT TO anon, authenticated USING (TRUE);
+CREATE POLICY "payments_insert_auth" ON payments FOR INSERT TO authenticated WITH CHECK (TRUE);
+CREATE POLICY "types_read" ON membership_types FOR SELECT TO anon, authenticated USING (TRUE);
+CREATE POLICY "types_write_head" ON membership_types FOR ALL TO authenticated USING (is_head()) WITH CHECK (is_head());
+CREATE POLICY "audit_read_head" ON audit_log FOR SELECT TO authenticated USING (is_head());
+CREATE POLICY "audit_insert_auth" ON audit_log FOR INSERT TO authenticated WITH CHECK (TRUE);
+
+-- STORAGE BUCKETS
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('attachments', 'attachments', FALSE)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('branding', 'branding', TRUE)
+ON CONFLICT (id) DO NOTHING;
+
+-- STORAGE POLICIES
+CREATE POLICY "att_storage_upload" ON storage.objects FOR INSERT TO anon, authenticated WITH CHECK (bucket_id = 'attachments');
+CREATE POLICY "att_storage_read" ON storage.objects FOR SELECT TO anon, authenticated USING (bucket_id = 'attachments');
+CREATE POLICY "att_storage_staff_update" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'attachments' AND EXISTS (SELECT 1 FROM users WHERE id = auth.uid()));
+CREATE POLICY "branding_public_read" ON storage.objects FOR SELECT TO public USING (bucket_id = 'branding');
+CREATE POLICY "branding_auth_upload" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'branding' AND is_head());
+CREATE POLICY "branding_auth_update" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'branding' AND is_head());
+CREATE POLICY "branding_auth_delete" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'branding' AND is_head());
+
+SELECT 'Setup completed successfully!' AS status;`;
 
 /* ============================================
-   LOGGER
+   INIT
    ============================================ */
-const logBox = document.getElementById('logBox');
+document.getElementById('code2').textContent = FULL_SQL;
 
-function log(msg, type = 'info') {
-  logBox.classList.add('show');
-  const time = new Date().toLocaleTimeString('en-GB');
-  const div = document.createElement('div');
-  div.className = 'log-line';
-  div.innerHTML = `
-    <span class="log-time">[${time}]</span>
-    <span class="log-msg ${type}">${msg}</span>
-  `;
-  logBox.appendChild(div);
-  logBox.scrollTop = logBox.scrollHeight;
-}
+/* ============================================
+   COPY CODE
+   ============================================ */
+function copyCode(id, btn) {
+  const el = document.getElementById(id);
+  const text = el.textContent;
 
-function setProgress(pct, text) {
-  document.getElementById('progressWrap').classList.add('show');
-  document.getElementById('progressFill').style.width = pct + '%';
-  if (text) document.getElementById('progressText').textContent = text;
-}
-
-function showResult(html, type = 'success') {
-  const box = document.getElementById('resultBox');
-  box.className = 'result show ' + type;
-  box.innerHTML = html;
-}
-
-function hideResult() {
-  const box = document.getElementById('resultBox');
-  box.className = 'result';
-  box.innerHTML = '';
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('✓ تم النسخ', 'success');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ تم النسخ!';
+    setTimeout(() => { btn.innerHTML = orig; }, 1500);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✓ تم النسخ', 'success');
+  });
 }
 
 /* ============================================
-   MAIN
+   MARK STEP AS DONE
    ============================================ */
-async function runSetup() {
-  hideResult();
-  logBox.innerHTML = '';
-  logBox.classList.remove('show');
+function markStep(n) {
+  const step = document.getElementById('step' + n);
+  if (!step) return;
+  step.classList.add('done');
 
-  const serviceKey = document.getElementById('serviceKey').value.trim();
-  const adminName = document.getElementById('adminName').value.trim();
-  const adminEmail = document.getElementById('adminEmail').value.trim();
-  const adminPassword = document.getElementById('adminPassword').value;
+  const bar = document.querySelector(`.progress-step[data-step="${n}"]`);
+  if (bar) bar.classList.add('done');
 
-  // Validation
-  if (!serviceKey) { showResult('<div class="result-title">❌ خطأ</div><div class="result-body">أدخل Service Role Key</div>', 'error'); return; }
-  if (!adminName) { showResult('<div class="result-title">❌ خطأ</div><div class="result-body">أدخل اسم النقيب</div>', 'error'); return; }
-  if (!adminEmail || !adminEmail.includes('@')) { showResult('<div class="result-title">❌ خطأ</div><div class="result-body">أدخل بريد صحيح</div>', 'error'); return; }
-  if (adminPassword.length < 6) { showResult('<div class="result-title">❌ خطأ</div><div class="result-body">الباسورد لازم 6 أحرف على الأقل</div>', 'error'); return; }
+  showToast(`✓ تم الخطوة ${n}`, 'success');
 
-  const btn = document.getElementById('runBtn');
-  const btnText = document.getElementById('btnText');
-  btn.disabled = true;
-  btnText.innerHTML = '<span class="spinner"></span> جاري التنفيذ...';
-
-  setProgress(10, 'جاري التحقق من المفتاح...');
-  log('بدء الإعداد...', 'info');
-  log('الاتصال بـ Supabase...', 'info');
-
-  try {
-    setProgress(25, 'جاري تنفيذ الـ SQL...');
-    log('إرسال الطلب للخادم...', 'info');
-
-    const response = await fetch(FUNCTIONS_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + serviceKey,
-        'apikey': serviceKey
-      },
-      body: JSON.stringify({
-        service_key: serviceKey,
-        admin_email: adminEmail,
-        admin_password: adminPassword,
-        admin_name: adminName
-      })
-    });
-
-    setProgress(70, 'جاري معالجة النتائج...');
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || data.message || 'فشل الاتصال بالخادم');
-    }
-
-    // Show logs from server
-    if (Array.isArray(data.logs)) {
-      data.logs.forEach(item => {
-        log(item.message, item.type || 'info');
-      });
-    }
-
-    if (!data.success) {
-      throw new Error(data.error || 'فشل الإعداد');
-    }
-
-    setProgress(100, '✅ اكتمل!');
-    log('🎉 اكتمل الإعداد بنجاح!', 'ok');
-
-    showResult(`
-      <div class="result-title">✅ تم الإعداد بنجاح!</div>
-      <div class="result-body">
-        <div class="row">🔑 <strong>بيانات الدخول:</strong></div>
-        <div style="padding:12px; background:rgba(0,0,0,0.4); border-radius:10px; margin:8px 0;">
-          <div style="margin-bottom:6px;">📧 البريد: <code>${escapeHtml(adminEmail)}</code></div>
-          <div>🔒 الباسورد: <code>${'•'.repeat(adminPassword.length)}</code></div>
-        </div>
-        <div class="row">🌐 <strong>افتح الآن:</strong> <code>login.html</code></div>
-        <div class="row">👑 هتدخل تلقائيًا على <code>admin.html</code></div>
-        <div style="margin-top:12px; padding:10px; background:rgba(255,184,0,0.1); border-radius:8px; color:#ffb800; font-size:12px;">
-          ⚠️ امسح ملف <code>setup.html</code> بعد ما تخلص
-        </div>
-      </div>
-    `, 'success');
-
-  } catch (err) {
-    console.error(err);
-    log('❌ ' + err.message, 'err');
-    setProgress(0, 'فشل');
-
-    showResult(`
-      <div class="result-title">❌ فشل الإعداد</div>
-      <div class="result-body">
-        <div style="margin-bottom:12px;">${escapeHtml(err.message)}</div>
-        <div style="padding:12px; background:rgba(0,0,0,0.4); border-radius:10px; font-size:12.5px;">
-          <strong>الحل:</strong>
-          <div style="margin-top:8px;">1. تأكد إن الـ Edge Function مرفوعة (راجع التعليمات)</div>
-          <div>2. تأكد إن الـ Service Role Key صحيح</div>
-          <div>3. جرّب تحدّث الصفحة وأعد المحاولة</div>
-        </div>
-      </div>
-    `, 'error');
-  } finally {
-    btn.disabled = false;
-    btnText.textContent = '🔄 إعادة المحاولة';
+  // Check if all done
+  const done = document.querySelectorAll('.step.done').length;
+  if (done === 4) {
+    setTimeout(() => {
+      document.getElementById('successBox').classList.add('show');
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }, 500);
   }
+
+  // Save to localStorage
+  try {
+    const completed = JSON.parse(localStorage.getItem('setup_steps') || '[]');
+    if (!completed.includes(n)) completed.push(n);
+    localStorage.setItem('setup_steps', JSON.stringify(completed));
+  } catch (e) {}
 }
 
-function escapeHtml(str) {
-  return String(str || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+/* ============================================
+   RESET
+   ============================================ */
+function resetSteps() {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('done'));
+  document.querySelectorAll('.progress-step').forEach(s => s.classList.remove('done'));
+  document.getElementById('successBox').classList.remove('show');
+  localStorage.removeItem('setup_steps');
+  showToast('تم إعادة التعيين', 'success');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ============================================
+   RESTORE STATE
+   ============================================ */
+function restoreState() {
+  try {
+    const completed = JSON.parse(localStorage.getItem('setup_steps') || '[]');
+    completed.forEach(n => {
+      const step = document.getElementById('step' + n);
+      const bar = document.querySelector(`.progress-step[data-step="${n}"]`);
+      if (step) step.classList.add('done');
+      if (bar) bar.classList.add('done');
+    });
+    if (completed.length === 4) {
+      document.getElementById('successBox').classList.add('show');
+    }
+  } catch (e) {}
+}
+
+restoreState();
+
+/* ============================================
+   TOAST
+   ============================================ */
+function showToast(msg, type = 'info') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show ' + type;
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2200);
 }
 </script>
 
