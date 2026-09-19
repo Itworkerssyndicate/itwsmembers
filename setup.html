@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Setup — نقابة تكنولوجيا المعلومات</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0c14;
+    color: #fff;
+    font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+    padding: 40px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px);
+    background-size: 55px 55px;
+    animation: gridMove 25s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  @keyframes gridMove {
+    from { background-position: 0 0, 0 0; }
+    to { background-position: 55px 55px, 55px 55px; }
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px; right: -200px;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,240,255,0.15), transparent 70%);
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    max-width: 720px;
+    width: 100%;
+    position: relative;
+    z-index: 10;
+  }
+
+  .logo-stage {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .logo-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%,
+      rgba(0,240,255,0.15), rgba(0,0,0,0.5) 70%);
+    border: 2px solid rgba(0,240,255,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 40px rgba(0,240,255,0.3);
+    animation: logoPulse 3s ease-in-out infinite;
+  }
+  @keyframes logoPulse {
+    0%,100% { box-shadow: 0 0 40px rgba(0,240,255,0.3); }
+    50% { box-shadow: 0 0 60px rgba(0,240,255,0.6); }
+  }
+  .logo-icon svg {
+    width: 38px; height: 38px;
+    stroke: #00f0ff; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .logo-title {
+    font-size: 28px;
+    font-weight: 900;
+    background: linear-gradient(90deg, #00f0ff, #b026ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+  .logo-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 2px;
+  }
+
+  .card {
+    background: rgba(10,12,20,0.85);
+    border: 1.5px solid rgba(0,240,255,0.2);
+    border-radius: 20px;
+    padding: 32px 28px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #00f0ff, #b026ff, #00f0ff);
+    background-size: 200% auto;
+    animation: shine 3s linear infinite;
+  }
+  @keyframes shine {
+    to { background-position: 200% center; }
+  }
+
+  .step-section {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(0,240,255,0.1);
+  }
+  .step-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .step-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 800;
+    color: #00f0ff;
+    margin-bottom: 16px;
+  }
+  .step-num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(0,240,255,0.15);
+    border: 1.5px solid #00f0ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: #00f0ff;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.75);
+    margin-bottom: 6px;
+  }
+  .field input {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(0,0,0,0.4);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.25s;
+  }
+  .field input:focus {
+    border-color: #00f0ff;
+    background: rgba(0,240,255,0.04);
+    box-shadow: 0 0 0 4px rgba(0,240,255,0.08);
+  }
+  .field input::placeholder { color: rgba(255,255,255,0.25); }
+
+  .btn {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px 28px;
+    border: none;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: linear-gradient(135deg, #00f0ff, #b026ff);
+    color: #000;
+    box-shadow: 0 4px 20px rgba(0,240,255,0.35);
+    margin-top: 8px;
+  }
+  .btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,240,255,0.55);
+  }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(0,0,0,0.3);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .progress-wrap {
+    margin-top: 20px;
+    display: none;
+  }
+  .progress-wrap.show { display: block; }
+  .progress-bar {
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #00f0ff, #b026ff);
+    border-radius: 100px;
+    transition: width 0.4s;
+    box-shadow: 0 0 15px #00f0ff;
+  }
+  .progress-text {
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.6);
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+  }
+
+  .log {
+    margin-top: 16px;
+    background: #000;
+    border: 1px solid rgba(0,240,255,0.15);
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    max-height: 280px;
+    overflow-y: auto;
+    display: none;
+  }
+  .log.show { display: block; }
+  .log-line {
+    padding: 2px 0;
+    display: flex;
+    gap: 8px;
+  }
+  .log-time { color: rgba(255,255,255,0.3); flex-shrink: 0; }
+  .log-msg { flex: 1; word-break: break-word; }
+  .log-msg.ok { color: #00ff9d; }
+  .log-msg.err { color: #ff5555; }
+  .log-msg.info { color: #00f0ff; }
+  .log-msg.warn { color: #ffb800; }
+
+  .result {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 14px;
+    display: none;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .result.show { display: block; }
+  .result.success {
+    background: rgba(0,255,157,0.08);
+    border: 1.5px solid #00ff9d;
+    color: #00ff9d;
+  }
+  .result.error {
+    background: rgba(255,85,85,0.08);
+    border: 1.5px solid #ff5555;
+    color: #ff5555;
+  }
+  .result-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 12px;
+  }
+  .result-body {
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    font-weight: 500;
+  }
+  .result-body code {
+    background: rgba(0,0,0,0.4);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    direction: ltr;
+    display: inline-block;
+    color: #00f0ff;
+  }
+  .result-body .row {
+    padding: 6px 0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .warning-box {
+    padding: 14px 18px;
+    background: rgba(255,184,0,0.08);
+    border: 1.5px solid rgba(255,184,0,0.4);
+    border-radius: 12px;
+    color: #ffb800;
+    font-size: 12.5px;
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .warning-box strong { color: #fff; }
+
+  @media (max-width: 480px) {
+    .card { padding: 24px 18px; }
+    .logo-title { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="logo-stage">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="16 18 22 12 16 6"/>
+        <polyline points="8 6 2 12 8 18"/>
+        <line x1="14" y1="4" x2="10" y2="20"/>
+      </svg>
+    </div>
+    <div class="logo-title">Setup — الإعداد الكامل</div>
+    <div class="logo-sub">IT WORKERS SYNDICATE</div>
+  </div>
+
+  <div class="card">
+
+    <div class="warning-box">
+      <strong>⚠️ ملاحظة:</strong> شغّل الصفحة دي <strong>مرة واحدة فقط</strong> من جهازك، وامسحها بعد ما تخلص.
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="step-section">
+      <div class="step-title">
+        <span class="step-num">1</span>
+        <span>مفتاح الإعداد (Service Role Key)</span>
+      </div>
+
+      <div class="field">
+        <label>Service Role Key</label>
+        <input type="password" id="serviceKey" placeholder="sb_secret_..." dir="ltr" />
+        <div style="font-size:11.5px; color:rgba(255,255,255,0.4); margin-top:5px;">
+          هتلاقيه في: Project Settings → API → Secret keys
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step-section">
+      <div class="step-title">
+        <span class="step-num">2</span>
+        <span>بيانات النقيب العام</span>
+      </div>
+
+      <div class="field">
+        <label>الاسم الكامل</label>
+        <input type="text" id="adminName" value="م / محمود جميل" />
+      </div>
+
+      <div class="field">
+        <label>البريد الإلكتروني (هتسجل بيه)</label>
+        <input type="email" id="adminEmail" placeholder="head@itsyndicate.eg" dir="ltr" />
+      </div>
+
+      <div class="field">
+        <label>كلمة المرور (6 أحرف على الأقل)</label>
+        <input type="password" id="adminPassword" placeholder="••••••••" dir="ltr" />
+      </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <button class="btn" id="runBtn" onclick="runSetup()">
+      <span id="btnText">🚀 نفّذ الإعداد الكامل</span>
+    </button>
+
+    <!-- PROGRESS -->
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText">جاري التنفيذ...</div>
+    </div>
+
+    <!-- LOG -->
+    <div class="log" id="logBox"></div>
+
+    <!-- RESULT -->
+    <div class="result" id="resultBox"></div>
+
+  </div>
+
+</div>
+
+<script>
+/* ============================================
+   CONFIG
+   ============================================ */
+const PROJECT_URL = 'https://zenhokbsuxgiyptmdphs.supabase.co';
+const FUNCTIONS_URL = PROJECT_URL + '/functions/v1/setup-system';
+
+/* ============================================
+   LOGGER
+   ============================================ */
+const logBox = document.getElementById('logBox');
+
+function log(msg, type = 'info') {
+  logBox.classList.add('show');
+  const time = new Date().toLocaleTimeString('en-GB');
+  const div = document.createElement('div');
+  div.className = 'log-line';
+  div.innerHTML = `
+    <span class="log-time">[${time}]</span>
+    <span class="log-msg ${type}">${msg}</span>
+  `;
+  logBox.appendChild(div);
+  logBox.scrollTop = logBox.scrollHeight;
+}
+
+function setProgress(pct, text) {
+  document.getElementById('progressWrap').classList.add('show');
+  document.getElementById('progressFill').style.width = pct + '%';
+  if (text) document.getElementById('progressText').textContent = text;
+}
+
+function showResult(html, type = 'success') {
+  const box = document.getElementById('resultBox');
+  box.className = 'result show ' + type;
+  box.innerHTML = html;
+}
+
+function hideResult() {
+  const box = document.getElementById('resultBox');
+  box.className = 'result';
+  box.innerHTML = '';
+}
+
+/* ============================================
+   MAIN
+   ============================================ */
+async function runSetup() {
+  hideResult();
+  logBox.innerHTML = '';
+  logBox.classList.remove('show');
+
+  const serviceKey = document.getElementById('serviceKey').value.trim();
+  const adminName = document.getElementById('adminName').value.trim();
+  const adminEmail = document.getElementById('adminEmail').value.trim();
+  const adminPassword = document.getElementById('adminPassword').value;
+
+  // Validation
+  if (!serviceKey) { showResult('<div class="result-title">❌ خطأ</div><div class="result-body">أدخل Service Role Key</div>', 'error'); return; }
+  if (!adminName) { showResult('<div class="result-title">❌ خطأ</div><div class="result-body">أدخل اسم النقيب</div>', 'error'); return; }
+  if (!adminEmail || !adminEmail.includes('@')) { showResult('<div class="result-title">❌ خطأ</div><div class="result-body">أدخل بريد صحيح</div>', 'error'); return; }
+  if (adminPassword.length < 6) { showResult('<div class="result-title">❌ خطأ</div><div class="result-body">الباسورد لازم 6 أحرف على الأقل</div>', 'error'); return; }
+
+  const btn = document.getElementById('runBtn');
+  const btnText = document.getElementById('btnText');
+  btn.disabled = true;
+  btnText.innerHTML = '<span class="spinner"></span> جاري التنفيذ...';
+
+  setProgress(10, 'جاري التحقق من المفتاح...');
+  log('بدء الإعداد...', 'info');
+  log('الاتصال بـ Supabase...', 'info');
+
+  try {
+    setProgress(25, 'جاري تنفيذ الـ SQL...');
+    log('إرسال الطلب للخادم...', 'info');
+
+    const response = await fetch(FUNCTIONS_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + serviceKey,
+        'apikey': serviceKey
+      },
+      body: JSON.stringify({
+        service_key: serviceKey,
+        admin_email: adminEmail,
+        admin_password: adminPassword,
+        admin_name: adminName
+      })
+    });
+
+    setProgress(70, 'جاري معالجة النتائج...');
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || data.message || 'فشل الاتصال بالخادم');
+    }
+
+    // Show logs from server
+    if (Array.isArray(data.logs)) {
+      data.logs.forEach(item => {
+        log(item.message, item.type || 'info');
+      });
+    }
+
+    if (!data.success) {
+      throw new Error(data.error || 'فشل الإعداد');
+    }
+
+    setProgress(100, '✅ اكتمل!');
+    log('🎉 اكتمل الإعداد بنجاح!', 'ok');
+
+    showResult(`
+      <div class="result-title">✅ تم الإعداد بنجاح!</div>
+      <div class="result-body">
+        <div class="row">🔑 <strong>بيانات الدخول:</strong></div>
+        <div style="padding:12px; background:rgba(0,0,0,0.4); border-radius:10px; margin:8px 0;">
+          <div style="margin-bottom:6px;">📧 البريد: <code>${escapeHtml(adminEmail)}</code></div>
+          <div>🔒 الباسورد: <code>${'•'.repeat(adminPassword.length)}</code></div>
+        </div>
+        <div class="row">🌐 <strong>افتح الآن:</strong> <code>login.html</code></div>
+        <div class="row">👑 هتدخل تلقائيًا على <code>admin.html</code></div>
+        <div style="margin-top:12px; padding:10px; background:rgba(255,184,0,0.1); border-radius:8px; color:#ffb800; font-size:12px;">
+          ⚠️ امسح ملف <code>setup.html</code> بعد ما تخلص
+        </div>
+      </div>
+    `, 'success');
+
+  } catch (err) {
+    console.error(err);
+    log('❌ ' + err.message, 'err');
+    setProgress(0, 'فشل');
+
+    showResult(`
+      <div class="result-title">❌ فشل الإعداد</div>
+      <div class="result-body">
+        <div style="margin-bottom:12px;">${escapeHtml(err.message)}</div>
+        <div style="padding:12px; background:rgba(0,0,0,0.4); border-radius:10px; font-size:12.5px;">
+          <strong>الحل:</strong>
+          <div style="margin-top:8px;">1. تأكد إن الـ Edge Function مرفوعة (راجع التعليمات)</div>
+          <div>2. تأكد إن الـ Service Role Key صحيح</div>
+          <div>3. جرّب تحدّث الصفحة وأعد المحاولة</div>
+        </div>
+      </div>
+    `, 'error');
+  } finally {
+    btn.disabled = false;
+    btnText.textContent = '🔄 إعادة المحاولة';
+  }
+}
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+</script>
+
+</body>
+</html>
