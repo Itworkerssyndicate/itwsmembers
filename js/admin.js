@@ -1,5 +1,5 @@
 /* =====================================================
-   IT SYNDICATE — Head of Syndicate (Admin) Logic
+   IT SYNDICATE — Admin Panel Logic
    ===================================================== */
 
 (function () {
@@ -8,43 +8,49 @@
   /* ============================================
      CONSTANTS
      ============================================ */
-  const DEFAULT_SETTINGS = {
-    site_name: 'نقابة تكنولوجيا المعلومات والبرمجيات',
-    site_name_en: 'IT WORKERS SYNDICATE',
-    site_logo_url: '',
-    head_name: 'م / محمود جميل',
-    head_title: 'النقيب العام',
-    contact_email: 'info@itsyndicate.eg',
-    contact_phone: '+20 100 000 0000',
-    contact_address: 'القاهرة، مصر',
-    default_theme: 'neon-dark',
-    splash_duration: '5000',
-    max_file_size: '5',
-    allow_registration: 'true',
-    maintenance_mode: 'false',
-    terms_text: 'أقر بأن جميع البيانات والمستندات المقدمة صحيحة، وأتحمل المسؤولية القانونية عن أي بيانات خاطئة.',
-    footer_text: 'نقابة تكنولوجيا المعلومات والبرمجيات — جميع الحقوق محفوظة'
-  };
-
   const LOGO_BUCKET = 'branding';
   const LOGO_FILE_NAME = 'logo';
-  const MAX_LOGO_SIZE = 2 * 1024 * 1024; // 2 MB
+  const MAX_LOGO_SIZE = 2 * 1024 * 1024;
   const ALLOWED_LOGO_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml', 'image/webp'];
-
   const AUDIT_TABLE = 'audit_log';
+
+  /* ============================================
+     ICON LIBRARY
+     ============================================ */
+  const ICON_LIBRARY = {
+    zap: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+    eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    palette: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2a10 10 0 1 0 0 20 2 2 0 0 0 0-4 6 6 0 0 1 0-12 2 2 0 0 0 0-4z"/></svg>',
+    smartphone: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+    code: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+    users: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    star: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    briefcase: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+    graduation: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+    activity: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+    award: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>',
+    trending: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+  };
 
   /* ============================================
      STATE
      ============================================ */
   let client = null;
   let currentUser = null;
-  let userRole = null;
-  let settings = { ...DEFAULT_SETTINGS };
+  let settings = {};
   let users = [];
   let membershipTypes = [];
+  let branches = [];
+  let featuresCards = [];
+  let sessions = [];
+  let actions = [];
   let auditLogs = [];
-  let unsubscribeRealtime = null;
   let activeTab = 'settings';
+  let unsubscribeRealtime = null;
 
   /* ============================================
      HELPERS
@@ -72,12 +78,13 @@
     } catch (e) { return '---'; }
   }
 
-  function showToast(message, type = 'info') {
-    if (window.showToast) {
-      window.showToast(message, type);
-      return;
-    }
-    console.log(`[${type}] ${message}`);
+  function formatDuration(seconds) {
+    if (!seconds && seconds !== 0) return '—';
+    if (seconds < 60) return `${seconds} ث`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} د`;
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return `${h} س ${m} د`;
   }
 
   function formatFileSize(bytes) {
@@ -88,36 +95,30 @@
     return (bytes / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
   }
 
+  function showToast(message, type = 'info') {
+    if (window.showToast) {
+      window.showToast(message, type);
+      return;
+    }
+    console.log(`[${type}] ${message}`);
+  }
+
   /* ============================================
-     SVG ICONS
+     SVG ICONS (Admin-only)
      ============================================ */
   const ICONS = {
-    save: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>`,
-    upload: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
-    trash: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
-    edit: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
-    user: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
-    users: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-    shield: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
-    settings: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
-    file: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
-    check: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"/></svg>`,
-    x: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
-    plus: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
-    refresh: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>`,
-    logout: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
-    palette: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2a10 10 0 1 0 0 20 2 2 0 0 0 0-4 6 6 0 0 1 0-12 2 2 0 0 0 0-4z"/></svg>`,
-    clock: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
-    eye: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
-    info: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
-    arrowBack: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>`,
-    image: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
-    key: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>`,
-    database: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>`
+    save: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',
+    upload: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+    edit: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+    eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+    x: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"/></svg>',
+    image: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>'
   };
 
   /* ============================================
-     AUTH + ROLE CHECK
+     AUTH CHECK
      ============================================ */
   async function checkAuth() {
     try {
@@ -130,30 +131,23 @@
 
       currentUser = session.user;
 
-      // Get role
-      const { data: userData, error } = await client
+      const { data: userData } = await client
         .from('users')
-        .select('role, full_name, email')
+        .select('role, full_name')
         .eq('id', currentUser.id)
         .maybeSingle();
 
-      if (error) {
-        console.warn('[Admin] Role fetch error:', error.message);
-      }
+      const role = userData?.role || 'committee';
 
-      userRole = userData?.role || 'committee';
-
-      // 🔒 Only head can access
-      if (userRole !== 'head') {
+      if (role !== 'head') {
         alert('هذه الصفحة مخصصة للنقيب العام فقط');
         window.location.href = 'dashboard.html';
         return false;
       }
 
-      window.currentUserRole = userRole;
+      window.currentUserRole = role;
       window.currentUserName = userData?.full_name || currentUser.email || 'النقيب';
 
-      // Update UI
       document.querySelectorAll('[data-user-name]').forEach(el => {
         el.textContent = window.currentUserName;
       });
@@ -167,7 +161,7 @@
   }
 
   /* ============================================
-     LOG AUDIT
+     AUDIT LOG
      ============================================ */
   async function logAudit(action, entity, entityId, oldValue, newValue) {
     try {
@@ -182,9 +176,63 @@
         created_at: new Date().toISOString()
       }]);
     } catch (e) {
-      // Silent fail — audit shouldn't break main flow
       console.warn('[Audit] Log failed:', e.message);
     }
+  }
+
+  /* ============================================
+     LOG USER ACTION
+     ============================================ */
+  async function logAction(action, entity, entityId, details) {
+    try {
+      await client.from('user_actions').insert([{
+        user_id: currentUser?.id,
+        user_email: currentUser?.email,
+        action,
+        entity,
+        entity_id: entityId ? String(entityId) : null,
+        details,
+        created_at: new Date().toISOString()
+      }]);
+    } catch (e) {}
+  }
+
+  /* ============================================
+     TAB SWITCHING
+     ============================================ */
+  function switchTab(tabId) {
+    activeTab = tabId;
+
+    document.querySelectorAll('[data-tab-content]').forEach(el => {
+      el.style.display = 'none';
+    });
+
+    const active = document.querySelector(`[data-tab-content="${tabId}"]`);
+    if (active) active.style.display = 'block';
+
+    document.querySelectorAll('[data-tab-btn]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tabBtn === tabId);
+    });
+
+    // Lazy load
+    if (tabId === 'users' && users.length === 0) loadUsers();
+    if (tabId === 'types' && membershipTypes.length === 0) loadTypes();
+    if (tabId === 'branches' && branches.length === 0) loadBranches();
+    if (tabId === 'sessions') loadSessions();
+    if (tabId === 'audit' && auditLogs.length === 0) loadAuditLog();
+
+    try {
+      history.replaceState(null, '', `#${tabId}`);
+    } catch (e) {}
+  }
+
+  function setupTabs() {
+    document.querySelectorAll('[data-tab-btn]').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tabBtn));
+    });
+
+    const hash = (window.location.hash || '').replace('#', '');
+    switchTab(hash || 'settings');
   }
 
   /* ============================================
@@ -192,21 +240,22 @@
      ============================================ */
   async function loadSettings() {
     try {
-      const { data, error } = await client
-        .from('settings')
-        .select('key, value');
+      const { data, error } = await client.from('settings').select('key, value');
 
       if (error) throw error;
 
-      const loaded = { ...DEFAULT_SETTINGS };
+      settings = {};
       (data || []).forEach(row => {
-        if (row.key) loaded[row.key] = row.value ?? '';
+        settings[row.key] = row.value ?? '';
       });
 
-      settings = loaded;
       applySettingsToForm();
       applyLogoPreview();
-      applySiteNamePreview();
+      buildThemeSelect();
+
+      // Load features cards
+      loadFeaturesFromSettings();
+
     } catch (err) {
       console.error('[Admin] Settings load error:', err);
       showToast('فشل تحميل الإعدادات: ' + err.message, 'error');
@@ -214,7 +263,6 @@
   }
 
   function applySettingsToForm() {
-    // Fill all inputs with [data-setting="key"]
     document.querySelectorAll('[data-setting]').forEach(el => {
       const key = el.dataset.setting;
       if (!(key in settings)) return;
@@ -229,21 +277,51 @@
     });
   }
 
+  function applyLogoPreview() {
+    const preview = document.getElementById('logoPreview');
+    if (!preview) return;
+
+    const url = settings.site_logo_url;
+    if (url) {
+      preview.innerHTML = `<img src="${escapeHtml(url)}" alt="Logo" />`;
+      preview.classList.add('has-logo');
+    } else {
+      preview.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--text-dim);">
+          <svg viewBox="0 0 24 24" style="width:32px;height:32px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
+          </svg>
+          <span style="font-size:12px;">لا يوجد شعار</span>
+        </div>
+      `;
+      preview.classList.remove('has-logo');
+    }
+  }
+
+  function buildThemeSelect() {
+    const select = document.getElementById('defaultThemeSelect');
+    if (!select) return;
+    if (window.ThemeManager && typeof window.ThemeManager.buildThemeSelect === 'function') {
+      window.ThemeManager.buildThemeSelect('defaultThemeSelect', settings.default_theme || 'neon-dark');
+    }
+  }
+
   /* ============================================
      SAVE SETTINGS
      ============================================ */
-  async function saveSettings() {
-    const btn = document.getElementById('saveSettingsBtn');
+  async function saveSettings(btnId = 'saveSettingsBtn') {
+    const btn = document.getElementById(btnId);
     if (btn) {
       btn.disabled = true;
       btn.dataset.originalHtml = btn.innerHTML;
-      btn.innerHTML = `<span>جاري الحفظ...</span>`;
+      btn.innerHTML = `<span>جاري الحفظ...</span><span class="spinner"></span>`;
     }
 
     try {
       const updates = {};
 
-      // Collect from all inputs with [data-setting]
       document.querySelectorAll('[data-setting]').forEach(el => {
         const key = el.dataset.setting;
         if (!key) return;
@@ -255,7 +333,11 @@
         }
       });
 
-      // Prepare upsert rows
+      // Add features_cards
+      if (featuresCards.length > 0 || 'features_cards' in settings) {
+        updates.features_cards = JSON.stringify(featuresCards);
+      }
+
       const rows = Object.entries(updates).map(([key, value]) => ({
         key,
         value: String(value),
@@ -268,31 +350,21 @@
 
       if (error) throw error;
 
-      // Merge into state
       Object.assign(settings, updates);
 
-      // Audit log
       await logAudit('update', 'settings', null, null, updates);
+      await logAction('update_settings', 'settings', null, `تم تحديث ${Object.keys(updates).length} إعداد`);
 
-      // Save to localStorage cache (for instant load)
       try {
         localStorage.setItem('its_site_settings', JSON.stringify(settings));
-        if (settings.site_logo_url) {
-          localStorage.setItem('its_logo_url', settings.site_logo_url);
-        }
-        if (settings.default_theme) {
-          localStorage.setItem('its_global_default_theme', settings.default_theme);
-        }
+        if (settings.site_logo_url) localStorage.setItem('its_logo_url', settings.site_logo_url);
+        if (settings.default_theme) localStorage.setItem('its_global_default_theme', settings.default_theme);
       } catch (e) {}
 
-      // Update UI
-      applySiteNamePreview();
-      applyLogoPreview();
-      document.title = settings.site_name || DEFAULT_SETTINGS.site_name;
+      document.title = settings.site_name || document.title;
 
       showToast('تم حفظ الإعدادات بنجاح', 'success');
 
-      // Broadcast to all open tabs
       if (window.Realtime) {
         window.Realtime.sendBroadcast('settings-updated', {
           timestamp: new Date().toISOString()
@@ -314,48 +386,16 @@
   }
 
   /* ============================================
-     SITE NAME PREVIEW
-     ============================================ */
-  function applySiteNamePreview() {
-    const preview = document.getElementById('siteNamePreview');
-    if (preview) {
-      preview.textContent = settings.site_name || DEFAULT_SETTINGS.site_name;
-    }
-  }
-
-  /* ============================================
      LOGO UPLOAD
      ============================================ */
-  function applyLogoPreview() {
-    const preview = document.getElementById('logoPreview');
-    if (!preview) return;
-
-    const url = settings.site_logo_url;
-    if (url) {
-      preview.innerHTML = `
-        <img src="${escapeHtml(url)}" alt="Logo" style="max-width:100%;max-height:100%;object-fit:contain;" />
-      `;
-      preview.classList.add('has-logo');
-    } else {
-      preview.innerHTML = `
-        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;color:rgba(255,255,255,0.35);">
-          <span style="width:36px;height:36px;display:inline-flex;">${ICONS.image}</span>
-          <span style="font-size:12px;">لا يوجد شعار</span>
-        </div>
-      `;
-      preview.classList.remove('has-logo');
-    }
-  }
-
   async function uploadLogo(file) {
-    // Validate
     if (file.size > MAX_LOGO_SIZE) {
-      showToast(`حجم الشعار كبير جدًا (${formatFileSize(file.size)}) — الحد الأقصى 2 ميجا`, 'error');
+      showToast(`حجم الشعار كبير (${formatFileSize(file.size)}) — الحد الأقصى 2 ميجا`, 'error');
       return;
     }
 
     if (!ALLOWED_LOGO_TYPES.includes(file.type)) {
-      showToast('صيغة الشعار غير مدعومة — مسموح: PNG, JPG, SVG, WEBP', 'error');
+      showToast('صيغة غير مدعومة — PNG, JPG, SVG, WEBP فقط', 'error');
       return;
     }
 
@@ -366,17 +406,13 @@
     }
 
     try {
-      // Extension
       let ext = 'png';
       if (file.type === 'image/svg+xml') ext = 'svg';
       else if (file.type === 'image/jpeg') ext = 'jpg';
       else if (file.type === 'image/webp') ext = 'webp';
-      else if (file.type === 'image/png') ext = 'png';
 
-      const fileName = `${LOGO_FILE_NAME}.${ext}`;
       const filePath = `logo.${ext}`;
 
-      // Upload (upsert)
       const { error: upErr } = await client.storage
         .from(LOGO_BUCKET)
         .upload(filePath, file, {
@@ -387,14 +423,12 @@
 
       if (upErr) throw upErr;
 
-      // Get public URL (with cache-bust query)
       const { data: urlData } = client.storage
         .from(LOGO_BUCKET)
         .getPublicUrl(filePath);
 
       const publicUrl = `${urlData.publicUrl}?v=${Date.now()}`;
 
-      // Save to settings
       const { error: setErr } = await client
         .from('settings')
         .upsert([{
@@ -407,20 +441,16 @@
 
       settings.site_logo_url = publicUrl;
 
-      // Update local cache
       try {
         localStorage.setItem('its_logo_url', publicUrl);
         localStorage.setItem('its_site_settings', JSON.stringify(settings));
       } catch (e) {}
 
-      // Update preview
       applyLogoPreview();
-
-      // Update favicon + all page logos
       updateLogosEverywhere(publicUrl);
 
-      // Audit
       await logAudit('upload', 'logo', filePath, null, { url: publicUrl, size: file.size });
+      await logAction('upload_logo', 'logo', null, `حجم: ${formatFileSize(file.size)}`);
 
       showToast('تم رفع الشعار بنجاح', 'success');
 
@@ -440,13 +470,11 @@
   }
 
   function updateLogosEverywhere(url) {
-    // Favicon
     const fav = document.getElementById('faviconLink');
     const apple = document.getElementById('appleTouchIcon');
     if (fav) { fav.type = 'image/png'; fav.href = url; }
     if (apple) { apple.href = url; }
 
-    // All logo images in page
     document.querySelectorAll('[data-logo]').forEach(img => {
       img.src = url;
       img.style.display = 'block';
@@ -457,12 +485,10 @@
     if (!confirm('هل أنت متأكد من إزالة الشعار؟')) return;
 
     try {
-      // Delete file
       try {
-        await client.storage.from(LOGO_BUCKET).remove([`logo.png`, `logo.jpg`, `logo.svg`, `logo.webp`]);
+        await client.storage.from(LOGO_BUCKET).remove(['logo.png', 'logo.jpg', 'logo.svg', 'logo.webp']);
       } catch (e) {}
 
-      // Clear setting
       await client.from('settings').upsert([{
         key: 'site_logo_url',
         value: '',
@@ -480,19 +506,16 @@
 
       showToast('تم إزالة الشعار', 'success');
     } catch (err) {
-      console.error('[Admin] Remove logo error:', err);
       showToast('فشل الإزالة: ' + err.message, 'error');
     }
   }
 
   /* ============================================
-     USERS MANAGEMENT
+     USERS
      ============================================ */
   async function loadUsers() {
     const tbody = document.getElementById('usersTableBody');
-    if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px;color:rgba(255,255,255,0.4);">جاري التحميل...</td></tr>`;
-    }
+    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
 
     try {
       const { data, error } = await client
@@ -506,9 +529,7 @@
       renderUsersTable();
     } catch (err) {
       console.error('[Admin] Load users error:', err);
-      if (tbody) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px;color:#ff5555;">${escapeHtml(err.message)}</td></tr>`;
-      }
+      if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--danger);">${escapeHtml(err.message)}</td></tr>`;
     }
   }
 
@@ -517,72 +538,50 @@
     if (!tbody) return;
 
     if (!users.length) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);">لا يوجد مستخدمون</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">لا يوجد مستخدمون</td></tr>`;
       return;
     }
 
     tbody.innerHTML = users.map(u => {
-      const isHead = u.role === 'head';
-      const roleLabel = isHead ? 'النقيب العام' : 'لجنة العضويات';
-      const roleColor = isHead ? '#f59e0b' : '#00f0ff';
-      const roleBg = isHead ? 'rgba(245, 158, 11, 0.12)' : 'rgba(0, 240, 255, 0.1)';
+      const roleConfig = {
+        head: { label: 'النقيب العام', cls: 'head' },
+        vice_president: { label: 'نائب الرئيس', cls: 'vice_president' },
+        committee: { label: 'لجنة العضوية', cls: 'committee' }
+      }[u.role] || { label: u.role, cls: 'committee' };
 
       return `
-        <tr style="border-bottom:1px solid rgba(0,240,255,0.06);">
+        <tr style="border-bottom:1px solid var(--border-soft);">
           <td style="padding:14px 12px;">
-            <div style="font-weight:700;font-size:13.5px;color:#fff;">${escapeHtml(u.full_name || '—')}</div>
+            <div style="font-weight:700;font-size:13.5px;color:var(--text);">${escapeHtml(u.full_name || '—')}</div>
+            ${u.phone ? `<div style="font-size:11.5px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;direction:ltr;text-align:right;">${escapeHtml(u.phone)}</div>` : ''}
           </td>
-          <td style="padding:14px 12px;font-size:12.5px;color:rgba(255,255,255,0.7);direction:ltr;text-align:right;">
+          <td style="padding:14px 12px;font-size:12.5px;color:var(--text-muted);direction:ltr;text-align:right;">
             <span dir="ltr">${escapeHtml(u.email || '—')}</span>
           </td>
           <td style="padding:14px 12px;">
-            <span style="
-              display:inline-flex;
-              align-items:center;
-              gap:6px;
-              padding:4px 12px;
-              background:${roleBg};
-              border:1.5px solid ${roleColor};
-              border-radius:100px;
-              font-size:12px;
-              color:${roleColor};
-              font-weight:700;
-            ">
-              <span style="width:6px;height:6px;border-radius:50%;background:${roleColor};"></span>
-              ${roleLabel}
+            <span class="role-badge ${roleConfig.cls}">
+              <span class="dot"></span>
+              ${roleConfig.label}
             </span>
           </td>
-          <td style="padding:14px 12px;font-size:12px;color:rgba(255,255,255,0.5);">${escapeHtml(formatDate(u.created_at))}</td>
+          <td style="padding:14px 12px;font-size:12px;color:var(--text-dim);">
+            ${escapeHtml(formatDate(u.last_login_at) || '—')}
+          </td>
           <td style="padding:14px 12px;">
-            <div style="display:flex;gap:6px;justify-content:center;">
-              <button class="user-edit-btn" data-id="${u.id}" title="تعديل الدور" style="
-                width:32px;height:32px;
-                border-radius:8px;
-                background:rgba(0,255,157,0.08);
-                border:1px solid rgba(0,255,157,0.25);
-                color:#00ff9d;
-                cursor:pointer;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                transition:all 0.2s;
-              ">
-                <span style="width:14px;height:14px;display:inline-flex;">${ICONS.edit}</span>
+            ${u.is_active !== false ? `
+              <span class="session-active"><span class="dot"></span>نشط</span>
+            ` : `
+              <span style="font-size:11.5px;color:var(--text-dim);">معطّل</span>
+            `}
+          </td>
+          <td style="padding:14px 12px;">
+            <div class="row-actions">
+              <button class="row-btn edit-btn" data-action="edit-user" data-id="${u.id}" title="تعديل">
+                ${ICONS.edit}
               </button>
-              ${!isHead || u.id !== currentUser?.id ? `
-                <button class="user-delete-btn" data-id="${u.id}" title="حذف" style="
-                  width:32px;height:32px;
-                  border-radius:8px;
-                  background:rgba(255,85,85,0.08);
-                  border:1px solid rgba(255,85,85,0.25);
-                  color:#ff5555;
-                  cursor:pointer;
-                  display:flex;
-                  align-items:center;
-                  justify-content:center;
-                  transition:all 0.2s;
-                ">
-                  <span style="width:14px;height:14px;display:inline-flex;">${ICONS.trash}</span>
+              ${u.id !== currentUser.id ? `
+                <button class="row-btn delete-btn" data-action="delete-user" data-id="${u.id}" title="حذف">
+                  ${ICONS.trash}
                 </button>
               ` : ''}
             </div>
@@ -591,20 +590,16 @@
       `;
     }).join('');
 
-    // Bind events
-    tbody.querySelectorAll('.user-edit-btn').forEach(btn => {
+    tbody.querySelectorAll('[data-action="edit-user"]').forEach(btn => {
       btn.addEventListener('click', () => openUserModal(btn.dataset.id));
     });
 
-    tbody.querySelectorAll('.user-delete-btn').forEach(btn => {
+    tbody.querySelectorAll('[data-action="delete-user"]').forEach(btn => {
       btn.addEventListener('click', () => deleteUser(btn.dataset.id));
     });
   }
 
-  /* ============================================
-     USER MODAL (Create / Edit)
-     ============================================ */
-  function openUserModal(userId) {
+  window.openUserModal = function (userId) {
     const modal = document.getElementById('userModal');
     if (!modal) return;
 
@@ -616,13 +611,15 @@
     document.getElementById('userEmail').value = isEdit ? (user.email || '') : '';
     document.getElementById('userEmail').disabled = isEdit;
     document.getElementById('userFullName').value = isEdit ? (user.full_name || '') : '';
+    document.getElementById('userPhone').value = isEdit ? (user.phone || '') : '';
     document.getElementById('userRole').value = isEdit ? (user.role || 'committee') : 'committee';
     document.getElementById('userPassword').value = '';
     document.getElementById('userPassword').parentElement.style.display = isEdit ? 'none' : 'block';
+    document.getElementById('userNotes').value = isEdit ? (user.notes || '') : '';
 
     modal.classList.add('open');
     document.body.style.overflow = 'hidden';
-  }
+  };
 
   window.closeUserModal = function () {
     const modal = document.getElementById('userModal');
@@ -634,8 +631,10 @@
     const userId = document.getElementById('userId').value;
     const email = document.getElementById('userEmail').value.trim();
     const fullName = document.getElementById('userFullName').value.trim();
+    const phone = document.getElementById('userPhone').value.trim();
     const role = document.getElementById('userRole').value;
     const password = document.getElementById('userPassword').value;
+    const notes = document.getElementById('userNotes').value.trim();
 
     if (!email || !fullName) {
       showToast('البريد والاسم مطلوبان', 'warning');
@@ -645,33 +644,43 @@
     const btn = document.getElementById('saveUserBtn');
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = 'جاري الحفظ...';
+      btn.innerHTML = '<span>جاري الحفظ...</span>';
     }
 
     try {
       if (userId) {
-        // Edit — update users table only
         const { error } = await client
           .from('users')
-          .update({ full_name: fullName, role })
+          .update({
+            full_name: fullName,
+            phone,
+            role,
+            notes
+          })
           .eq('id', userId);
 
         if (error) throw error;
 
         await logAudit('update', 'user', userId, null, { full_name: fullName, role });
+        await logAction('update_user', 'user', userId, `تم تحديث ${fullName}`);
         showToast('تم التحديث', 'success');
+
       } else {
-        // Create — sign up
         if (!password || password.length < 6) {
           throw new Error('الباسورد مطلوب (6 أحرف على الأقل)');
         }
 
-        const { data: signUpData, error: signUpErr } = await client.auth.signUp({
+        // Sign up with regular client
+        const tempClient = window.supabase.createClient(
+          window.SUPABASE_URL,
+          window.SUPABASE_KEY,
+          { auth: { persistSession: false } }
+        );
+
+        const { data: signUpData, error: signUpErr } = await tempClient.auth.signUp({
           email,
           password,
-          options: {
-            data: { full_name: fullName }
-          }
+          options: { data: { full_name: fullName } }
         });
 
         if (signUpErr) throw signUpErr;
@@ -679,19 +688,21 @@
         const newUserId = signUpData?.user?.id;
         if (!newUserId) throw new Error('فشل إنشاء المستخدم');
 
-        // Add to users table
         const { error: insertErr } = await client
           .from('users')
           .upsert([{
             id: newUserId,
             email,
             full_name: fullName,
-            role
+            phone,
+            role,
+            notes
           }], { onConflict: 'id' });
 
         if (insertErr) throw insertErr;
 
         await logAudit('create', 'user', newUserId, null, { email, role, full_name: fullName });
+        await logAction('create_user', 'user', newUserId, `تم إنشاء ${fullName} بدور ${role}`);
         showToast('تم إنشاء المستخدم — سيصله إيميل تأكيد', 'success');
       }
 
@@ -703,51 +714,46 @@
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = 'حفظ';
+        btn.innerHTML = '<span>حفظ</span>';
       }
     }
   }
 
   async function deleteUser(userId) {
-    if (!confirm('هل أنت متأكد من حذف هذا المستخدم؟ لا يمكن التراجع.')) return;
+    if (!confirm('هل أنت متأكد من حذف هذا المستخدم؟')) return;
 
     try {
       const { error } = await client.from('users').delete().eq('id', userId);
       if (error) throw error;
 
       await logAudit('delete', 'user', userId, null, null);
+      await logAction('delete_user', 'user', userId, null);
       showToast('تم حذف المستخدم', 'success');
       await loadUsers();
     } catch (err) {
-      console.error('[Admin] Delete user error:', err);
       showToast('فشل الحذف: ' + err.message, 'error');
     }
   }
 
   /* ============================================
-     MEMBERSHIP TYPES CRUD
+     TYPES
      ============================================ */
-  async function loadMembershipTypes() {
+  async function loadTypes() {
     const tbody = document.getElementById('typesTableBody');
-    if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:rgba(255,255,255,0.4);">جاري التحميل...</td></tr>`;
-    }
+    if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
 
     try {
       const { data, error } = await client
         .from('membership_types')
         .select('*')
-        .order('id', { ascending: true });
+        .order('sort_order', { ascending: true });
 
       if (error) throw error;
 
       membershipTypes = data || [];
       renderTypesTable();
     } catch (err) {
-      console.error('[Admin] Load types error:', err);
-      if (tbody) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:#ff5555;">${escapeHtml(err.message)}</td></tr>`;
-      }
+      if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--danger);">${escapeHtml(err.message)}</td></tr>`;
     }
   }
 
@@ -756,63 +762,48 @@
     if (!tbody) return;
 
     if (!membershipTypes.length) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);">لا توجد أنواع</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">لا توجد أنواع</td></tr>`;
       return;
     }
 
     tbody.innerHTML = membershipTypes.map(t => `
-      <tr style="border-bottom:1px solid rgba(0,240,255,0.06);">
-        <td style="padding:14px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent, #00f0ff);font-weight:600;">${escapeHtml(t.code || '—')}</td>
-        <td style="padding:14px 12px;font-weight:700;font-size:13.5px;color:#fff;">${escapeHtml(t.name || '—')}</td>
-        <td style="padding:14px 12px;font-size:12.5px;color:rgba(255,255,255,0.6);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(t.description || '—')}</td>
-        <td style="padding:14px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent, #00f0ff);font-weight:600;">${t.fee || 0} ج</td>
-        <td style="padding:14px 12px;font-size:12.5px;color:rgba(255,255,255,0.6);">${t.duration_months || 12} شهر</td>
+      <tr style="border-bottom:1px solid var(--border-soft);">
+        <td style="padding:14px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);font-weight:600;">${escapeHtml(t.code || '—')}</td>
+        <td style="padding:14px 12px;font-weight:700;font-size:13.5px;color:var(--text);">${escapeHtml(t.name || '—')}</td>
+        <td style="padding:14px 12px;font-size:12.5px;color:var(--text-muted);max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(t.description || '—')}</td>
+        <td style="padding:14px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);font-weight:600;">${t.fee || 0} ج</td>
+        <td style="padding:14px 12px;font-size:12.5px;color:var(--text-muted);">${t.duration_months || 12} شهر</td>
         <td style="padding:14px 12px;">
-          <div style="display:flex;gap:6px;justify-content:center;">
-            <button class="type-edit-btn" data-id="${t.id}" style="
-              width:32px;height:32px;
-              border-radius:8px;
-              background:rgba(0,255,157,0.08);
-              border:1px solid rgba(0,255,157,0.25);
-              color:#00ff9d;
-              cursor:pointer;
-              display:flex;align-items:center;justify-content:center;
-            ">
-              <span style="width:14px;height:14px;display:inline-flex;">${ICONS.edit}</span>
-            </button>
-            <button class="type-delete-btn" data-id="${t.id}" style="
-              width:32px;height:32px;
-              border-radius:8px;
-              background:rgba(255,85,85,0.08);
-              border:1px solid rgba(255,85,85,0.25);
-              color:#ff5555;
-              cursor:pointer;
-              display:flex;align-items:center;justify-content:center;
-            ">
-              <span style="width:14px;height:14px;display:inline-flex;">${ICONS.trash}</span>
-            </button>
+          ${t.is_active !== false
+            ? `<span class="session-active" style="font-size:11px;"><span class="dot"></span>مفعّل</span>`
+            : `<span style="font-size:11.5px;color:var(--text-dim);">معطّل</span>`}
+        </td>
+        <td style="padding:14px 12px;">
+          <div class="row-actions">
+            <button class="row-btn edit-btn" data-action="edit-type" data-id="${t.id}">${ICONS.edit}</button>
+            <button class="row-btn delete-btn" data-action="delete-type" data-id="${t.id}">${ICONS.trash}</button>
           </div>
         </td>
       </tr>
     `).join('');
 
-    tbody.querySelectorAll('.type-edit-btn').forEach(btn => {
+    tbody.querySelectorAll('[data-action="edit-type"]').forEach(btn => {
       btn.addEventListener('click', () => openTypeModal(btn.dataset.id));
     });
 
-    tbody.querySelectorAll('.type-delete-btn').forEach(btn => {
+    tbody.querySelectorAll('[data-action="delete-type"]').forEach(btn => {
       btn.addEventListener('click', () => deleteType(btn.dataset.id));
     });
   }
 
-  function openTypeModal(typeId) {
+  window.openTypeModal = function (typeId) {
     const modal = document.getElementById('typeModal');
     if (!modal) return;
 
     const isEdit = !!typeId;
     const type = isEdit ? membershipTypes.find(t => String(t.id) === String(typeId)) : null;
 
-    document.getElementById('typeModalTitle').textContent = isEdit ? 'تعديل نوع العضوية' : 'إضافة نوع عضوية';
+    document.getElementById('typeModalTitle').textContent = isEdit ? 'تعديل نوع' : 'إضافة نوع';
     document.getElementById('typeId').value = isEdit ? type.id : '';
     document.getElementById('typeName').value = isEdit ? (type.name || '') : '';
     document.getElementById('typeCode').value = isEdit ? (type.code || '') : '';
@@ -820,10 +811,12 @@
     document.getElementById('typeDesc').value = isEdit ? (type.description || '') : '';
     document.getElementById('typeFee').value = isEdit ? (type.fee || 0) : 0;
     document.getElementById('typeDuration').value = isEdit ? (type.duration_months || 12) : 12;
+    document.getElementById('typeSortOrder').value = isEdit ? (type.sort_order || 1) : (membershipTypes.length + 1);
+    document.getElementById('typeActive').checked = isEdit ? (type.is_active !== false) : true;
 
     modal.classList.add('open');
     document.body.style.overflow = 'hidden';
-  }
+  };
 
   window.closeTypeModal = function () {
     const modal = document.getElementById('typeModal');
@@ -838,6 +831,8 @@
     const description = document.getElementById('typeDesc').value.trim();
     const fee = parseFloat(document.getElementById('typeFee').value) || 0;
     const duration = parseInt(document.getElementById('typeDuration').value) || 12;
+    const sortOrder = parseInt(document.getElementById('typeSortOrder').value) || 0;
+    const isActive = document.getElementById('typeActive').checked;
 
     if (!name || !code) {
       showToast('الاسم والكود مطلوبان', 'warning');
@@ -847,61 +842,443 @@
     const btn = document.getElementById('saveTypeBtn');
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = 'جاري الحفظ...';
+      btn.innerHTML = '<span>جاري الحفظ...</span>';
     }
 
     try {
       const payload = {
-        name,
-        code,
-        description,
-        fee,
-        duration_months: duration
+        name, code, description, fee,
+        duration_months: duration,
+        sort_order: sortOrder,
+        is_active: isActive
       };
 
       if (typeId) {
-        const { error } = await client
-          .from('membership_types')
-          .update(payload)
-          .eq('id', typeId);
+        const { error } = await client.from('membership_types').update(payload).eq('id', typeId);
         if (error) throw error;
         await logAudit('update', 'membership_type', typeId, null, payload);
       } else {
-        const { error } = await client
-          .from('membership_types')
-          .insert([payload]);
+        const { error } = await client.from('membership_types').insert([payload]);
         if (error) throw error;
         await logAudit('create', 'membership_type', null, null, payload);
       }
 
       showToast('تم الحفظ', 'success');
       closeTypeModal();
-      await loadMembershipTypes();
+      await loadTypes();
     } catch (err) {
-      console.error('[Admin] Save type error:', err);
       showToast('فشل: ' + err.message, 'error');
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = 'حفظ';
+        btn.innerHTML = '<span>حفظ</span>';
       }
     }
   }
 
   async function deleteType(typeId) {
-    if (!confirm('هل أنت متأكد من حذف نوع العضوية؟ قد يؤثر على الطلبات الحالية.')) return;
+    if (!confirm('هل أنت متأكد من حذف هذا النوع؟')) return;
 
     try {
       const { error } = await client.from('membership_types').delete().eq('id', typeId);
       if (error) throw error;
-
       await logAudit('delete', 'membership_type', typeId, null, null);
       showToast('تم الحذف', 'success');
-      await loadMembershipTypes();
+      await loadTypes();
     } catch (err) {
-      console.error('[Admin] Delete type error:', err);
       showToast('فشل: ' + err.message, 'error');
     }
+  }
+
+  /* ============================================
+     BRANCHES
+     ============================================ */
+  async function loadBranches() {
+    const tbody = document.getElementById('branchesTableBody');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
+
+    try {
+      const { data, error } = await client
+        .from('branches')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+
+      branches = data || [];
+      renderBranchesTable();
+    } catch (err) {
+      if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--danger);">${escapeHtml(err.message)}</td></tr>`;
+    }
+  }
+
+  function renderBranchesTable() {
+    const tbody = document.getElementById('branchesTableBody');
+    if (!tbody) return;
+
+    if (!branches.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">لا توجد شعب</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = branches.map(b => `
+      <tr style="border-bottom:1px solid var(--border-soft);">
+        <td style="padding:14px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);font-weight:600;">${escapeHtml(b.code || '—')}</td>
+        <td style="padding:14px 12px;font-weight:700;font-size:13.5px;color:var(--text);">${escapeHtml(b.name || '—')}</td>
+        <td style="padding:14px 12px;font-size:12.5px;color:var(--text-muted);max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(b.description || '—')}</td>
+        <td style="padding:14px 12px;font-size:12.5px;color:var(--text-muted);">${b.sort_order || 0}</td>
+        <td style="padding:14px 12px;">
+          ${b.is_active !== false
+            ? `<span class="session-active" style="font-size:11px;"><span class="dot"></span>مفعّلة</span>`
+            : `<span style="font-size:11.5px;color:var(--text-dim);">معطّلة</span>`}
+        </td>
+        <td style="padding:14px 12px;">
+          <div class="row-actions">
+            <button class="row-btn edit-btn" data-action="edit-branch" data-id="${b.id}">${ICONS.edit}</button>
+            <button class="row-btn delete-btn" data-action="delete-branch" data-id="${b.id}">${ICONS.trash}</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('[data-action="edit-branch"]').forEach(btn => {
+      btn.addEventListener('click', () => openBranchModal(btn.dataset.id));
+    });
+    tbody.querySelectorAll('[data-action="delete-branch"]').forEach(btn => {
+      btn.addEventListener('click', () => deleteBranch(btn.dataset.id));
+    });
+  }
+
+  window.openBranchModal = function (branchId) {
+    const modal = document.getElementById('branchModal');
+    if (!modal) return;
+
+    const isEdit = !!branchId;
+    const branch = isEdit ? branches.find(b => String(b.id) === String(branchId)) : null;
+
+    document.getElementById('branchModalTitle').textContent = isEdit ? 'تعديل شعبة' : 'إضافة شعبة';
+    document.getElementById('branchId').value = isEdit ? branch.id : '';
+    document.getElementById('branchName').value = isEdit ? (branch.name || '') : '';
+    document.getElementById('branchCode').value = isEdit ? (branch.code || '') : '';
+    document.getElementById('branchCode').disabled = isEdit;
+    document.getElementById('branchDesc').value = isEdit ? (branch.description || '') : '';
+    document.getElementById('branchSortOrder').value = isEdit ? (branch.sort_order || 1) : (branches.length + 1);
+    document.getElementById('branchActive').checked = isEdit ? (branch.is_active !== false) : true;
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeBranchModal = function () {
+    const modal = document.getElementById('branchModal');
+    if (modal) modal.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  async function saveBranch() {
+    const branchId = document.getElementById('branchId').value;
+    const name = document.getElementById('branchName').value.trim();
+    const code = document.getElementById('branchCode').value.trim().toUpperCase();
+    const description = document.getElementById('branchDesc').value.trim();
+    const sortOrder = parseInt(document.getElementById('branchSortOrder').value) || 0;
+    const isActive = document.getElementById('branchActive').checked;
+
+    if (!name || !code) {
+      showToast('الاسم والكود مطلوبان', 'warning');
+      return;
+    }
+
+    const btn = document.getElementById('saveBranchBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>جاري الحفظ...</span>';
+    }
+
+    try {
+      const payload = { name, code, description, sort_order: sortOrder, is_active: isActive };
+
+      if (branchId) {
+        const { error } = await client.from('branches').update(payload).eq('id', branchId);
+        if (error) throw error;
+        await logAudit('update', 'branch', branchId, null, payload);
+      } else {
+        const { error } = await client.from('branches').insert([payload]);
+        if (error) throw error;
+        await logAudit('create', 'branch', null, null, payload);
+      }
+
+      showToast('تم الحفظ', 'success');
+      closeBranchModal();
+      await loadBranches();
+    } catch (err) {
+      showToast('فشل: ' + err.message, 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span>حفظ</span>';
+      }
+    }
+  }
+
+  async function deleteBranch(branchId) {
+    if (!confirm('هل أنت متأكد من حذف هذه الشعبة؟')) return;
+
+    try {
+      const { error } = await client.from('branches').delete().eq('id', branchId);
+      if (error) throw error;
+      await logAudit('delete', 'branch', branchId, null, null);
+      showToast('تم الحذف', 'success');
+      await loadBranches();
+    } catch (err) {
+      showToast('فشل: ' + err.message, 'error');
+    }
+  }
+
+  /* ============================================
+     FEATURES CARDS
+     ============================================ */
+  function loadFeaturesFromSettings() {
+    try {
+      const raw = settings.features_cards;
+      if (raw) {
+        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (Array.isArray(parsed)) featuresCards = parsed;
+      }
+    } catch (e) {
+      featuresCards = [];
+    }
+    renderFeaturesPreview();
+  }
+
+  function renderFeaturesPreview() {
+    const list = document.getElementById('featuresPreviewList');
+    if (!list) return;
+
+    if (!featuresCards.length) {
+      list.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-dim);">لا توجد كروت بعد. اضغط "إضافة كارت" لإضافة أول كارت.</div>`;
+      return;
+    }
+
+    list.innerHTML = featuresCards.map((c, idx) => {
+      const iconHTML = c.logo
+        ? `<img src="${escapeHtml(c.logo)}" alt="" />`
+        : (ICON_LIBRARY[c.icon] || ICON_LIBRARY.zap);
+
+      return `
+        <div class="feature-preview-card">
+          <div class="feature-preview-icon">${iconHTML}</div>
+          <div class="feature-preview-info">
+            <div class="feature-preview-title">${escapeHtml(c.title || 'بدون عنوان')}</div>
+            <div class="feature-preview-text">${escapeHtml(c.text || '')}</div>
+          </div>
+          <div class="feature-preview-actions">
+            <button class="feature-action-btn edit" data-action="edit-feature" data-idx="${idx}" title="تعديل">
+              ${ICONS.edit}
+            </button>
+            <button class="feature-action-btn delete" data-action="delete-feature" data-idx="${idx}" title="حذف">
+              ${ICONS.trash}
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    list.querySelectorAll('[data-action="edit-feature"]').forEach(btn => {
+      btn.addEventListener('click', () => openFeatureModal(parseInt(btn.dataset.idx)));
+    });
+    list.querySelectorAll('[data-action="delete-feature"]').forEach(btn => {
+      btn.addEventListener('click', () => deleteFeature(parseInt(btn.dataset.idx)));
+    });
+  }
+
+  function renderIconPicker() {
+    const picker = document.getElementById('iconPicker');
+    if (!picker) return;
+
+    picker.innerHTML = Object.entries(ICON_LIBRARY).map(([key, svg]) => `
+      <div class="icon-option" data-icon="${key}" title="${key}">${svg}</div>
+    `).join('');
+
+    picker.querySelectorAll('.icon-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.getElementById('featureIcon').value = opt.dataset.icon;
+        picker.querySelectorAll('.icon-option').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+      });
+    });
+  }
+
+  window.openFeatureModal = function (index) {
+    const modal = document.getElementById('featureModal');
+    if (!modal) return;
+
+    const isEdit = index !== null && index !== undefined && index >= 0;
+    const feature = isEdit ? featuresCards[index] : null;
+
+    document.getElementById('featureModalTitle').textContent = isEdit ? 'تعديل كارت' : 'إضافة كارت';
+    document.getElementById('featureIndex').value = isEdit ? index : '';
+    document.getElementById('featureTitle').value = isEdit ? (feature.title || '') : '';
+    document.getElementById('featureText').value = isEdit ? (feature.text || '') : '';
+    document.getElementById('featureLogo').value = isEdit ? (feature.logo || '') : '';
+
+    const iconKey = isEdit ? (feature.icon || 'zap') : 'zap';
+    document.getElementById('featureIcon').value = iconKey;
+
+    renderIconPicker();
+    const picker = document.getElementById('iconPicker');
+    picker?.querySelectorAll('.icon-option').forEach(o => {
+      o.classList.toggle('active', o.dataset.icon === iconKey);
+    });
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeFeatureModal = function () {
+    const modal = document.getElementById('featureModal');
+    if (modal) modal.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  function saveFeature() {
+    const index = document.getElementById('featureIndex').value;
+    const title = document.getElementById('featureTitle').value.trim();
+    const text = document.getElementById('featureText').value.trim();
+    const icon = document.getElementById('featureIcon').value || 'zap';
+    const logo = document.getElementById('featureLogo').value.trim();
+
+    if (!title) {
+      showToast('العنوان مطلوب', 'warning');
+      return;
+    }
+
+    const card = { icon, title, text, logo: logo || undefined };
+
+    if (index !== '' && index !== null && index !== undefined) {
+      featuresCards[parseInt(index)] = card;
+    } else {
+      featuresCards.push(card);
+    }
+
+    renderFeaturesPreview();
+    closeFeatureModal();
+    showToast('تم الحفظ. لا تنسَ الضغط على "حفظ إعدادات الرئيسية"', 'info');
+  }
+
+  function deleteFeature(index) {
+    if (!confirm('هل أنت متأكد من حذف هذا الكارت؟')) return;
+
+    featuresCards.splice(index, 1);
+    renderFeaturesPreview();
+    showToast('تم الحذف. لا تنسَ الحفظ', 'info');
+  }
+
+  /* ============================================
+     SESSIONS & ACTIONS
+     ============================================ */
+  async function loadSessions() {
+    const tbody = document.getElementById('sessionsTableBody');
+    const actionsBody = document.getElementById('actionsTableBody');
+    const countEl = document.getElementById('actionsCount');
+
+    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
+    if (actionsBody) actionsBody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
+
+    try {
+      // Sessions with user info
+      const { data: sessData } = await client
+        .from('user_sessions')
+        .select('*, users:user_id(full_name, role)')
+        .order('login_at', { ascending: false })
+        .limit(100);
+
+      sessions = sessData || [];
+      renderSessionsTable();
+
+      // Actions
+      const { data: actData } = await client
+        .from('user_actions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      actions = actData || [];
+      renderActionsTable();
+      if (countEl) countEl.textContent = `${actions.length} إجراء`;
+
+    } catch (err) {
+      console.error('[Admin] Load sessions error:', err);
+    }
+  }
+
+  function renderSessionsTable() {
+    const tbody = document.getElementById('sessionsTableBody');
+    if (!tbody) return;
+
+    if (!sessions.length) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-dim);">لا توجد جلسات مسجلة</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = sessions.map(s => {
+      const userName = s.users?.full_name || '—';
+      const role = s.users?.role || '—';
+      const roleLabel = role === 'head' ? 'النقيب' : role === 'vice_president' ? 'نائب' : 'لجنة';
+
+      return `
+        <tr style="border-bottom:1px solid var(--border-soft);">
+          <td style="padding:12px;font-size:13px;font-weight:600;color:var(--text);">${escapeHtml(userName)}</td>
+          <td style="padding:12px;">
+            <span class="role-badge ${role}">
+              <span class="dot"></span>
+              ${roleLabel}
+            </span>
+          </td>
+          <td style="padding:12px;font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">${escapeHtml(formatDate(s.login_at))}</td>
+          <td style="padding:12px;">
+            ${s.is_active
+              ? `<span class="session-active"><span class="dot"></span>مفتوحة</span>`
+              : `<span class="session-duration">${escapeHtml(formatDuration(s.duration_seconds))}</span>`}
+          </td>
+          <td style="padding:12px;font-size:12px;color:var(--text-dim);">
+            ${s.device ? escapeHtml(s.device.substring(0, 40)) : '—'}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function renderActionsTable() {
+    const tbody = document.getElementById('actionsTableBody');
+    if (!tbody) return;
+
+    if (!actions.length) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-dim);">لا توجد إجراءات</td></tr>`;
+      return;
+    }
+
+    const actionLabels = {
+      'update_settings': 'تحديث الإعدادات',
+      'upload_logo': 'رفع شعار',
+      'create_user': 'إنشاء مستخدم',
+      'update_user': 'تعديل مستخدم',
+      'delete_user': 'حذف مستخدم'
+    };
+
+    tbody.innerHTML = actions.map(a => `
+      <tr style="border-bottom:1px solid var(--border-soft);">
+        <td style="padding:12px;font-size:12.5px;color:var(--text-muted);direction:ltr;text-align:right;">
+          <span dir="ltr">${escapeHtml(a.user_email || '—')}</span>
+        </td>
+        <td style="padding:12px;">
+          <span style="font-size:12px;font-weight:700;color:var(--accent);">
+            ${escapeHtml(actionLabels[a.action] || a.action)}
+          </span>
+        </td>
+        <td style="padding:12px;font-size:12px;color:var(--text-muted);">${escapeHtml(a.details || '—')}</td>
+        <td style="padding:12px;font-size:11.5px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">${escapeHtml(formatDate(a.created_at))}</td>
+      </tr>
+    `).join('');
   }
 
   /* ============================================
@@ -909,9 +1286,7 @@
      ============================================ */
   async function loadAuditLog() {
     const tbody = document.getElementById('auditTableBody');
-    if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px;color:rgba(255,255,255,0.4);">جاري التحميل...</td></tr>`;
-    }
+    if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
 
     try {
       const { data, error } = await client
@@ -920,18 +1295,13 @@
         .order('created_at', { ascending: false })
         .limit(100);
 
-      if (error) {
-        // Table might not exist yet
-        if (tbody) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);">لا يوجد سجل بعد</td></tr>`;
-        }
-        return;
-      }
+      if (error) throw error;
 
       auditLogs = data || [];
       renderAuditTable();
     } catch (err) {
       console.error('[Admin] Audit load error:', err);
+      if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-dim);">لا يوجد سجل بعد</td></tr>`;
     }
   }
 
@@ -940,134 +1310,35 @@
     if (!tbody) return;
 
     if (!auditLogs.length) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:rgba(255,255,255,0.4);">لا يوجد سجل بعد</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-dim);">لا يوجد سجل بعد</td></tr>`;
       return;
     }
 
-    const actionLabels = {
-      'create': { label: 'إنشاء', color: '#00ff9d' },
-      'update': { label: 'تعديل', color: '#ffb800' },
-      'delete': { label: 'حذف', color: '#ff5555' },
-      'upload': { label: 'رفع', color: '#00f0ff' }
+    const actionColors = {
+      'create': { label: 'إنشاء', color: 'var(--success)' },
+      'update': { label: 'تعديل', color: 'var(--warning)' },
+      'delete': { label: 'حذف', color: 'var(--danger)' },
+      'upload': { label: 'رفع', color: 'var(--accent)' }
     };
 
     tbody.innerHTML = auditLogs.map(log => {
-      const action = actionLabels[log.action] || { label: log.action, color: '#888' };
+      const action = actionColors[log.action] || { label: log.action, color: 'var(--text-muted)' };
       return `
-        <tr style="border-bottom:1px solid rgba(0,240,255,0.06);">
-          <td style="padding:12px;font-size:12.5px;color:rgba(255,255,255,0.7);direction:ltr;text-align:right;">
+        <tr style="border-bottom:1px solid var(--border-soft);">
+          <td style="padding:12px;font-size:12.5px;color:var(--text-muted);direction:ltr;text-align:right;">
             <span dir="ltr">${escapeHtml(log.user_email || '—')}</span>
           </td>
           <td style="padding:12px;">
-            <span style="
-              padding:4px 10px;
-              background:${action.color}22;
-              border:1px solid ${action.color};
-              border-radius:100px;
-              font-size:11.5px;
-              color:${action.color};
-              font-weight:700;
-            ">${action.label}</span>
+            <span style="padding:4px 10px;background:${action.color}22;border:1px solid ${action.color};border-radius:100px;font-size:11.5px;color:${action.color};font-weight:700;">
+              ${action.label}
+            </span>
           </td>
-          <td style="padding:12px;font-size:12.5px;color:rgba(255,255,255,0.7);">${escapeHtml(log.entity || '—')}</td>
-          <td style="padding:12px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:rgba(255,255,255,0.5);">${escapeHtml(log.entity_id || '—')}</td>
-          <td style="padding:12px;font-size:11.5px;color:rgba(255,255,255,0.5);font-family:'JetBrains Mono',monospace;">${escapeHtml(formatDate(log.created_at))}</td>
+          <td style="padding:12px;font-size:12.5px;color:var(--text-muted);">${escapeHtml(log.entity || '—')}</td>
+          <td style="padding:12px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text-dim);">${escapeHtml(log.entity_id || '—')}</td>
+          <td style="padding:12px;font-size:11.5px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">${escapeHtml(formatDate(log.created_at))}</td>
         </tr>
       `;
     }).join('');
-  }
-
-  /* ============================================
-     TABS
-     ============================================ */
-  function switchTab(tabId) {
-    activeTab = tabId;
-
-    // Hide all
-    document.querySelectorAll('[data-tab-content]').forEach(el => {
-      el.style.display = 'none';
-    });
-
-    // Show active
-    const active = document.querySelector(`[data-tab-content="${tabId}"]`);
-    if (active) active.style.display = 'block';
-
-    // Update tab buttons
-    document.querySelectorAll('[data-tab-btn]').forEach(btn => {
-      const isActive = btn.dataset.tabBtn === tabId;
-      btn.classList.toggle('active', isActive);
-    });
-
-    // Lazy-load data
-    if (tabId === 'users' && !users.length) loadUsers();
-    if (tabId === 'types' && !membershipTypes.length) loadMembershipTypes();
-    if (tabId === 'audit' && !auditLogs.length) loadAuditLog();
-
-    // Update URL hash
-    try {
-      history.replaceState(null, '', `#${tabId}`);
-    } catch (e) {}
-  }
-
-  function setupTabs() {
-    document.querySelectorAll('[data-tab-btn]').forEach(btn => {
-      btn.addEventListener('click', () => switchTab(btn.dataset.tabBtn));
-    });
-
-    // From hash
-    const hash = (window.location.hash || '').replace('#', '');
-    if (hash) {
-      switchTab(hash);
-    } else {
-      switchTab('settings');
-    }
-  }
-
-  /* ============================================
-     THEME PREVIEW SELECT
-     ============================================ */
-  function buildThemeSelect() {
-    const select = document.getElementById('defaultThemeSelect');
-    if (!select) return;
-    if (window.ThemeManager && typeof window.ThemeManager.buildThemeSelect === 'function') {
-      window.ThemeManager.buildThemeSelect('defaultThemeSelect', settings.default_theme);
-    }
-  }
-
-  function previewThemeChange() {
-    const select = document.getElementById('defaultThemeSelect');
-    if (!select) return;
-
-    const themeId = select.value;
-    // Live preview only (not saved until user clicks save)
-    if (window.ThemeManager) {
-      window.ThemeManager.applyTheme(themeId);
-    }
-  }
-
-  /* ============================================
-     REALTIME
-     ============================================ */
-  function setupRealtime() {
-    if (!window.Realtime) return;
-
-    unsubscribeRealtime = window.Realtime.watchManyAndReload(
-      ['settings', 'membership_types', 'users'],
-      async () => {
-        if (activeTab === 'settings') await loadSettings();
-        if (activeTab === 'types') await loadMembershipTypes();
-        if (activeTab === 'users') await loadUsers();
-      },
-      { debounceMs: 500, immediate: false }
-    );
-
-    // Listen for settings broadcasts
-    window.addEventListener('broadcast-notification', (e) => {
-      const data = e.detail;
-      if (data?.type === 'settings-updated') {
-        loadSettings();
-      }
-    });
   }
 
   /* ============================================
@@ -1077,20 +1348,24 @@
     try {
       showToast('جاري تحضير النسخة الاحتياطية...', 'info');
 
-      const [settingsRes, typesRes, usersRes] = await Promise.all([
+      const [settingsRes, typesRes, branchesRes, usersRes, featuresRes] = await Promise.all([
         client.from('settings').select('*'),
         client.from('membership_types').select('*'),
-        client.from('users').select('*')
+        client.from('branches').select('*'),
+        client.from('users').select('*'),
+        client.from('applications').select('*')
       ]);
 
       const backup = {
         exported_at: new Date().toISOString(),
         exported_by: currentUser?.email,
-        version: '1.0.0',
+        version: '2.0.0',
         data: {
           settings: settingsRes.data || [],
           membership_types: typesRes.data || [],
-          users: usersRes.data || []
+          branches: branchesRes.data || [],
+          users: usersRes.data || [],
+          applications: featuresRes.data || []
         }
       };
 
@@ -1106,18 +1381,20 @@
 
       showToast('تم تصدير النسخة الاحتياطية', 'success');
     } catch (err) {
-      console.error('[Admin] Backup error:', err);
       showToast('فشل التصدير: ' + err.message, 'error');
     }
   }
 
   /* ============================================
-     SETUP EVENT LISTENERS
+     SETUP LISTENERS
      ============================================ */
   function setupListeners() {
     // Save settings
     const saveBtn = document.getElementById('saveSettingsBtn');
-    if (saveBtn) saveBtn.addEventListener('click', saveSettings);
+    if (saveBtn) saveBtn.addEventListener('click', () => saveSettings('saveSettingsBtn'));
+
+    const saveHomeBtn = document.getElementById('saveHomeBtn');
+    if (saveHomeBtn) saveHomeBtn.addEventListener('click', () => saveSettings('saveHomeBtn'));
 
     // Upload logo
     const uploadInput = document.getElementById('logoFileInput');
@@ -1139,7 +1416,11 @@
     // Theme preview
     const themeSelect = document.getElementById('defaultThemeSelect');
     if (themeSelect) {
-      themeSelect.addEventListener('change', previewThemeChange);
+      themeSelect.addEventListener('change', () => {
+        if (window.ThemeManager) {
+          window.ThemeManager.applyTheme(themeSelect.value);
+        }
+      });
     }
 
     // Add user
@@ -1158,6 +1439,32 @@
     const saveTypeBtn = document.getElementById('saveTypeBtn');
     if (saveTypeBtn) saveTypeBtn.addEventListener('click', saveType);
 
+    // Add branch
+    const addBranchBtn = document.getElementById('addBranchBtn');
+    if (addBranchBtn) addBranchBtn.addEventListener('click', () => openBranchModal(null));
+
+    // Save branch
+    const saveBranchBtn = document.getElementById('saveBranchBtn');
+    if (saveBranchBtn) saveBranchBtn.addEventListener('click', saveBranch);
+
+    // Add feature
+    const addFeatureBtn = document.getElementById('addFeatureBtn');
+    if (addFeatureBtn) addFeatureBtn.addEventListener('click', () => openFeatureModal(null));
+
+    // Save feature
+    const saveFeatureBtn = document.getElementById('saveFeatureBtn');
+    if (saveFeatureBtn) saveFeatureBtn.addEventListener('click', saveFeature);
+
+    // Refresh sessions
+    const refreshSessionsBtn = document.getElementById('refreshSessionsBtn');
+    if (refreshSessionsBtn) {
+      refreshSessionsBtn.addEventListener('click', () => {
+        sessions = [];
+        actions = [];
+        loadSessions();
+      });
+    }
+
     // Refresh audit
     const refreshAuditBtn = document.getElementById('refreshAuditBtn');
     if (refreshAuditBtn) {
@@ -1167,7 +1474,7 @@
       });
     }
 
-    // Export backup
+    // Backup
     const backupBtn = document.getElementById('backupBtn');
     if (backupBtn) backupBtn.addEventListener('click', exportBackup);
 
@@ -1181,14 +1488,16 @@
       });
     }
 
-    // Modals backdrop close + ESC
-    ['userModal', 'typeModal'].forEach(id => {
+    // Modal backdrops
+    ['userModal', 'typeModal', 'branchModal', 'featureModal'].forEach(id => {
       const modal = document.getElementById(id);
       if (!modal) return;
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
           if (id === 'userModal') window.closeUserModal();
-          else window.closeTypeModal();
+          else if (id === 'typeModal') window.closeTypeModal();
+          else if (id === 'branchModal') window.closeBranchModal();
+          else if (id === 'featureModal') window.closeFeatureModal();
         }
       });
     });
@@ -1197,7 +1506,31 @@
       if (e.key === 'Escape') {
         window.closeUserModal();
         window.closeTypeModal();
+        window.closeBranchModal();
+        window.closeFeatureModal();
       }
+    });
+  }
+
+  /* ============================================
+     REALTIME
+     ============================================ */
+  function setupRealtime() {
+    if (!window.Realtime) return;
+
+    unsubscribeRealtime = window.Realtime.watchManyAndReload(
+      ['settings', 'membership_types', 'branches', 'users'],
+      async () => {
+        if (activeTab === 'settings' || activeTab === 'home') await loadSettings();
+        if (activeTab === 'types') await loadTypes();
+        if (activeTab === 'branches') await loadBranches();
+        if (activeTab === 'users') await loadUsers();
+      },
+      { debounceMs: 500, immediate: false }
+    );
+
+    window.addEventListener('broadcast-notification', (e) => {
+      if (e.detail?.type === 'settings-updated') loadSettings();
     });
   }
 
@@ -1216,32 +1549,27 @@
       const ok = await checkAuth();
       if (!ok) return;
 
-      // Setup UI
       setupTabs();
       setupListeners();
 
-      // Load settings
       await loadSettings();
 
-      // Build theme select
-      buildThemeSelect();
-
-      // Setup realtime
       setupRealtime();
 
-      // Pre-load users/types if their tab is active
+      // Pre-load حسب التاب الحالي
       if (activeTab === 'users') loadUsers();
-      if (activeTab === 'types') loadMembershipTypes();
+      if (activeTab === 'types') loadTypes();
+      if (activeTab === 'branches') loadBranches();
+      if (activeTab === 'sessions') loadSessions();
       if (activeTab === 'audit') loadAuditLog();
 
       console.log('[Admin] Ready.');
     });
   }
 
-  // Expose for HTML inline events
+  // Expose
   window.switchTab = switchTab;
-  window.closeUserModal = window.closeUserModal || function () {};
-  window.closeTypeModal = window.closeTypeModal || function () {};
+  window.saveFeature = saveFeature;
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
