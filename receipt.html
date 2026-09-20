@@ -7,13 +7,15 @@
 <meta name="description" content="إيصال تقديم طلب العضوية — نقابة تكنولوجيا المعلومات والبرمجيات" />
 <title>إيصال التقديم — نقابة تكنولوجيا المعلومات والبرمجيات</title>
 
-<!-- FAVICON -->
 <link rel="icon" id="faviconLink" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+<!-- html2canvas لتحميل الإيصال كصورة -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <link rel="stylesheet" href="css/themes.css" />
 <link rel="stylesheet" href="css/style.css" />
@@ -35,7 +37,7 @@
     z-index: 10;
   }
 
-  /* Success banner */
+  /* ============ SUCCESS BANNER ============ */
   .success-banner {
     text-align: center;
     margin-bottom: 32px;
@@ -52,11 +54,7 @@
     height: 88px;
     margin: 0 auto 20px;
     border-radius: 50%;
-    background: radial-gradient(
-      circle at 30% 30%,
-      rgba(var(--success-rgb), 0.2),
-      rgba(var(--success-rgb), 0.05) 70%
-    );
+    background: radial-gradient(circle at 30% 30%, rgba(var(--success-rgb), 0.2), rgba(var(--success-rgb), 0.05) 70%);
     border: 2px solid var(--success);
     display: flex;
     align-items: center;
@@ -115,12 +113,7 @@
     font-family: 'Tajawal', sans-serif;
     font-size: clamp(24px, 4vw, 32px);
     font-weight: 900;
-    background: linear-gradient(
-      90deg,
-      var(--success),
-      var(--accent),
-      var(--success)
-    );
+    background: linear-gradient(90deg, var(--success), var(--accent), var(--success));
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
@@ -130,9 +123,7 @@
     line-height: 1.3;
   }
 
-  @keyframes shine {
-    to { background-position: 200% center; }
-  }
+  @keyframes shine { to { background-position: 200% center; } }
 
   .success-desc {
     font-size: 15px;
@@ -142,7 +133,7 @@
     line-height: 1.75;
   }
 
-  /* Receipt card */
+  /* ============ RECEIPT CARD ============ */
   .receipt-card {
     background: var(--card-bg);
     border: 1.5px solid var(--border);
@@ -163,17 +154,12 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(
-      90deg,
-      var(--accent),
-      var(--accent-2),
-      var(--accent)
-    );
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
     background-size: 200% auto;
     animation: shine 3s linear infinite;
   }
 
-  /* Receipt header */
+  /* ============ HEADER ============ */
   .receipt-header {
     text-align: center;
     padding-bottom: 24px;
@@ -187,11 +173,7 @@
     height: 64px;
     margin: 0 auto 14px;
     border-radius: 50%;
-    background: radial-gradient(
-      circle at 30% 30%,
-      rgba(var(--accent-rgb), 0.15),
-      rgba(0, 0, 0, 0.4) 70%
-    );
+    background: radial-gradient(circle at 30% 30%, rgba(var(--accent-rgb), 0.15), rgba(0, 0, 0, 0.4) 70%);
     border: 1.5px solid rgba(var(--accent-rgb), 0.35);
     display: flex;
     align-items: center;
@@ -244,15 +226,11 @@
     letter-spacing: 0.5px;
   }
 
-  /* Tracking number */
+  /* ============ TRACKING ============ */
   .tracking-section {
     text-align: center;
     padding: 24px 20px;
-    background: linear-gradient(
-      135deg,
-      rgba(var(--accent-rgb), 0.06),
-      rgba(var(--accent-2-rgb), 0.06)
-    );
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.06), rgba(var(--accent-2-rgb), 0.06));
     border: 1.5px solid rgba(var(--accent-rgb), 0.25);
     border-radius: var(--radius-lg);
     margin-bottom: 24px;
@@ -307,10 +285,6 @@
     box-shadow: var(--glow-accent);
   }
 
-  .copy-btn:active {
-    transform: scale(0.95);
-  }
-
   .copy-btn svg {
     width: 16px;
     height: 16px;
@@ -341,7 +315,7 @@
     stroke-linejoin: round;
   }
 
-  /* Details */
+  /* ============ DETAILS ============ */
   .details-section {
     margin-bottom: 24px;
   }
@@ -379,9 +353,7 @@
     font-size: 14px;
   }
 
-  .detail-row:last-child {
-    border-bottom: none;
-  }
+  .detail-row:last-child { border-bottom: none; }
 
   .detail-label {
     color: var(--text-muted);
@@ -405,7 +377,7 @@
     font-size: 14px;
   }
 
-  /* Status badge */
+  /* ============ STATUS ============ */
   .status-badge-wrap {
     display: flex;
     align-items: center;
@@ -454,29 +426,29 @@
     min-width: 200px;
   }
 
-  /* QR section */
+  /* ============ QR ============ */
   .qr-section {
     text-align: center;
-    padding: 24px;
+    padding: 20px;
     background: rgba(var(--accent-rgb), 0.03);
     border: 1px dashed rgba(var(--accent-rgb), 0.3);
     border-radius: var(--radius-lg);
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
 
   .qr-wrap {
     display: inline-block;
-    padding: 12px;
+    padding: 10px;
     background: #ffffff;
     border-radius: var(--radius-md);
     box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.3);
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
   .qr-wrap img {
     display: block;
-    width: 160px;
-    height: 160px;
+    width: 140px;
+    height: 140px;
     image-rendering: pixelated;
   }
 
@@ -499,7 +471,7 @@
     stroke-linejoin: round;
   }
 
-  /* Footer note */
+  /* ============ FOOTNOTE ============ */
   .receipt-footnote {
     text-align: center;
     padding-top: 20px;
@@ -514,10 +486,10 @@
     font-weight: 700;
   }
 
-  /* Action buttons */
+  /* ============ ACTIONS ============ */
   .actions-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
     margin-top: 28px;
     animation: fadeUp 0.6s 0.3s both;
@@ -527,7 +499,7 @@
     width: 100%;
   }
 
-  /* Missing data state */
+  /* ============ MISSING STATE ============ */
   .missing-state {
     text-align: center;
     padding: 60px 24px;
@@ -575,7 +547,7 @@
     line-height: 1.75;
   }
 
-  /* Confetti (light) */
+  /* ============ CONFETTI ============ */
   .confetti {
     position: fixed;
     inset: 0;
@@ -600,59 +572,35 @@
     }
   }
 
-  /* Responsive */
+  /* ============ RESPONSIVE ============ */
   @media (max-width: 640px) {
-    body {
-      padding: 90px 14px 40px;
-    }
-
-    .receipt-card {
-      padding: 26px 20px;
-    }
-
-    .success-icon {
-      width: 72px;
-      height: 72px;
-    }
-
-    .success-icon svg {
-      width: 34px;
-      height: 34px;
-    }
-
-    .actions-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .detail-row {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 4px;
-    }
-
-    .detail-value {
-      text-align: right;
-      width: 100%;
-    }
-
-    .qr-wrap img {
-      width: 140px;
-      height: 140px;
-    }
-
-    .status-badge-wrap {
-      flex-direction: column;
-      padding: 14px;
-    }
+    body { padding: 90px 14px 40px; }
+    .receipt-card { padding: 26px 20px; }
+    .success-icon { width: 72px; height: 72px; }
+    .success-icon svg { width: 34px; height: 34px; }
+    .actions-grid { grid-template-columns: 1fr; }
+    .detail-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .detail-value { text-align: right; width: 100%; }
+    .qr-wrap img { width: 120px; height: 120px; }
+    .status-badge-wrap { flex-direction: column; padding: 14px; }
   }
 
-  /* Print */
+  /* ============ PRINT (صفحة واحدة فقط) ============ */
   @media print {
-    body {
-      padding: 0 !important;
-      background: white !important;
+    @page {
+      size: A4;
+      margin: 10mm;
     }
 
+    body {
+      padding: 0 !important;
+      margin: 0 !important;
+      background: white !important;
+      color: black !important;
+      font-size: 12px !important;
+    }
+
+    /* اخفاء كل حاجة ما عدا الـ receipt */
     .actions-grid,
     .copy-btn,
     .confetti,
@@ -662,8 +610,17 @@
     .bg-glow,
     .bg-layer,
     .glow-1,
-    .glow-2 {
+    .glow-2,
+    .success-banner,
+    .skip-btn,
+    .draft-indicator {
       display: none !important;
+    }
+
+    .receipt-container {
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
 
     .receipt-card {
@@ -673,18 +630,28 @@
       -webkit-backdrop-filter: none !important;
       background: white !important;
       color: black !important;
-      page-break-inside: avoid;
-      max-width: 100%;
+      padding: 12mm !important;
+      max-width: 100% !important;
+      page-break-inside: avoid !important;
+      page-break-after: avoid !important;
+      border-radius: 0 !important;
     }
 
     .receipt-card::before {
-      display: none;
+      display: none !important;
     }
 
+    /* كل النصوص سوداء */
     .receipt-title,
-    .success-title,
     .detail-value,
-    .details-title {
+    .details-title,
+    .detail-label,
+    .receipt-footnote,
+    .qr-label,
+    .status-note,
+    .receipt-subtitle,
+    .receipt-doc-type,
+    .tracking-label {
       color: black !important;
       -webkit-text-fill-color: black !important;
       background: none !important;
@@ -693,37 +660,55 @@
     .tracking-number {
       color: black !important;
       text-shadow: none !important;
+      font-size: 18px !important;
     }
 
-    .success-banner {
-      margin-bottom: 16px;
-    }
-
-    .success-icon {
-      display: none;
-    }
-
-    .success-title {
-      font-size: 20px;
-      text-align: center;
-    }
-
-    .qr-section {
-      border-color: #666 !important;
+    .receipt-doc-type {
+      border-color: #000 !important;
       background: white !important;
     }
 
-    .qr-label {
-      color: black !important;
+    .tracking-section {
+      background: white !important;
+      border-color: #999 !important;
+      padding: 12px !important;
+    }
+
+    .qr-section {
+      border-color: #999 !important;
+      background: white !important;
+      padding: 10px !important;
+    }
+
+    .qr-wrap {
+      box-shadow: none !important;
+      border: 1px solid #ddd !important;
+    }
+
+    .qr-wrap img {
+      width: 110px !important;
+      height: 110px !important;
     }
 
     .receipt-footnote {
-      color: #333 !important;
+      border-top-color: #999 !important;
+    }
+
+    .receipt-header {
+      border-bottom-color: #999 !important;
+      padding-bottom: 12px !important;
+      margin-bottom: 12px !important;
+    }
+
+    .detail-row {
+      padding: 6px 0 !important;
+      border-bottom-color: #ddd !important;
     }
 
     .status-badge-wrap {
       background: white !important;
       border-color: #999 !important;
+      padding: 10px !important;
     }
 
     .status-badge {
@@ -732,8 +717,21 @@
       background: #f0f0f0 !important;
     }
 
-    .status-note {
-      color: #333 !important;
+    .status-badge .dot {
+      background: #666 !important;
+      box-shadow: none !important;
+      animation: none !important;
+    }
+
+    .receipt-logo {
+      box-shadow: none !important;
+      border-color: #666 !important;
+    }
+
+    .success-icon,
+    .success-icon::before,
+    .success-icon::after {
+      display: none !important;
     }
   }
 </style>
@@ -749,7 +747,6 @@
 <!-- NAVBAR -->
 <header class="navbar scrolled" id="navbar">
   <div class="nav-container">
-
     <a href="home.html" class="nav-logo">
       <div class="logo-badge">
         <img id="navLogoImg" src="" alt="شعار النقابة" style="display:none;" />
@@ -788,11 +785,10 @@
         </svg>
       </button>
     </div>
-
   </div>
 </header>
 
-<!-- CONFETTI (يظهر لحظة) -->
+<!-- CONFETTI -->
 <div class="confetti" id="confettiBox"></div>
 
 <!-- CONTAINER -->
@@ -812,7 +808,7 @@
   </div>
 
   <!-- RECEIPT CARD -->
-  <div class="receipt-card">
+  <div class="receipt-card" id="receiptCard">
 
     <!-- Header -->
     <div class="receipt-header">
@@ -829,12 +825,12 @@
       <div class="receipt-doc-type">إيصال تقديم طلب عضوية</div>
     </div>
 
-    <!-- Tracking number -->
+    <!-- Tracking -->
     <div class="tracking-section">
       <div class="tracking-label">رقم التتبع</div>
       <div class="tracking-value">
         <span class="tracking-number" id="trackingNumber">---</span>
-        <button type="button" class="copy-btn" id="copyBtn" aria-label="نسخ رقم التتبع">
+        <button type="button" class="copy-btn no-print" id="copyBtn" aria-label="نسخ رقم التتبع">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
@@ -855,10 +851,10 @@
     <div class="status-badge-wrap">
       <div class="status-badge">
         <span class="dot"></span>
-        <span>بانتظار الفحص</span>
+        <span id="statusText">تم الفحص التلقائي</span>
       </div>
       <div class="status-note">
-        الوقت المتوقع للمراجعة: 24-48 ساعة
+        الطلب الآن عند المراجعة البشرية
       </div>
     </div>
 
@@ -915,17 +911,26 @@
   </div>
 
   <!-- ACTIONS -->
-  <div class="actions-grid">
-    <button type="button" class="btn btn-primary btn-lg" onclick="window.print()">
+  <div class="actions-grid no-print">
+    <button type="button" class="btn btn-primary" onclick="printReceipt()">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <polyline points="6 9 6 2 18 2 18 9" />
         <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
         <rect x="6" y="14" width="12" height="8" />
       </svg>
-      <span>طباعة الإيصال</span>
+      <span>طباعة</span>
     </button>
 
-    <a href="track.html" class="btn btn-outline btn-lg" id="trackBtn">
+    <button type="button" class="btn btn-outline" onclick="downloadAsImage()" id="downloadImgBtn">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+      </svg>
+      <span>تحميل كصورة</span>
+    </button>
+
+    <a href="track.html" class="btn btn-outline" id="trackBtn">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <circle cx="11" cy="11" r="8" />
         <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -937,7 +942,7 @@
 </div>
 
 <!-- FOOTER -->
-<footer class="footer" style="margin-top:40px;">
+<footer class="footer no-print" style="margin-top:40px;">
   <div class="container">
     <div class="footer-bottom" style="border-top:none;padding-top:0;justify-content:center;">
       <div>© 2026 <span data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</span> — جميع الحقوق محفوظة</div>
@@ -956,6 +961,7 @@
 
   const RECEIPT_STORAGE_KEY = 'its_receipt_data';
   const LAST_TRACKING_KEY = 'its_last_tracking';
+  const RECENT_TRACKINGS_KEY = 'its_recent_trackings';
 
   /* ============================================
      READ RECEIPT DATA
@@ -991,7 +997,7 @@
   }
 
   /* ============================================
-     RENDER MISSING STATE
+     MISSING STATE
      ============================================ */
   function renderMissingState() {
     const container = document.getElementById('receiptContainer');
@@ -1035,121 +1041,171 @@
      RENDER RECEIPT
      ============================================ */
   function renderReceipt(data) {
-    // Tracking
     const trackingEl = document.getElementById('trackingNumber');
     if (trackingEl) trackingEl.textContent = data.tracking_no || '---';
 
-    // Name
     const nameEl = document.getElementById('rName');
     if (nameEl) nameEl.textContent = data.full_name || '---';
 
-    // Type
     const typeEl = document.getElementById('rType');
     if (typeEl) typeEl.textContent = data.membership_type || '---';
 
-    // Phone
     const phoneEl = document.getElementById('rPhone');
     if (phoneEl) phoneEl.textContent = data.phone || '---';
 
-    // Date
     const dateEl = document.getElementById('rDate');
     if (dateEl) dateEl.textContent = formatDate(data.created_at);
 
-    // QR Code
+    // QR
     const qrImg = document.getElementById('qrImage');
     if (qrImg && data.tracking_no) {
       const trackUrl = new URL('track.html', window.location.href).href +
         '?tracking=' + encodeURIComponent(data.tracking_no);
-
       const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=' +
         encodeURIComponent(trackUrl);
-
       qrImg.src = qrUrl;
     }
 
-    // Track button link
+    // Track link
     const trackBtn = document.getElementById('trackBtn');
     if (trackBtn && data.tracking_no) {
       trackBtn.href = 'track.html?tracking=' + encodeURIComponent(data.tracking_no);
     }
+
+    // Status
+    const statusEl = document.getElementById('statusText');
+    if (statusEl) {
+      if (data.status === 'ai_review') {
+        statusEl.textContent = 'تم الفحص التلقائي';
+      } else if (data.status === 'pending') {
+        statusEl.textContent = 'بانتظار الفحص';
+      } else {
+        statusEl.textContent = 'تم استلام الطلب';
+      }
+    }
   }
 
   /* ============================================
-     COPY TO CLIPBOARD
+     COPY TRACKING
      ============================================ */
   function setupCopy() {
     const copyBtn = document.getElementById('copyBtn');
     if (!copyBtn) return;
 
     copyBtn.addEventListener('click', async () => {
-      const trackingNumber = document.getElementById('trackingNumber')?.textContent || '';
-      if (!trackingNumber || trackingNumber === '---') return;
+      const tracking = document.getElementById('trackingNumber')?.textContent || '';
+      if (!tracking || tracking === '---') return;
 
       try {
-        await navigator.clipboard.writeText(trackingNumber);
-
-        // Feedback
-        const originalSvg = copyBtn.innerHTML;
-        copyBtn.innerHTML = `
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:var(--success);">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        `;
-
-        if (window.showToast) {
-          window.showToast('تم نسخ رقم التتبع', 'success', 1800);
-        }
-
-        setTimeout(() => {
-          copyBtn.innerHTML = originalSvg;
-        }, 1800);
-
+        await navigator.clipboard.writeText(tracking);
+        const orig = copyBtn.innerHTML;
+        copyBtn.innerHTML = `<svg viewBox="0 0 24 24" style="stroke:var(--success);"><polyline points="20 6 9 17 4 12"/></svg>`;
+        if (window.showToast) window.showToast('تم نسخ رقم التتبع', 'success', 1800);
+        setTimeout(() => { copyBtn.innerHTML = orig; }, 1800);
       } catch (err) {
-        // Fallback
         try {
           const ta = document.createElement('textarea');
-          ta.value = trackingNumber;
+          ta.value = tracking;
           ta.style.position = 'fixed';
           ta.style.opacity = '0';
           document.body.appendChild(ta);
           ta.select();
           document.execCommand('copy');
           document.body.removeChild(ta);
-
-          if (window.showToast) {
-            window.showToast('تم نسخ رقم التتبع', 'success', 1800);
-          }
+          if (window.showToast) window.showToast('تم نسخ رقم التتبع', 'success', 1800);
         } catch (e) {
-          if (window.showToast) {
-            window.showToast('فشل النسخ', 'error', 1800);
-          }
+          if (window.showToast) window.showToast('فشل النسخ', 'error', 1800);
         }
       }
     });
   }
 
   /* ============================================
-     CONFETTI (خفيف وأنيق)
+     PRINT (صفحة واحدة)
+     ============================================ */
+  window.printReceipt = function () {
+    // قبل الطباعة، نخلي الإيصال بس ظاهر
+    document.body.classList.add('printing');
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        document.body.classList.remove('printing');
+      }, 500);
+    }, 100);
+  };
+
+  /* ============================================
+     DOWNLOAD AS IMAGE
+     ============================================ */
+  window.downloadAsImage = async function () {
+    const btn = document.getElementById('downloadImgBtn');
+    if (!btn || typeof html2canvas === 'undefined') {
+      if (window.showToast) window.showToast('جارٍ التحميل...', 'info');
+      return;
+    }
+
+    const receiptCard = document.getElementById('receiptCard');
+    if (!receiptCard) return;
+
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span><span>جاري التحميل...</span>';
+
+    try {
+      // اخفاء الأزرار مؤقتًا
+      document.querySelectorAll('.no-print').forEach(el => {
+        el.style.display = 'none';
+      });
+
+      const canvas = await html2canvas(receiptCard, {
+        scale: 2,
+        backgroundColor: '#0a0c14',
+        logging: false,
+        useCORS: true,
+        allowTaint: true
+      });
+
+      // استرجع
+      document.querySelectorAll('.no-print').forEach(el => {
+        el.style.display = '';
+      });
+
+      // حمّل الصورة
+      const link = document.createElement('a');
+      const tracking = document.getElementById('trackingNumber')?.textContent || 'receipt';
+      link.download = `إيصال-${tracking}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      if (window.showToast) window.showToast('تم تحميل الإيصال', 'success', 2000);
+
+    } catch (err) {
+      console.error('[Download] Error:', err);
+      document.querySelectorAll('.no-print').forEach(el => {
+        el.style.display = '';
+      });
+      if (window.showToast) window.showToast('فشل التحميل: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  };
+
+  /* ============================================
+     CONFETTI
      ============================================ */
   function launchConfetti() {
     const box = document.getElementById('confettiBox');
     if (!box) return;
 
-    // Reduce motion check
     try {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     } catch (e) {}
 
-    const colors = [
-      'var(--accent)',
-      'var(--accent-2)',
-      'var(--success)',
-      'var(--warning)'
-    ];
+    const colors = ['var(--accent)', 'var(--accent-2)', 'var(--success)', 'var(--warning)'];
+    const count = 40;
 
-    const pieceCount = 40;
-
-    for (let i = 0; i < pieceCount; i++) {
+    for (let i = 0; i < count; i++) {
       const piece = document.createElement('span');
       piece.className = 'confetti-piece';
       piece.style.left = Math.random() * 100 + '%';
@@ -1159,29 +1215,25 @@
       piece.style.width = (6 + Math.random() * 6) + 'px';
       piece.style.height = (6 + Math.random() * 6) + 'px';
       piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-      piece.style.transform = `rotate(${Math.random() * 360}deg)`;
       box.appendChild(piece);
     }
 
-    // Cleanup
     setTimeout(() => {
       if (box) box.innerHTML = '';
     }, 6000);
   }
 
   /* ============================================
-     AUTO-SAVE LAST TRACKING
+     SAVE RECENT
      ============================================ */
   function saveLastTracking(data) {
     try {
       if (data.tracking_no) {
         localStorage.setItem(LAST_TRACKING_KEY, data.tracking_no);
 
-        // Also add to recents
-        const RECENT_KEY = 'its_recent_trackings';
         let recents = [];
         try {
-          const raw = localStorage.getItem(RECENT_KEY);
+          const raw = localStorage.getItem(RECENT_TRACKINGS_KEY);
           recents = raw ? JSON.parse(raw) : [];
           if (!Array.isArray(recents)) recents = [];
         } catch (e) { recents = []; }
@@ -1190,12 +1242,77 @@
         recents.unshift({
           tracking_no: data.tracking_no,
           full_name: data.full_name,
-          status: 'pending',
+          status: data.status || 'ai_review',
           updated_at: new Date().toISOString()
         });
-        localStorage.setItem(RECENT_KEY, JSON.stringify(recents.slice(0, 5)));
+        localStorage.setItem(RECENT_TRACKINGS_KEY, JSON.stringify(recents.slice(0, 5)));
       }
     } catch (e) {}
+  }
+
+  /* ============================================
+     URL FALLBACK (QR)
+     ============================================ */
+  function checkTrackingFromURL() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const tr = params.get('tracking') || params.get('t');
+      if (!tr) return;
+
+      const existing = getReceiptData();
+      if (existing && existing.tracking_no) return;
+
+      if (window.supabaseClient) {
+        loadReceiptFromServer(tr);
+      } else if (typeof window.onSupabaseReady === 'function') {
+        window.onSupabaseReady(() => loadReceiptFromServer(tr));
+      }
+    } catch (e) {}
+  }
+
+  async function loadReceiptFromServer(trackingNo) {
+    try {
+      const client = window.supabaseClient;
+      if (!client) return;
+
+      const { data, error } = await client
+        .from('applications')
+        .select('*')
+        .eq('tracking_no', trackingNo)
+        .maybeSingle();
+
+      if (error || !data) return;
+
+      let membershipName = '';
+      try {
+        const { data: typeData } = await client
+          .from('membership_types')
+          .select('name')
+          .eq('id', data.membership_type_id)
+          .maybeSingle();
+        if (typeData?.name) membershipName = typeData.name;
+      } catch (e) {}
+
+      const receiptData = {
+        tracking_no: data.tracking_no,
+        application_id: data.id,
+        full_name: data.full_name,
+        national_id: data.national_id,
+        phone: data.phone,
+        membership_type: membershipName,
+        membership_type_id: data.membership_type_id,
+        status: data.status,
+        created_at: data.created_at
+      };
+
+      try {
+        sessionStorage.setItem(RECEIPT_STORAGE_KEY, JSON.stringify(receiptData));
+      } catch (e) {}
+
+      renderReceipt(receiptData);
+    } catch (e) {
+      console.warn('[Receipt] Server load failed:', e);
+    }
   }
 
   /* ============================================
@@ -1285,82 +1402,12 @@
     }
 
     window.addEventListener('resize', () => {
-      clearTimeout(window.__receiptResizeT);
-      window.__receiptResizeT = setTimeout(resize, 200);
+      clearTimeout(window.__rcptResizeT);
+      window.__rcptResizeT = setTimeout(resize, 200);
     });
 
     resize();
     loop();
-  }
-
-  /* ============================================
-     AUTO-FILL OG FROM TRACKING URL
-     ============================================ */
-  function checkTrackingFromURL() {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const tr = params.get('tracking') || params.get('t');
-      if (!tr) return;
-
-      // لو المستخدم فتح الرابط من QR ومفيش sessionStorage
-      const existing = getReceiptData();
-      if (existing && existing.tracking_no) return;
-
-      // نحاول نجيب البيانات من Supabase
-      if (window.supabaseClient) {
-        loadReceiptFromServer(tr);
-      } else if (typeof window.onSupabaseReady === 'function') {
-        window.onSupabaseReady(() => loadReceiptFromServer(tr));
-      }
-    } catch (e) {}
-  }
-
-  async function loadReceiptFromServer(trackingNo) {
-    try {
-      const client = window.supabaseClient;
-      if (!client) return;
-
-      const { data, error } = await client
-        .from('applications')
-        .select('*')
-        .eq('tracking_no', trackingNo)
-        .maybeSingle();
-
-      if (error || !data) return;
-
-      // جهز بيانات الإيصال
-      let membershipName = '';
-      try {
-        const { data: typeData } = await client
-          .from('membership_types')
-          .select('name')
-          .eq('id', data.membership_type_id)
-          .maybeSingle();
-        if (typeData?.name) membershipName = typeData.name;
-      } catch (e) {}
-
-      const receiptData = {
-        tracking_no: data.tracking_no,
-        application_id: data.id,
-        full_name: data.full_name,
-        national_id: data.national_id,
-        phone: data.phone,
-        membership_type: membershipName,
-        membership_type_id: data.membership_type_id,
-        status: data.status,
-        created_at: data.created_at
-      };
-
-      // حفظ في sessionStorage
-      try {
-        sessionStorage.setItem(RECEIPT_STORAGE_KEY, JSON.stringify(receiptData));
-      } catch (e) {}
-
-      // إعادة العرض
-      renderReceipt(receiptData);
-    } catch (e) {
-      console.warn('[Receipt] Load from server failed:', e);
-    }
   }
 
   /* ============================================
@@ -1372,10 +1419,8 @@
     const data = getReceiptData();
 
     if (!data) {
-      // Maybe from URL?
       checkTrackingFromURL();
 
-      // Fallback: show missing state after a short delay
       setTimeout(() => {
         if (!getReceiptData()) {
           renderMissingState();
@@ -1386,15 +1431,7 @@
       setupCopy();
       saveLastTracking(data);
       launchConfetti();
-
-      // نظف sessionStorage بعد 30 دقيقة (اختياري)
-      // ملاحظة: نتركها للمستخدم لو عايز يطبع
     }
-
-    // استمع لتحميل الإعدادات عشان اللوجو
-    window.addEventListener('settings-ready', () => {
-      // settings.js بيتعامل مع اللوجو تلقائي
-    });
   }
 
   if (document.readyState === 'loading') {
