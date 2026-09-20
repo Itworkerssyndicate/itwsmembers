@@ -8,117 +8,93 @@
   /* ============================================
      CONSTANTS
      ============================================ */
-  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB (بعد التعديل)
   const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   const ALLOWED_DOC_TYPES = [...ALLOWED_IMAGE_TYPES, 'application/pdf'];
   const MIN_IMAGE_WIDTH = 400;
   const MIN_IMAGE_HEIGHT = 250;
   const RECEIPT_STORAGE_KEY = 'its_receipt_data';
   const DRAFT_STORAGE_KEY = 'its_apply_draft';
+  const TESSERACT_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+
+  /* ============================================
+     REQUIRED & OPTIONAL DOCS
+     ============================================ */
+  const REQUIRED_DOCS = [
+    { field: 'id_front',      docType: 'id_front',      label: 'بطاقة الرقم القومي (وجه)',  keywords: ['جمهورية مصر العربية', 'بطاقة تحقيق الشخصية'] },
+    { field: 'id_back',       docType: 'id_back',       label: 'بطاقة الرقم القومي (ظهر)',  keywords: [] },
+    { field: 'certificate',   docType: 'certificate',   label: 'الشهادة الدراسية',          keywords: ['شهادة', 'بكالوريوس', 'ليسانس', 'دبلوم', 'ثانوية', 'التقدير'] },
+    { field: 'photo',         docType: 'photo',         label: 'الصورة الشخصية',            keywords: [] }
+  ];
+
+  const OPTIONAL_DOCS = [
+    { field: 'work_certificate', docType: 'work_certificate', label: 'شهادة إثبات عمل', keywords: ['شهادة', 'خبرة', 'عمل'] },
+    { field: 'criminal_record',  docType: 'criminal_record',  label: 'فيش وتشبيه',      keywords: ['فيش', 'تشبيه', 'حسن سيرة', 'وزارة الداخلية'] }
+  ];
 
   /* ============================================
      STATE
      ============================================ */
   let client = null;
   let membershipTypes = [];
-  let selectedFiles = {
-    id_front: null,
-    id_back: null,
-    certificate: null,
-    photo: null
-  };
-  let fileCheckResults = {
-    id_front: null,
-    id_back: null,
-    certificate: null,
-    photo: null
-  };
+  let selectedFiles = {};
+  let fileCheckResults = {};
+  let aiAnalysisResults = {};
   let isSubmitting = false;
   let draftSaveTimer = null;
 
+  /* Camera state */
+  let cameraStream = null;
+  let cameraFacing = 'environment';
+  let cameraTarget = null;
+  let capturedBlob = null;
+
+  /* Tesseract state */
+  let tesseractLoaded = false;
+  let tesseractWorker = null;
+
   /* ============================================
-     DOM CACHE
+     DOM HELPERS
      ============================================ */
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => document.querySelectorAll(sel);
 
   /* ============================================
-     SVG ICONS (No emoji)
+     SVG ICONS
      ============================================ */
   const ICONS = {
-    camera: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
-    file: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
-    user: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
-    check: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"/></svg>`,
-    x: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
-    loader: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>`,
-    send: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`,
-    alert: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
-    info: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`
+    check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"/></svg>',
+    x: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    loader: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>',
+    alert: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+    info: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
   };
 
   /* ============================================
-     UTILS
+     ALERT BOX
      ============================================ */
-  function setAlert(containerId, type, message) {
-    const box = document.getElementById(containerId);
+  function setAlert(type, message) {
+    const box = document.getElementById('alertBox');
     if (!box) return;
 
     const colors = {
-      success: { bg: 'rgba(0, 255, 157, 0.12)', border: '#00ff9d', text: '#00ff9d' },
-      error:   { bg: 'rgba(255, 85, 85, 0.12)', border: '#ff5555', text: '#ff5555' },
-      warning: { bg: 'rgba(255, 184, 0, 0.12)', border: '#ffb800', text: '#ffb800' },
-      info:    { bg: 'rgba(0, 240, 255, 0.1)',  border: '#00f0ff', text: '#00f0ff' }
+      success: { bg: 'rgba(var(--success-rgb), 0.12)', border: 'var(--success)', text: 'var(--success)', icon: ICONS.check },
+      error:   { bg: 'rgba(var(--danger-rgb), 0.12)',  border: 'var(--danger)',  text: 'var(--danger)',  icon: ICONS.x },
+      warning: { bg: 'rgba(var(--warning-rgb), 0.12)', border: 'var(--warning)', text: 'var(--warning)', icon: ICONS.alert },
+      info:    { bg: 'rgba(var(--accent-rgb), 0.1)',   border: 'var(--accent)',  text: 'var(--accent)',  icon: ICONS.info }
     };
     const c = colors[type] || colors.info;
-    const iconMap = {
-      success: ICONS.check,
-      error: ICONS.x,
-      warning: ICONS.alert,
-      info: ICONS.info
-    };
-    const icon = iconMap[type] || ICONS.info;
 
     box.innerHTML = `
-      <div class="alert alert-${type}" style="
-        background:${c.bg};
-        border:1.5px solid ${c.border};
-        color:${c.text};
-        padding:14px 18px;
-        border-radius:12px;
-        font-size:14px;
-        font-weight:600;
-        display:flex;
-        align-items:center;
-        gap:10px;
-        margin-bottom:16px;
-        animation: alertIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      ">
-        <span style="width:20px;height:20px;display:inline-flex;flex-shrink:0;">${icon}</span>
+      <div class="alert" style="background:${c.bg};border-color:${c.border};color:${c.text};">
+        <span style="width:18px;height:18px;display:inline-flex;flex-shrink:0;">${c.icon}</span>
         <span>${window.escapeHtml ? window.escapeHtml(message) : message}</span>
       </div>
     `;
-
-    // Add animation keyframes if not exists
-    if (!document.getElementById('applyAnimStyles')) {
-      const style = document.createElement('style');
-      style.id = 'applyAnimStyles';
-      style.textContent = `
-        @keyframes alertIn {
-          from { opacity: 0; transform: translateY(-8px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes checkPulse {
-          0%, 100% { transform: scale(1); }
-          50%      { transform: scale(1.15); }
-        }
-      `;
-      document.head.appendChild(style);
-    }
   }
 
-  function clearAlert(containerId) {
-    const box = document.getElementById(containerId);
+  function clearAlert() {
+    const box = document.getElementById('alertBox');
     if (box) box.innerHTML = '';
   }
 
@@ -126,26 +102,12 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function setButtonLoading(btn, text, isLoading) {
+  function setButtonLoading(btn, text, loading) {
     if (!btn) return;
-    if (isLoading) {
+    if (loading) {
       btn.disabled = true;
       btn.dataset.originalHtml = btn.innerHTML;
-      btn.innerHTML = `<span>${text}</span><span class="spin" style="
-        display:inline-block;
-        width:16px;height:16px;
-        border:2px solid rgba(255,255,255,0.3);
-        border-top-color:#fff;
-        border-radius:50%;
-        animation: spin 0.8s linear infinite;
-        margin-right:8px;
-      "></span>`;
-      if (!document.getElementById('spinStyles')) {
-        const st = document.createElement('style');
-        st.id = 'spinStyles';
-        st.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
-        document.head.appendChild(st);
-      }
+      btn.innerHTML = `<span>${text}</span><span class="spinner"></span>`;
     } else {
       btn.disabled = false;
       if (btn.dataset.originalHtml) {
@@ -156,24 +118,451 @@
   }
 
   /* ============================================
-     FILE UPLOAD HANDLERS
+     LOAD TESSERACT
+     ============================================ */
+  function loadTesseract() {
+    return new Promise((resolve, reject) => {
+      if (window.Tesseract) {
+        resolve();
+        return;
+      }
+
+      const existing = document.querySelector('script[data-tesseract]');
+      if (existing) {
+        existing.addEventListener('load', () => resolve());
+        existing.addEventListener('error', () => reject(new Error('Failed to load Tesseract')));
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = TESSERACT_CDN;
+      script.async = true;
+      script.dataset.tesseract = 'true';
+      script.onload = () => {
+        tesseractLoaded = true;
+        resolve();
+      };
+      script.onerror = () => reject(new Error('Failed to load Tesseract'));
+      document.head.appendChild(script);
+    });
+  }
+
+  /* ============================================
+     AI OVERLAY
+     ============================================ */
+  function openAIOverlay(title) {
+    const overlay = document.getElementById('aiOverlay');
+    const t = document.getElementById('aiTitle');
+    const s = document.getElementById('aiStatus');
+    const p = document.getElementById('aiProgressFill');
+    const r = document.getElementById('aiResult');
+    const a = document.getElementById('aiActions');
+
+    if (!overlay) return;
+
+    if (t) t.textContent = title || 'جاري الفحص الذكي';
+    if (s) s.textContent = 'بدء التحليل...';
+    if (p) p.style.width = '0%';
+    if (r) { r.className = 'ai-result'; r.innerHTML = ''; }
+    if (a) a.style.display = 'none';
+
+    overlay.classList.add('open');
+  }
+
+  function updateAIStatus(text) {
+    const s = document.getElementById('aiStatus');
+    if (s) s.textContent = text;
+  }
+
+  function updateAIProgress(pct) {
+    const p = document.getElementById('aiProgressFill');
+    if (p) p.style.width = Math.min(100, Math.max(0, pct)) + '%';
+  }
+
+  function showAIResult(type, message) {
+    const r = document.getElementById('aiResult');
+    if (!r) return;
+    r.className = 'ai-result show ' + type;
+    r.innerHTML = message;
+  }
+
+  function closeAIOverlay() {
+    const overlay = document.getElementById('aiOverlay');
+    if (overlay) overlay.classList.remove('open');
+  }
+
+  function showAIActions() {
+    const a = document.getElementById('aiActions');
+    if (a) a.style.display = 'flex';
+  }
+
+  window.retakePhoto = function () {
+    closeAIOverlay();
+    // اعادة فتح الكاميرا على نفس الهدف
+    if (cameraTarget) {
+      setTimeout(() => openCamera(cameraTarget), 300);
+    }
+  };
+
+  window.acceptPhoto = function () {
+    if (!capturedBlob || !cameraTarget) {
+      closeAIOverlay();
+      return;
+    }
+
+    // حوّل الـ Blob لـ File
+    const file = new File([capturedBlob], `capture_${Date.now()}.jpg`, { type: 'image/jpeg' });
+    const field = cameraTarget;
+
+    // ضع الملف في الـ input
+    const input = document.querySelector(`input[name="${field}"]`);
+    if (input) {
+      try {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+      } catch (e) {
+        console.warn('DataTransfer failed:', e);
+      }
+    }
+
+    // خزنه في selectedFiles
+    selectedFiles[field] = file;
+    fileCheckResults[field] = { ok: true, status: 'pass' };
+
+    // UI
+    const wrapper = document.getElementById('upload-' + field);
+    if (wrapper) {
+      wrapper.classList.add('has-file');
+      const filename = wrapper.querySelector('.filename');
+      if (filename) {
+        filename.textContent = `${file.name} (${window.formatFileSize ? window.formatFileSize(file.size) : Math.round(file.size/1024) + 'KB'})`;
+      }
+    }
+
+    updateCheckUI(field, {
+      status: 'pass',
+      message: 'تم قبول الصورة بعد الفحص'
+    });
+
+    closeAIOverlay();
+    capturedBlob = null;
+    cameraTarget = null;
+
+    if (window.showToast) {
+      window.showToast('تم استخدام الصورة', 'success', 2000);
+    }
+
+    saveDraft();
+  };
+
+  /* ============================================
+     CAMERA
+     ============================================ */
+  window.openCamera = async function (field) {
+    const modal = document.getElementById('cameraModal');
+    const video = document.getElementById('cameraVideo');
+    const title = document.getElementById('cameraTitle');
+    const hint = document.getElementById('cameraHint');
+
+    if (!modal || !video) return;
+
+    cameraTarget = field;
+    capturedBlob = null;
+
+    // عنوان حسب النوع
+    const titles = {
+      id_front: 'تصوير بطاقة الرقم القومي (وجه)',
+      id_back: 'تصوير بطاقة الرقم القومي (ظهر)',
+      certificate: 'تصوير الشهادة الدراسية',
+      photo: 'تصوير الصورة الشخصية',
+      work_certificate: 'تصوير شهادة إثبات العمل',
+      criminal_record: 'تصوير الفيش والتشبيه'
+    };
+    if (title) title.textContent = titles[field] || 'التقاط صورة';
+
+    // تلميح
+    const hints = {
+      id_front: 'ضع البطاقة داخل الإطار بحيث تظهر كل البيانات',
+      id_back: 'ضع البطاقة داخل الإطار بحيث تظهر كل البيانات',
+      certificate: 'ضع الشهادة داخل الإطار',
+      photo: 'قف أمام الكاميرا في مكان مضيء',
+      work_certificate: 'ضع الشهادة داخل الإطار',
+      criminal_record: 'ضع الفيش داخل الإطار'
+    };
+    if (hint) hint.textContent = hints[field] || 'ضع المستند داخل الإطار';
+
+    modal.classList.add('open');
+
+    try {
+      await startCamera();
+    } catch (err) {
+      console.error('Camera error:', err);
+      if (window.showToast) {
+        window.showToast('تعذّر الوصول للكاميرا: ' + err.message, 'error');
+      }
+      closeCamera();
+    }
+  };
+
+  async function startCamera() {
+    const video = document.getElementById('cameraVideo');
+    if (!video) return;
+
+    // اقفل الكاميرا القديمة
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(t => t.stop());
+      cameraStream = null;
+    }
+
+    const constraints = {
+      video: {
+        facingMode: cameraFacing,
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      },
+      audio: false
+    };
+
+    cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = cameraStream;
+  }
+
+  window.switchCamera = async function () {
+    cameraFacing = cameraFacing === 'environment' ? 'user' : 'environment';
+    try {
+      await startCamera();
+    } catch (err) {
+      if (window.showToast) {
+        window.showToast('تعذّر تبديل الكاميرا', 'error');
+      }
+    }
+  };
+
+  window.closeCamera = function () {
+    const modal = document.getElementById('cameraModal');
+    if (modal) modal.classList.remove('open');
+
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(t => t.stop());
+      cameraStream = null;
+    }
+
+    cameraTarget = null;
+    capturedBlob = null;
+  };
+
+  window.capturePhoto = async function () {
+    const video = document.getElementById('cameraVideo');
+    if (!video || !cameraStream) return;
+
+    // اعمل canvas للصورة
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // حوّل لـ Blob
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+
+      capturedBlob = blob;
+
+      // اقفل الكاميرا
+      closeCamera();
+
+      // شغّل الفحص الذكي
+      await analyzeCapturedPhoto(blob, cameraTarget);
+    }, 'image/jpeg', 0.92);
+  };
+
+  /* ============================================
+     ANALYZE CAPTURED PHOTO (Tesseract)
+     ============================================ */
+  async function analyzeCapturedPhoto(blob, field) {
+    if (!field) return;
+
+    const docInfo = REQUIRED_DOCS.concat(OPTIONAL_DOCS).find(d => d.field === field);
+    const docLabel = docInfo?.label || 'المستند';
+
+    openAIOverlay('جاري فحص ' + docLabel);
+    updateAIProgress(10);
+    updateAIStatus('تحضير محرك الفحص...');
+
+    try {
+      // حمّل Tesseract
+      await loadTesseract();
+
+      updateAIProgress(25);
+      updateAIStatus('قراءة النص من الصورة...');
+
+      // حوّل الـ Blob لـ Image
+      const img = await blobToImage(blob);
+
+      // ابدأ الفحص
+      const result = await window.Tesseract.recognize(
+        img,
+        'ara+eng',
+        {
+          logger: (m) => {
+            if (m.status === 'recognizing text') {
+              const pct = 25 + (m.progress || 0) * 65;
+              updateAIProgress(pct);
+              updateAIStatus(`جاري قراءة النص... ${Math.round((m.progress || 0) * 100)}%`);
+            } else if (m.status === 'loading language traineddata') {
+              updateAIStatus('تحميل بيانات اللغة...');
+            } else if (m.status === 'initializing api') {
+              updateAIStatus('تهيئة المحرك...');
+            }
+          }
+        }
+      );
+
+      updateAIProgress(95);
+      updateAIStatus('تحليل النتائج...');
+
+      const text = result?.data?.text || '';
+      const confidence = result?.data?.confidence || 0;
+
+      // تحقق من المحتوى
+      const validation = validateDocument(field, text, confidence);
+
+      updateAIProgress(100);
+
+      if (validation.ok) {
+        showAIResult('success', `
+          <strong>✓ تم الفحص بنجاح</strong><br>
+          <span style="font-size:12.5px;opacity:0.9;">
+            ${validation.message}<br>
+            نسبة الثقة: ${Math.round(confidence)}%
+          </span>
+        `);
+        updateAIStatus('المستند صالح');
+
+        // خزّن النتيجة
+        aiAnalysisResults[field] = {
+          ok: true,
+          confidence: confidence,
+          text: text,
+          timestamp: new Date().toISOString()
+        };
+
+        // اعرض زر القبول
+        setTimeout(() => {
+          showAIActions();
+        }, 600);
+      } else {
+        showAIResult('error', `
+          <strong>✗ مشكلة في المستند</strong><br>
+          <span style="font-size:12.5px;opacity:0.9;">
+            ${validation.message}
+          </span>
+        `);
+        updateAIStatus('يحتاج إعادة التصوير');
+        showAIActions();
+      }
+
+    } catch (err) {
+      console.error('[AI Analysis] Error:', err);
+      showAIResult('warning', `
+        <strong>⚠ تعذّر الفحص التلقائي</strong><br>
+        <span style="font-size:12.5px;opacity:0.9;">
+          يمكنك استخدام الصورة على أي حال، وسيتم فحصها من قبل اللجنة.
+        </span>
+      `);
+      updateAIStatus('خطأ في الفحص');
+      showAIActions();
+    }
+  }
+
+  function blobToImage(blob) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Failed to load image'));
+      };
+      img.src = url;
+    });
+  }
+
+  function validateDocument(field, text, confidence) {
+    if (!text || text.trim().length < 10) {
+      return {
+        ok: false,
+        message: 'الصورة لا تحتوي على نص واضح. تأكد من جودة التصوير.'
+      };
+    }
+
+    if (confidence < 40) {
+      return {
+        ok: false,
+        message: 'جودة الصورة منخفضة. حاول الإضاءة بشكل أفضل.'
+      };
+    }
+
+    const docInfo = REQUIRED_DOCS.concat(OPTIONAL_DOCS).find(d => d.field === field);
+    if (!docInfo) {
+      return { ok: true, message: 'تم قبول المستند' };
+    }
+
+    // تحقق من الكلمات المفتاحية
+    const keywords = docInfo.keywords || [];
+    if (keywords.length > 0) {
+      const normalizedText = text.replace(/\s+/g, ' ').trim();
+      const found = keywords.some(kw => normalizedText.includes(kw));
+
+      if (!found) {
+        return {
+          ok: false,
+          message: `لم يتم التعرف على "${docInfo.label}" في الصورة. تأكد من التصوير الصحيح.`
+        };
+      }
+    }
+
+    // للبطاقة: تأكد إن فيه أرقام (رقم قومي)
+    if (field === 'id_front') {
+      const digits = (text.match(/\d+/g) || []).join('');
+      if (digits.length < 14) {
+        return {
+          ok: false,
+          message: 'لم يتم التعرف على الرقم القومي. تأكد من وضوح البطاقة.'
+        };
+      }
+    }
+
+    return {
+      ok: true,
+      message: 'المستند صالح وواضح'
+    };
+  }
+
+  /* ============================================
+     FILE UPLOADS (Drag & Drop + Click)
      ============================================ */
   function setupFileUploads() {
-    const uploadWrappers = $$('.file-upload');
+    const wrappers = $$('.file-upload');
 
-    uploadWrappers.forEach(wrapper => {
+    wrappers.forEach(wrapper => {
       const input = wrapper.querySelector('input[type=file]');
       if (!input) return;
 
       const fieldName = input.name;
 
-      // Click wrapper → open file picker
+      // Click (بس لو مش على زر الكاميرا)
       wrapper.addEventListener('click', (e) => {
-        if (e.target === input) return;
+        if (e.target.closest('.upload-actions')) return;
         input.click();
       });
 
-      // Handle file selection
+      // File change
       input.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) {
@@ -186,8 +575,8 @@
       // Drag & drop
       wrapper.addEventListener('dragover', (e) => {
         e.preventDefault();
-        wrapper.style.borderColor = 'var(--accent, #00f0ff)';
-        wrapper.style.background = 'rgba(0, 240, 255, 0.06)';
+        wrapper.style.borderColor = 'var(--accent)';
+        wrapper.style.background = 'rgba(var(--accent-rgb), 0.06)';
       });
 
       wrapper.addEventListener('dragleave', () => {
@@ -203,7 +592,6 @@
         const file = e.dataTransfer.files[0];
         if (!file) return;
 
-        // Set into input
         try {
           const dt = new DataTransfer();
           dt.items.add(file);
@@ -221,96 +609,107 @@
     if (filename) filename.textContent = '';
     selectedFiles[fieldName] = null;
     fileCheckResults[fieldName] = null;
+    aiAnalysisResults[fieldName] = null;
     updateCheckUI(fieldName, null);
   }
 
   async function handleFileSelected(wrapper, fieldName, file) {
-    // Reset
     wrapper.classList.remove('has-file');
     const filename = wrapper.querySelector('.filename');
     if (filename) filename.textContent = '';
 
-    // Size check
+    // حجم
     if (file.size > MAX_FILE_SIZE) {
       updateCheckUI(fieldName, {
         status: 'fail',
-        message: `حجم الملف كبير جدًا (${window.formatFileSize ? window.formatFileSize(file.size) : Math.round(file.size/1024) + 'KB'}) — الحد الأقصى 5 ميجا`
+        message: `حجم الملف كبير (${window.formatFileSize ? window.formatFileSize(file.size) : ''}). الحد الأقصى 10 ميجا.`
       });
       selectedFiles[fieldName] = null;
-      fileCheckResults[fieldName] = null;
       return;
     }
 
-    // Type check
-    const isCert = fieldName === 'certificate';
+    // نوع
+    const isOptionalDoc = OPTIONAL_DOCS.some(d => d.field === fieldName);
+    const isCert = fieldName === 'certificate' || isOptionalDoc;
     const allowed = isCert ? ALLOWED_DOC_TYPES : ALLOWED_IMAGE_TYPES;
+
     if (!allowed.includes(file.type)) {
       updateCheckUI(fieldName, {
         status: 'fail',
-        message: isCert
-          ? 'صيغة الملف غير مدعومة — مسموح: JPG, PNG, PDF'
-          : 'صيغة الصورة غير مدعومة — مسموح: JPG, PNG'
+        message: isCert ? 'صيغة غير مدعومة — مسموح: JPG, PNG, PDF' : 'صيغة غير مدعومة — مسموح: JPG, PNG'
       });
       selectedFiles[fieldName] = null;
-      fileCheckResults[fieldName] = null;
       return;
     }
 
-    // Show loading
     updateCheckUI(fieldName, { status: 'checking', message: 'جاري فحص الملف...' });
 
-    // Validate image
+    // لو صورة → تحقق من الأبعاد + الفحص الذكي
     if (file.type.startsWith('image/')) {
-      const result = await validateImageFile(file);
-      if (!result.ok) {
-        updateCheckUI(fieldName, { status: 'fail', message: result.message });
+      const dimCheck = await validateImageDimensions(file);
+      if (!dimCheck.ok) {
+        updateCheckUI(fieldName, { status: 'fail', message: dimCheck.message });
         selectedFiles[fieldName] = null;
-        fileCheckResults[fieldName] = null;
         return;
       }
+
+      // خزّن الملف
+      selectedFiles[fieldName] = file;
+      wrapper.classList.add('has-file');
+      if (filename) {
+        filename.textContent = `${file.name} (${window.formatFileSize ? window.formatFileSize(file.size) : ''})`;
+      }
+
+      // ابدأ الفحص الذكي
+      setTimeout(() => {
+        analyzeUploadedFile(file, fieldName);
+      }, 300);
+
+      updateCheckUI(fieldName, {
+        status: 'checking',
+        message: 'جاري الفحص الذكي...'
+      });
+
+    } else {
+      // PDF → اقبل مباشرة
+      selectedFiles[fieldName] = file;
+      wrapper.classList.add('has-file');
+      if (filename) {
+        filename.textContent = `${file.name} (${window.formatFileSize ? window.formatFileSize(file.size) : ''})`;
+      }
+
+      updateCheckUI(fieldName, {
+        status: 'pass',
+        message: 'الملف جاهز للرفع'
+      });
+
+      saveDraft();
     }
-
-    // Success
-    selectedFiles[fieldName] = file;
-    fileCheckResults[fieldName] = { ok: true, status: 'pass' };
-
-    wrapper.classList.add('has-file');
-    if (filename) filename.textContent = `${file.name} (${window.formatFileSize ? window.formatFileSize(file.size) : Math.round(file.size/1024) + 'KB'})`;
-
-    updateCheckUI(fieldName, {
-      status: 'pass',
-      message: 'الملف جاهز للرفع'
-    });
-
-    saveDraft();
   }
 
-  function validateImageFile(file) {
+  function validateImageDimensions(file) {
     return new Promise((resolve) => {
       const url = URL.createObjectURL(file);
       const img = new Image();
 
-      const cleanup = () => URL.revokeObjectURL(url);
-
       img.onload = () => {
         const w = img.naturalWidth;
         const h = img.naturalHeight;
-        cleanup();
+        URL.revokeObjectURL(url);
 
         if (w < MIN_IMAGE_WIDTH || h < MIN_IMAGE_HEIGHT) {
           resolve({
             ok: false,
-            message: `دقة الصورة منخفضة (${w}×${h}) — الحد الأدنى ${MIN_IMAGE_WIDTH}×${MIN_IMAGE_HEIGHT}`
+            message: `دقة الصورة منخفضة (${w}×${h}). الحد الأدنى ${MIN_IMAGE_WIDTH}×${MIN_IMAGE_HEIGHT}.`
           });
           return;
         }
 
-        // Aspect ratio sanity: reject very weird ratios
         const ratio = w / h;
         if (ratio > 4 || ratio < 0.25) {
           resolve({
             ok: false,
-            message: 'أبعاد الصورة غير مناسبة، من فضلك استخدم صورة أوضح'
+            message: 'أبعاد الصورة غير مناسبة. استخدم صورة أوضح.'
           });
           return;
         }
@@ -319,12 +718,116 @@
       };
 
       img.onerror = () => {
-        cleanup();
-        resolve({ ok: false, message: 'الملف غير صالح أو تالف' });
+        URL.revokeObjectURL(url);
+        resolve({ ok: false, message: 'الملف غير صالح أو تالف.' });
       };
 
       img.src = url;
     });
+  }
+
+  async function analyzeUploadedFile(file, field) {
+    const docInfo = REQUIRED_DOCS.concat(OPTIONAL_DOCS).find(d => d.field === field);
+    const docLabel = docInfo?.label || 'المستند';
+
+    openAIOverlay('فحص ' + docLabel);
+    updateAIProgress(10);
+    updateAIStatus('تحضير محرك الفحص...');
+
+    try {
+      await loadTesseract();
+      updateAIProgress(25);
+      updateAIStatus('قراءة النص من الصورة...');
+
+      const result = await window.Tesseract.recognize(
+        file,
+        'ara+eng',
+        {
+          logger: (m) => {
+            if (m.status === 'recognizing text') {
+              const pct = 25 + (m.progress || 0) * 65;
+              updateAIProgress(pct);
+              updateAIStatus(`جاري قراءة النص... ${Math.round((m.progress || 0) * 100)}%`);
+            }
+          }
+        }
+      );
+
+      updateAIProgress(95);
+      updateAIStatus('تحليل النتائج...');
+
+      const text = result?.data?.text || '';
+      const confidence = result?.data?.confidence || 0;
+
+      const validation = validateDocument(field, text, confidence);
+
+      updateAIProgress(100);
+
+      if (validation.ok) {
+        showAIResult('success', `
+          <strong>✓ تم الفحص بنجاح</strong><br>
+          <span style="font-size:12.5px;opacity:0.9;">
+            ${validation.message}<br>
+            نسبة الثقة: ${Math.round(confidence)}%
+          </span>
+        `);
+        updateAIStatus('المستند صالح');
+
+        aiAnalysisResults[field] = {
+          ok: true,
+          confidence: confidence,
+          text: text,
+          timestamp: new Date().toISOString()
+        };
+
+        fileCheckResults[field] = { ok: true, status: 'pass' };
+
+        // اقفل تلقائيًا بعد ثانيتين لو تمام
+        setTimeout(() => {
+          closeAIOverlay();
+          updateCheckUI(field, {
+            status: 'pass',
+            message: 'تم الفحص ✓ المستند صالح'
+          });
+        }, 1800);
+
+      } else {
+        showAIResult('error', `
+          <strong>✗ مشكلة في المستند</strong><br>
+          <span style="font-size:12.5px;opacity:0.9;">
+            ${validation.message}
+          </span>
+        `);
+        updateAIStatus('يحتاج إعادة الرفع');
+        showAIActions();
+
+        fileCheckResults[field] = { ok: false, status: 'fail', message: validation.message };
+
+        updateCheckUI(field, {
+          status: 'fail',
+          message: validation.message
+        });
+      }
+
+    } catch (err) {
+      console.error('[AI] Error:', err);
+      showAIResult('warning', `
+        <strong>⚠ تعذّر الفحص التلقائي</strong><br>
+        <span style="font-size:12.5px;opacity:0.9;">
+          سيتم فحص المستند من قبل اللجنة يدويًا.
+        </span>
+      `);
+      updateAIStatus('خطأ في الفحص');
+      showAIActions();
+
+      // نعتبره "تحذير مش فشل" عشان مايمنعش الإرسال
+      fileCheckResults[field] = { ok: true, status: 'warning' };
+
+      updateCheckUI(field, {
+        status: 'pass',
+        message: 'سيتم فحصه يدويًا من اللجنة'
+      });
+    }
   }
 
   function updateCheckUI(fieldName, result) {
@@ -337,52 +840,17 @@
       return;
     }
 
-    const statusConfig = {
-      checking: {
-        cls: 'checking',
-        bg: 'rgba(255, 184, 0, 0.1)',
-        border: '#ffb800',
-        color: '#ffb800',
-        icon: ICONS.loader,
-        spin: true
-      },
-      pass: {
-        cls: 'pass',
-        bg: 'rgba(0, 255, 157, 0.1)',
-        border: '#00ff9d',
-        color: '#00ff9d',
-        icon: ICONS.check,
-        spin: false
-      },
-      fail: {
-        cls: 'fail',
-        bg: 'rgba(255, 85, 85, 0.1)',
-        border: '#ff5555',
-        color: '#ff5555',
-        icon: ICONS.x,
-        spin: false
-      }
+    const config = {
+      checking: { cls: 'checking', icon: ICONS.loader, spin: true },
+      pass:     { cls: 'pass',     icon: ICONS.check,  spin: false },
+      fail:     { cls: 'fail',     icon: ICONS.x,      spin: false }
     };
 
-    const c = statusConfig[result.status] || statusConfig.checking;
+    const c = config[result.status] || config.checking;
 
     el.className = 'ai-check ' + c.cls;
-    el.style.cssText = `
-      background:${c.bg};
-      border:1px solid ${c.border};
-      color:${c.color};
-      padding:10px 14px;
-      border-radius:10px;
-      font-size:13px;
-      font-weight:600;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin-top:8px;
-    `;
-
     el.innerHTML = `
-      <span style="width:18px;height:18px;display:inline-flex;flex-shrink:0;${c.spin ? 'animation:spin 0.9s linear infinite;' : ''}">${c.icon}</span>
+      <span style="width:16px;height:16px;display:inline-flex;flex-shrink:0;${c.spin ? 'animation:spin 0.9s linear infinite;' : ''}">${c.icon}</span>
       <span>${window.escapeHtml ? window.escapeHtml(result.message) : result.message}</span>
     `;
 
@@ -399,15 +867,16 @@
      ============================================ */
   async function loadMembershipTypes() {
     const select = document.getElementById('membershipType');
-    if (!select) return;
+    if (!select || !client) return;
 
     const { data, error } = await client
       .from('membership_types')
       .select('*')
-      .order('id', { ascending: true });
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
 
     if (error) {
-      setAlert('alertBox', 'error', 'فشل تحميل أنواع العضوية: ' + error.message);
+      setAlert('error', 'فشل تحميل أنواع العضوية: ' + error.message);
       return;
     }
 
@@ -423,7 +892,7 @@
       select.appendChild(opt);
     });
 
-    // Preselect from URL ?type=id
+    // Preselect من URL
     try {
       const params = new URLSearchParams(window.location.search);
       const typeId = params.get('type');
@@ -449,15 +918,17 @@
 
     priceEl.style.display = 'block';
     priceEl.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:rgba(0,240,255,0.06);border:1px solid rgba(0,240,255,0.25);border-radius:12px;margin-top:12px;">
-        <span style="font-size:13px;color:rgba(255,255,255,0.7);">الرسوم السنوية</span>
-        <span style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--accent,#00f0ff);">${fee} <span style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.5);">جنيه</span></span>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:rgba(var(--accent-rgb),0.06);border:1px solid rgba(var(--accent-rgb),0.25);border-radius:12px;margin-top:12px;">
+        <span style="font-size:13px;color:var(--text-muted);">الرسوم السنوية</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--accent);">
+          ${fee} <span style="font-size:13px;font-weight:500;color:var(--text-muted);">جنيه</span>
+        </span>
       </div>
     `;
   }
 
   /* ============================================
-     FORM VALIDATION
+     VALIDATE FORM
      ============================================ */
   function validateForm() {
     const errors = [];
@@ -466,34 +937,28 @@
 
     const getVal = (name) => (form.querySelector(`[name="${name}"]`)?.value || '').trim();
 
-    // Basic fields
     const fullName = getVal('full_name');
     const nationalId = getVal('national_id');
     const phone = getVal('phone');
     const email = getVal('email');
     const membershipType = getVal('membership_type_id');
 
-    if (!fullName || fullName.length < 6) {
-      errors.push('الاسم الرباعي مطلوب (6 أحرف على الأقل)');
+    if (!fullName || fullName.length < 6) errors.push('الاسم الرباعي مطلوب (6 أحرف على الأقل)');
+    if (!/^\d{14}$/.test(nationalId)) errors.push('الرقم القومي يجب أن يكون 14 رقم');
+    if (!/^01[0125]\d{8}$/.test(phone)) errors.push('رقم الموبايل غير صحيح');
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('البريد الإلكتروني غير صحيح');
+    if (!membershipType) errors.push('اختر نوع العضوية');
+
+    // لو مقيد في نقابة أخرى → لازم اسم النقابة
+    const isOtherSyndicate = form.querySelector('input[name="is_other_syndicate"]:checked')?.value === 'yes';
+    if (isOtherSyndicate) {
+      const otherName = getVal('other_syndicate');
+      if (!otherName || otherName.length < 3) {
+        errors.push('اسم النقابة الأخرى مطلوب');
+      }
     }
 
-    if (!/^\d{14}$/.test(nationalId)) {
-      errors.push('الرقم القومي يجب أن يكون 14 رقم');
-    }
-
-    if (!/^01[0125]\d{8}$/.test(phone)) {
-      errors.push('رقم الموبايل غير صحيح (مثال: 01012345678)');
-    }
-
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.push('البريد الإلكتروني غير صحيح');
-    }
-
-    if (!membershipType) {
-      errors.push('اختر نوع العضوية');
-    }
-
-    // Files
+    // الملفات المطلوبة
     const requiredFiles = ['id_front', 'id_back', 'certificate', 'photo'];
     const fileLabels = {
       id_front: 'بطاقة الرقم القومي (وجه)',
@@ -506,21 +971,19 @@
       if (!selectedFiles[f]) {
         errors.push(`مطلوب: ${fileLabels[f]}`);
       } else if (fileCheckResults[f] && fileCheckResults[f].status === 'fail') {
-        errors.push(`الملف "${fileLabels[f]}" فيه مشكلة`);
+        errors.push(`الملف "${fileLabels[f]}" فيه مشكلة — أعد رفعه`);
       }
     });
 
-    // Agreement
+    // الإقرار
     const agree = document.getElementById('agreeTerms');
-    if (agree && !agree.checked) {
-      errors.push('يجب الموافقة على الإقرار');
-    }
+    if (agree && !agree.checked) errors.push('يجب الموافقة على الإقرار');
 
     return errors;
   }
 
   /* ============================================
-     DUPLICATE CHECK
+     CHECK DUPLICATE
      ============================================ */
   async function checkDuplicate(nationalId) {
     const { data, error } = await client
@@ -529,19 +992,15 @@
       .eq('national_id', nationalId)
       .in('status', [
         'pending', 'ai_review', 'under_review', 'needs_docs',
-        'approved', 'paid', 'card_processing', 'card_ready'
+        'approved', 'awaiting_payment', 'paid',
+        'awaiting_membership_no', 'membership_no_assigned',
+        'card_processing', 'card_ready'
       ])
       .order('created_at', { ascending: false })
       .limit(1);
 
-    if (error) {
-      // If error (e.g. RLS), don't block
-      return null;
-    }
-
-    if (data && data.length > 0) {
-      return data[0];
-    }
+    if (error) return null;
+    if (data && data.length > 0) return data[0];
     return null;
   }
 
@@ -552,10 +1011,11 @@
     e.preventDefault();
     if (isSubmitting) return;
 
-    clearAlert('alertBox');
+    clearAlert();
     const errors = validateForm();
+
     if (errors.length > 0) {
-      setAlert('alertBox', 'error', errors[0] + (errors.length > 1 ? ` (و${errors.length - 1} أخطاء أخرى)` : ''));
+      setAlert('error', errors[0] + (errors.length > 1 ? ` (و${errors.length - 1} أخطاء أخرى)` : ''));
       scrollToTop();
       return;
     }
@@ -570,15 +1030,18 @@
 
       const nationalId = getVal('national_id');
 
-      // 1) Duplicate check
-      setAlert('alertBox', 'info', 'جاري التحقق من البيانات...');
+      // 1) فحص التكرار
+      setAlert('info', 'جاري التحقق من البيانات...');
       const duplicate = await checkDuplicate(nationalId);
       if (duplicate) {
         throw new Error(`يوجد طلب مسبق بنفس الرقم القومي — رقم التتبع: ${duplicate.tracking_no}`);
       }
 
-      // 2) Insert application
-      setAlert('alertBox', 'info', 'جاري إنشاء الطلب...');
+      // 2) أنشئ الطلب
+      setAlert('info', 'جاري إنشاء الطلب...');
+
+      const isOtherSyndicate = form.querySelector('input[name="is_other_syndicate"]:checked')?.value === 'yes';
+
       const payload = {
         full_name: getVal('full_name'),
         national_id: nationalId,
@@ -587,9 +1050,13 @@
         address: getVal('address') || null,
         qualification: getVal('qualification') || null,
         graduation_year: getVal('graduation_year') ? parseInt(getVal('graduation_year')) : null,
+        grade: getVal('grade') || null,
         employer: getVal('employer') || null,
+        job_title: getVal('job_title') || null,
         governorate: getVal('governorate') || null,
         membership_type_id: parseInt(getVal('membership_type_id')),
+        is_other_syndicate: isOtherSyndicate,
+        other_syndicate: isOtherSyndicate ? getVal('other_syndicate') : null,
         status: 'pending',
         ai_score: 0
       };
@@ -600,32 +1067,22 @@
         .select()
         .single();
 
-      if (appError) {
-        throw new Error('فشل إنشاء الطلب: ' + appError.message);
-      }
+      if (appError) throw new Error('فشل إنشاء الطلب: ' + appError.message);
 
       const applicationId = appData.id;
       const trackingNo = appData.tracking_no;
 
-      // 3) Upload files
-      setAlert('alertBox', 'info', 'جاري رفع المرفقات...');
+      // 3) ارفع الملفات
+      setAlert('info', 'جاري رفع المرفقات...');
 
-      const fileUploads = [
-        { field: 'id_front', docType: 'id_front' },
-        { field: 'id_back', docType: 'id_back' },
-        { field: 'certificate', docType: 'certificate' },
-        { field: 'photo', docType: 'photo' }
-      ];
+      const allDocs = REQUIRED_DOCS.concat(OPTIONAL_DOCS);
 
-      const uploadedPaths = [];
-      const uploadErrors = [];
-
-      for (const f of fileUploads) {
-        const file = selectedFiles[f.field];
+      for (const docInfo of allDocs) {
+        const file = selectedFiles[docInfo.field];
         if (!file) continue;
 
-        const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
-        const path = `${applicationId}/${f.docType}_${Date.now()}.${ext}`;
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = `${applicationId}/${docInfo.docType}_${Date.now()}.${ext}`;
 
         const { error: upErr } = await client.storage
           .from('attachments')
@@ -636,30 +1093,43 @@
           });
 
         if (upErr) {
-          uploadErrors.push(`${f.docType}: ${upErr.message}`);
+          console.warn(`Upload failed for ${docInfo.field}:`, upErr);
           continue;
         }
 
-        uploadedPaths.push({ path, file, docType: f.docType });
+        const isRequired = REQUIRED_DOCS.some(d => d.field === docInfo.field);
+        const aiResult = aiAnalysisResults[docInfo.field];
 
-        // Insert into attachments table
         await client.from('attachments').insert([{
           application_id: applicationId,
           file_path: path,
           file_type: file.type,
           file_size: file.size,
-          doc_type: f.docType,
-          ai_verified: true
+          doc_type: docInfo.docType,
+          is_required: isRequired,
+          ai_verified: aiResult?.ok || false,
+          ai_score: aiResult?.confidence || null,
+          ai_notes: aiResult ? `ثقة: ${Math.round(aiResult.confidence)}%` : null
         }]);
       }
 
-      if (uploadErrors.length > 0) {
-        console.warn('[Apply] Some uploads failed:', uploadErrors);
+      // 4) احسب متوسط الـ AI Score
+      const scores = Object.values(aiAnalysisResults).filter(r => r?.ok).map(r => r.confidence);
+      if (scores.length > 0) {
+        const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+        await client
+          .from('applications')
+          .update({
+            ai_score: avgScore,
+            ai_verified: true,
+            status: 'ai_review'
+          })
+          .eq('id', applicationId);
       }
 
-      // 4) Prepare receipt data
+      // 5) بيانات الإيصال
       const selectedTypeOpt = form.querySelector(`[name="membership_type_id"]`)?.selectedOptions[0];
-      const membershipName = selectedTypeOpt?.dataset?.name || selectedTypeOpt?.textContent?.split('—')[0]?.trim() || '';
+      const membershipName = selectedTypeOpt?.dataset?.name || '';
 
       const receiptData = {
         tracking_no: trackingNo,
@@ -669,18 +1139,16 @@
         phone: appData.phone,
         membership_type: membershipName,
         membership_type_id: appData.membership_type_id,
-        status: appData.status,
+        status: 'ai_review',
         created_at: appData.created_at
       };
 
-      // 5) Save receipt + clear draft
       try {
         sessionStorage.setItem(RECEIPT_STORAGE_KEY, JSON.stringify(receiptData));
         localStorage.removeItem(DRAFT_STORAGE_KEY);
       } catch (err) {}
 
-      // 6) Success
-      setAlert('alertBox', 'success', 'تم استلام طلبك بنجاح، جاري التحويل للإيصال...');
+      setAlert('success', 'تم استلام طلبك بنجاح، جاري التحويل للإيصال...');
 
       setTimeout(() => {
         window.location.href = 'receipt.html';
@@ -688,7 +1156,7 @@
 
     } catch (err) {
       console.error('[Apply] Error:', err);
-      setAlert('alertBox', 'error', err.message || 'حدث خطأ غير متوقع');
+      setAlert('error', err.message || 'حدث خطأ غير متوقع');
       scrollToTop();
       isSubmitting = false;
       setButtonLoading(btn, 'إرسال الطلب', false);
@@ -696,7 +1164,7 @@
   }
 
   /* ============================================
-     DRAFT (auto-save form data)
+     DRAFT
      ============================================ */
   function saveDraft() {
     if (draftSaveTimer) clearTimeout(draftSaveTimer);
@@ -704,16 +1172,32 @@
       try {
         const form = document.getElementById('applyForm');
         if (!form) return;
+
         const data = {};
         form.querySelectorAll('input, select, textarea').forEach(el => {
-          if (el.type === 'file' || el.type === 'checkbox') return;
+          if (el.type === 'file' || el.type === 'checkbox' || el.type === 'radio') return;
           if (!el.name) return;
           data[el.name] = el.value;
         });
+
+        // راديو نقابة أخرى
+        const otherRadio = form.querySelector('input[name="is_other_syndicate"]:checked');
+        if (otherRadio) data.is_other_syndicate = otherRadio.value;
+
         localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify({
           data,
           savedAt: new Date().toISOString()
         }));
+
+        // مؤشر الحفظ
+        const indicator = document.getElementById('draftIndicator');
+        if (indicator) {
+          indicator.style.opacity = '1';
+          clearTimeout(window.__draftHideTimer);
+          window.__draftHideTimer = setTimeout(() => {
+            indicator.style.opacity = '0';
+          }, 2000);
+        }
       } catch (e) {}
     }, 600);
   }
@@ -722,24 +1206,32 @@
     try {
       const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
       if (!raw) return;
+
       const parsed = JSON.parse(raw);
-      if (!parsed || !parsed.data) return;
+      if (!parsed?.data) return;
+
+      // تحقق من العمر (24 ساعة)
+      const savedAt = new Date(parsed.savedAt).getTime();
+      if (Date.now() - savedAt > 24 * 60 * 60 * 1000) return;
 
       const form = document.getElementById('applyForm');
       if (!form) return;
 
-      // Restore only if draft is < 24h old
-      const savedAt = new Date(parsed.savedAt).getTime();
-      if (Date.now() - savedAt > 24 * 60 * 60 * 1000) return;
-
       Object.entries(parsed.data).forEach(([name, value]) => {
-        const el = form.querySelector(`[name="${name}"]`);
-        if (el && el.type !== 'file' && el.type !== 'checkbox') {
-          el.value = value || '';
+        if (name === 'is_other_syndicate') {
+          const radio = form.querySelector(`input[name="is_other_syndicate"][value="${value}"]`);
+          if (radio) {
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change'));
+          }
+        } else {
+          const el = form.querySelector(`[name="${name}"]`);
+          if (el && el.type !== 'file' && el.type !== 'checkbox') {
+            el.value = value || '';
+          }
         }
       });
 
-      // Restore membership type from URL if not restored
       const params = new URLSearchParams(window.location.search);
       const typeId = params.get('type');
       if (typeId) {
@@ -753,6 +1245,7 @@
   function setupDraftAutosave() {
     const form = document.getElementById('applyForm');
     if (!form) return;
+
     form.querySelectorAll('input, select, textarea').forEach(el => {
       if (el.type === 'file') return;
       el.addEventListener('input', saveDraft);
@@ -772,36 +1265,21 @@
     window.onSupabaseReady(async (c) => {
       client = c;
 
-      // Load types
       await loadMembershipTypes();
-
-      // Setup file uploads
       setupFileUploads();
-
-      // Restore draft
       restoreDraft();
-
-      // Setup autosave
       setupDraftAutosave();
 
-      // Form submit
       const form = document.getElementById('applyForm');
-      if (form) {
-        form.addEventListener('submit', submitForm);
-      }
+      if (form) form.addEventListener('submit', submitForm);
 
-      // Real-time: if membership_types changes, reload
+      // Realtime
       if (window.Realtime) {
-        window.Realtime.watch('membership_types', () => {
-          loadMembershipTypes();
-        });
+        window.Realtime.watch('membership_types', () => loadMembershipTypes());
       }
     });
   }
 
-  /* ============================================
-     START
-     ============================================ */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
