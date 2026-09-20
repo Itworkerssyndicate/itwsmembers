@@ -1,11 +1,5 @@
 /* =====================================================
    IT SYNDICATE — Global Settings Manager
-   =====================================================
-   - Loads site settings from Supabase
-   - Caches in localStorage for instant load
-   - Auto-applies branding (logo, name, favicon)
-   - Syncs across tabs via BroadcastChannel
-   - Provides public API: SettingsManager.get(key)
    ===================================================== */
 
 (function () {
@@ -21,7 +15,7 @@
   const SITE_NAME_CACHE_KEY = 'its_site_name';
   const THEME_CACHE_KEY = 'its_global_default_theme';
   const BROADCAST_CHANNEL = 'its_settings_sync';
-  const CACHE_TTL = 1000 * 60 * 60; // 1 hour
+  const CACHE_TTL = 1000 * 60 * 60;
 
   const DEFAULTS = {
     site_name: 'نقابة تكنولوجيا المعلومات والبرمجيات',
@@ -29,16 +23,35 @@
     site_logo_url: '',
     head_name: 'م / محمود جميل',
     head_title: 'النقيب العام',
+    vice_president_name: '',
+    vice_president_title: 'نائب رئيس النقابة',
     contact_email: 'info@itsyndicate.eg',
     contact_phone: '+20 100 000 0000',
     contact_address: 'القاهرة، مصر',
+    footer_button_name: 'تقديم عضوية',
+    footer_button_url: 'apply.html',
     default_theme: 'neon-dark',
     splash_duration: '5000',
-    max_file_size: '5',
+    max_file_size: '10',
     allow_registration: 'true',
     maintenance_mode: 'false',
+    hero_description: 'قدّم طلب عضويتك إلكترونيًا، ارفع مستنداتك، وتابع حالة طلبك لحظة بلحظة.',
+    code_card_name: 'syndicate.js',
+    code_card_content: '',
+    code_card_status: 'ACTIVE',
+    features_cards: '[]',
+    about_card_enabled: 'false',
+    about_card_title: 'عن النقابة',
+    about_card_text: '',
+    about_card_logo: '',
+    cta_title: 'جاهز تبدأ رحلتك مع نقابتك؟',
+    cta_subtitle: 'سجّل عضويتك الآن واستمتع بكل المزايا والخدمات',
+    footer_description: 'منظومة رقمية متكاملة لتقديم وإدارة عضويات نقابة تكنولوجيا المعلومات والبرمجيات.',
     terms_text: 'أقر بأن جميع البيانات والمستندات المقدمة صحيحة، وأتحمل المسؤولية القانونية عن أي بيانات خاطئة.',
-    footer_text: 'نقابة تكنولوجيا المعلومات والبرمجيات — جميع الحقوق محفوظة'
+    footer_text: 'نقابة تكنولوجيا المعلومات والبرمجيات — جميع الحقوق محفوظة',
+    subscription_reminder_days: '30',
+    membership_no_prefix: 'MEM',
+    application_prefix: 'ITS'
   };
 
   /* ============================================
@@ -52,7 +65,7 @@
   let unsubRealtime = null;
   let initialized = false;
 
-  const changeListeners = new Map(); // key → [callbacks]
+  const changeListeners = new Map();
   const allChangeListeners = [];
 
   /* ============================================
@@ -67,7 +80,7 @@
   }
 
   /* ============================================
-     CACHE MANAGEMENT
+     CACHE
      ============================================ */
   function readCache() {
     try {
@@ -77,9 +90,8 @@
       const parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== 'object') return null;
 
-      // Check version
       const cachedVersion = localStorage.getItem(SETTINGS_VERSION_KEY);
-      if (cachedVersion !== '1') return null;
+      if (cachedVersion !== '2') return null;
 
       return parsed;
     } catch (e) {
@@ -90,8 +102,7 @@
   function writeCache(data) {
     try {
       localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(data));
-      localStorage.setItem(SETTINGS_VERSION_KEY, '1');
-      // Specific caches for fast access
+      localStorage.setItem(SETTINGS_VERSION_KEY, '2');
       if (data.site_logo_url) localStorage.setItem(LOGO_CACHE_KEY, data.site_logo_url);
       if (data.site_name) localStorage.setItem(SITE_NAME_CACHE_KEY, data.site_name);
       if (data.default_theme) localStorage.setItem(THEME_CACHE_KEY, data.default_theme);
@@ -108,12 +119,12 @@
   }
 
   /* ============================================
-     APPLY BRANDING (Logo + Name + Favicon)
+     APPLY BRANDING
      ============================================ */
   function applyBranding(data) {
     if (!data) return;
 
-    // 1. Site name (title + all elements)
+    /* ===== Site name ===== */
     if (data.site_name) {
       document.title = data.site_name;
 
@@ -126,24 +137,21 @@
 
       const footerName = document.getElementById('footerSiteName');
       if (footerName) footerName.textContent = data.site_name;
-
-      const previewName = document.getElementById('siteNamePreview');
-      if (previewName) previewName.textContent = data.site_name;
     }
 
-    // 2. Site name (English)
+    /* ===== Site name EN ===== */
     if (data.site_name_en) {
       document.querySelectorAll('[data-site-name-en]').forEach(el => {
         el.textContent = data.site_name_en;
       });
     }
 
-    // 3. Logo
+    /* ===== Logo ===== */
     if (data.site_logo_url) {
       applyLogo(data.site_logo_url);
     }
 
-    // 4. Head info
+    /* ===== Head ===== */
     if (data.head_name) {
       document.querySelectorAll('[data-head-name]').forEach(el => {
         el.textContent = data.head_name;
@@ -155,7 +163,19 @@
       });
     }
 
-    // 5. Contact info
+    /* ===== VP ===== */
+    if (data.vice_president_name) {
+      document.querySelectorAll('[data-vp-name]').forEach(el => {
+        el.textContent = data.vice_president_name;
+      });
+    }
+    if (data.vice_president_title) {
+      document.querySelectorAll('[data-vp-title]').forEach(el => {
+        el.textContent = data.vice_president_title;
+      });
+    }
+
+    /* ===== Contact ===== */
     if (data.contact_email) {
       document.querySelectorAll('[data-contact-email]').forEach(el => {
         el.textContent = data.contact_email;
@@ -172,82 +192,114 @@
       });
     }
 
-    // 6. Footer text
+    /* ===== Footer ===== */
     if (data.footer_text) {
       document.querySelectorAll('[data-footer-text]').forEach(el => {
         el.textContent = data.footer_text;
       });
     }
 
-    // 7. Terms
+    /* ===== Terms ===== */
     if (data.terms_text) {
       document.querySelectorAll('[data-terms-text]').forEach(el => {
         el.textContent = data.terms_text;
       });
     }
 
-    // 8. OG meta tags update (dynamic — useful for SPA navigation)
+    /* ===== Dynamic tags (data-setting="key") ===== */
+    document.querySelectorAll('[data-setting]').forEach(el => {
+      const key = el.dataset.setting;
+      if (!key) return;
+      if (!(key in data)) return;
+
+      const value = data[key] ?? '';
+
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
+        if (el.type === 'checkbox') {
+          el.checked = value === 'true';
+        } else if (el !== document.activeElement) {
+          el.value = value;
+        }
+      } else {
+        if (key === 'code_card_content' || key === 'hero_description' || key === 'footer_description') {
+          el.style.whiteSpace = 'pre-line';
+        }
+        el.textContent = value;
+      }
+    });
+
+    /* ===== OG Meta ===== */
     updateMetaTags(data);
   }
 
   function applyLogo(url) {
     if (!url) return;
 
-    // Navbar logo
+    // Navbar
     const navImg = document.getElementById('navLogoImg');
     const navFb = document.getElementById('navLogoFallback');
     if (navImg && navFb) {
-      navImg.onload = () => {
-        navImg.style.display = 'block';
-        navFb.style.display = 'none';
-      };
-      navImg.onerror = () => {
-        navImg.style.display = 'none';
-        navFb.style.display = 'block';
-      };
+      navImg.onload = () => { navImg.style.display = 'block'; navFb.style.display = 'none'; };
+      navImg.onerror = () => { navImg.style.display = 'none'; navFb.style.display = 'block'; };
       navImg.src = url;
     }
 
-    // Footer logo
+    // Footer
     const ftImg = document.getElementById('footerLogoImg');
     const ftFb = document.getElementById('footerLogoFallback');
     if (ftImg && ftFb) {
-      ftImg.onload = () => {
-        ftImg.style.display = 'block';
-        ftFb.style.display = 'none';
-      };
-      ftImg.onerror = () => {
-        ftImg.style.display = 'none';
-        ftFb.style.display = 'block';
-      };
+      ftImg.onload = () => { ftImg.style.display = 'block'; ftFb.style.display = 'none'; };
+      ftImg.onerror = () => { ftImg.style.display = 'none'; ftFb.style.display = 'block'; };
       ftImg.src = url;
     }
 
-    // Any generic [data-logo]
+    // Splash
+    const splashImg = document.getElementById('logoImg');
+    const splashFb = document.getElementById('logoFallback');
+    if (splashImg && splashFb) {
+      splashImg.onload = () => { splashImg.style.display = 'block'; splashFb.style.display = 'none'; };
+      splashImg.onerror = () => { splashImg.style.display = 'none'; splashFb.style.display = 'block'; };
+      splashImg.src = url;
+    }
+
+    // Brand logo (login)
+    const brandImg = document.getElementById('brandLogoImg');
+    const brandFb = document.getElementById('brandLogoFallback');
+    if (brandImg && brandFb) {
+      brandImg.onload = () => { brandImg.style.display = 'block'; brandFb.style.display = 'none'; };
+      brandImg.onerror = () => { brandImg.style.display = 'none'; brandFb.style.display = 'block'; };
+      brandImg.src = url;
+    }
+
+    // Receipt
+    const receiptImg = document.getElementById('receiptLogoImg');
+    const receiptFb = document.getElementById('receiptLogoFallback');
+    if (receiptImg && receiptFb) {
+      receiptImg.onload = () => { receiptImg.style.display = 'block'; receiptFb.style.display = 'none'; };
+      receiptImg.onerror = () => { receiptImg.style.display = 'none'; receiptFb.style.display = 'block'; };
+      receiptImg.src = url;
+    }
+
+    // About card
+    const aboutImg = document.getElementById('aboutLogoImg');
+    const aboutFb = document.getElementById('aboutLogoFallback');
+    if (aboutImg && aboutFb) {
+      aboutImg.onload = () => { aboutImg.style.display = 'block'; aboutFb.style.display = 'none'; };
+      aboutImg.onerror = () => { aboutImg.style.display = 'none'; aboutFb.style.display = 'block'; };
+      aboutImg.src = url;
+    }
+
+    // Generic
     document.querySelectorAll('[data-logo]').forEach(img => {
       img.src = url;
       img.style.display = 'block';
     });
 
-    // Splash logo
-    const splashImg = document.getElementById('logoImg');
-    const splashFb = document.getElementById('logoFallback');
-    if (splashImg && splashFb) {
-      splashImg.onload = () => {
-        splashImg.style.display = 'block';
-        splashFb.style.display = 'none';
-      };
-      splashImg.onerror = () => {
-        splashImg.style.display = 'none';
-        splashFb.style.display = 'block';
-      };
-      splashImg.src = url;
-    }
-
-    // Logo preview (admin page)
+    // Admin preview
     const preview = document.getElementById('logoPreview');
     if (preview) {
-      preview.innerHTML = `<img src="${url}" alt="Logo" style="max-width:100%;max-height:100%;object-fit:contain;" />`;
+      preview.innerHTML = `<img src="${url}" alt="Logo" />`;
+      preview.classList.add('has-logo');
     }
 
     // Favicons
@@ -258,17 +310,9 @@
     if (apple) { apple.href = url; }
     if (shortcut) { shortcut.href = url; }
 
-    // Apple touch
-    document.querySelectorAll('link[rel="apple-touch-icon"]').forEach(el => {
-      el.href = url;
-    });
-
-    // Favicon fallbacks
+    document.querySelectorAll('link[rel="apple-touch-icon"]').forEach(el => { el.href = url; });
     document.querySelectorAll('link[rel="icon"]').forEach(el => {
-      try {
-        el.type = 'image/png';
-        el.href = url;
-      } catch (e) {}
+      try { el.type = 'image/png'; el.href = url; } catch (e) {}
     });
   }
 
@@ -281,12 +325,15 @@
     const ogTitle = document.querySelector('meta[property="og:title"]');
     if (ogTitle && data.site_name) ogTitle.setAttribute('content', data.site_name);
 
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc && data.hero_description) ogDesc.setAttribute('content', data.hero_description);
+
     const twTitle = document.querySelector('meta[name="twitter:title"]');
     if (twTitle && data.site_name) twTitle.setAttribute('content', data.site_name);
   }
 
   /* ============================================
-     FETCH FROM SUPABASE
+     FETCH
      ============================================ */
   async function fetchFromSupabase() {
     if (!client) return null;
@@ -314,13 +361,11 @@
   }
 
   /* ============================================
-     LOAD (with cache-first strategy)
+     LOAD
      ============================================ */
   async function load(force = false) {
-    // Already loading → return existing promise
     if (loadingPromise) return loadingPromise;
 
-    // Cache is fresh → return cached
     if (!force && Date.now() - lastLoaded < CACHE_TTL) {
       const cached = readCache();
       if (cached) {
@@ -331,14 +376,12 @@
     }
 
     loadingPromise = (async () => {
-      // 1. Try cache immediately (for instant UI)
       const cached = readCache();
       if (cached) {
         settings = cached;
         applyBranding(cached);
       }
 
-      // 2. Wait for Supabase client if not ready
       if (!client) {
         if (typeof window.onSupabaseReady === 'function') {
           await new Promise((resolve) => {
@@ -348,7 +391,6 @@
             });
           });
         } else {
-          // Wait up to 5s for supabase-config.js
           const start = Date.now();
           while (!client && Date.now() - start < 5000) {
             await new Promise(r => setTimeout(r, 100));
@@ -357,17 +399,13 @@
         }
       }
 
-      // 3. Fetch fresh from server
       const fresh = await fetchFromSupabase();
       if (fresh) {
         settings = fresh;
         lastLoaded = Date.now();
         writeCache(fresh);
         applyBranding(fresh);
-
-        // Notify listeners
         notifyAllListeners(settings);
-
         log('Loaded from Supabase');
       } else if (cached) {
         log('Using cache only');
@@ -409,16 +447,13 @@
 
       if (error) throw error;
 
-      // Merge
       Object.assign(settings, updates);
       lastLoaded = Date.now();
       writeCache(settings);
       applyBranding(settings);
 
-      // Broadcast
       broadcastUpdate({ type: 'settings-updated', updates });
 
-      // Notify listeners
       Object.entries(updates).forEach(([k, v]) => notifyListeners(k, v, settings));
       notifyAllListeners(settings);
 
@@ -472,13 +507,12 @@
   }
 
   /* ============================================
-     BROADCAST CHANNEL (Cross-tab sync)
+     BROADCAST
      ============================================ */
   function initBroadcast() {
     if (broadcastChannel) return;
 
     try {
-      // Modern API
       if ('BroadcastChannel' in window) {
         broadcastChannel = new BroadcastChannel(BROADCAST_CHANNEL);
         broadcastChannel.addEventListener('message', (e) => {
@@ -489,7 +523,6 @@
           }
         });
       } else {
-        // Fallback: storage event
         window.addEventListener('storage', (e) => {
           if (e.key === SETTINGS_CACHE_KEY && e.newValue) {
             try {
@@ -508,16 +541,12 @@
 
   function broadcastUpdate(message) {
     try {
-      if (broadcastChannel) {
-        broadcastChannel.postMessage(message);
-      }
-    } catch (e) {
-      // Silent
-    }
+      if (broadcastChannel) broadcastChannel.postMessage(message);
+    } catch (e) {}
   }
 
   /* ============================================
-     REALTIME (Supabase)
+     REALTIME
      ============================================ */
   function initRealtime() {
     if (!window.Realtime || unsubRealtime) return;
@@ -537,7 +566,7 @@
   }
 
   /* ============================================
-     MAINTENANCE MODE CHECK
+     HELPERS
      ============================================ */
   function isMaintenanceMode() {
     return settings.maintenance_mode === 'true';
@@ -548,12 +577,12 @@
   }
 
   function getMaxFileSizeBytes() {
-    const mb = parseFloat(settings.max_file_size) || 5;
+    const mb = parseFloat(settings.max_file_size) || 10;
     return mb * 1024 * 1024;
   }
 
   function getMaxFileSizeMB() {
-    return parseFloat(settings.max_file_size) || 5;
+    return parseFloat(settings.max_file_size) || 10;
   }
 
   function getSplashDuration() {
@@ -565,10 +594,9 @@
   }
 
   /* ============================================
-     MAINTENANCE MODE OVERLAY
+     MAINTENANCE OVERLAY
      ============================================ */
   function showMaintenanceOverlay() {
-    // Only show on public pages, not on login/admin
     const path = window.location.pathname.toLowerCase();
     const isAdminPath = path.includes('login') ||
                         path.includes('dashboard') ||
@@ -576,74 +604,32 @@
                         path.includes('receipt');
 
     if (isAdminPath) return;
-
     if (!isMaintenanceMode()) return;
     if (document.getElementById('itsMaintenanceOverlay')) return;
 
     const overlay = document.createElement('div');
     overlay.id = 'itsMaintenanceOverlay';
     overlay.style.cssText = `
-      position: fixed;
-      inset: 0;
-      z-index: 999999;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      font-family: 'Cairo', 'Tajawal', sans-serif;
-      color: #fff;
-      text-align: center;
+      position: fixed; inset: 0; z-index: 999999;
+      background: #000; display: flex; align-items: center; justify-content: center;
+      padding: 20px; font-family: 'Cairo', 'Tajawal', sans-serif;
+      color: #fff; text-align: center;
     `;
 
     overlay.innerHTML = `
       <div style="max-width:520px;">
-        <div style="
-          width:80px;
-          height:80px;
-          margin:0 auto 24px;
-          border-radius:50%;
-          background:rgba(255,184,0,0.1);
-          border:1.5px solid #ffb800;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          box-shadow:0 0 40px rgba(255,184,0,0.3);
-          animation: pulseIcon 2s ease-in-out infinite;
-        ">
+        <div style="width:80px;height:80px;margin:0 auto 24px;border-radius:50%;background:rgba(255,184,0,0.1);border:1.5px solid #ffb800;display:flex;align-items:center;justify-content:center;box-shadow:0 0 40px rgba(255,184,0,0.3);animation: pulseIcon 2s ease-in-out infinite;">
           <svg viewBox="0 0 24 24" style="width:36px;height:36px;stroke:#ffb800;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;">
             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
             <line x1="12" y1="9" x2="12" y2="13"/>
             <line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
         </div>
-        <h1 style="
-          font-size:28px;
-          font-weight:900;
-          margin-bottom:12px;
-          background:linear-gradient(135deg, #ffb800, #f97316);
-          -webkit-background-clip:text;
-          background-clip:text;
-          -webkit-text-fill-color:transparent;
-        ">المنصة تحت الصيانة</h1>
-        <p style="
-          font-size:15px;
-          color:rgba(255,255,255,0.6);
-          line-height:1.8;
-          margin-bottom:24px;
-        ">
-          نعتذر عن الإزعاج، نقوم حاليًا بأعمال صيانة وتحديث للمنصة.
-          سيتم استئناف الخدمة قريبًا.
+        <h1 style="font-size:28px;font-weight:900;margin-bottom:12px;background:linear-gradient(135deg, #ffb800, #f97316);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">المنصة تحت الصيانة</h1>
+        <p style="font-size:15px;color:rgba(255,255,255,0.6);line-height:1.8;margin-bottom:24px;">
+          نعتذر عن الإزعاج، نقوم حاليًا بأعمال صيانة وتحديث للمنصة. سيتم استئناف الخدمة قريبًا.
         </p>
-        <div style="
-          font-size:13px;
-          color:rgba(255,255,255,0.4);
-          padding:12px 20px;
-          background:rgba(255,184,0,0.05);
-          border:1px solid rgba(255,184,0,0.2);
-          border-radius:12px;
-          display:inline-block;
-        ">
+        <div style="font-size:13px;color:rgba(255,255,255,0.4);padding:12px 20px;background:rgba(255,184,0,0.05);border:1px solid rgba(255,184,0,0.2);border-radius:12px;display:inline-block;">
           للاستفسار: ${settings.contact_email || DEFAULTS.contact_email}
         </div>
       </div>
@@ -656,25 +642,33 @@
     `;
 
     document.body.appendChild(overlay);
-
-    // Block scrolling
     document.body.style.overflow = 'hidden';
   }
 
   /* ============================================
-     CONVENIENCE: Apply settings on the fly
+     PUBLIC API
      ============================================ */
-  function apply(overrides = {}) {
-    const merged = { ...settings, ...overrides };
-    applyBranding(merged);
-  }
-
-  /* ============================================
-     REFRESH
-     ============================================ */
-  async function refresh() {
-    return load(true);
-  }
+  window.SettingsManager = {
+    init,
+    load,
+    refresh: () => load(true),
+    get,
+    getAll,
+    update,
+    applyBranding,
+    applyLogo,
+    onChange,
+    onAnyChange,
+    isMaintenanceMode,
+    isRegistrationOpen,
+    getMaxFileSizeBytes,
+    getMaxFileSizeMB,
+    getSplashDuration,
+    getDefaultTheme,
+    clearCache,
+    DEFAULTS,
+    CACHE_TTL
+  };
 
   /* ============================================
      INIT
@@ -683,7 +677,6 @@
     if (initialized) return;
     initialized = true;
 
-    // 1. Apply cache immediately (no flash)
     const cached = readCache();
     if (cached) {
       settings = cached;
@@ -691,30 +684,21 @@
       log('Applied from cache');
     }
 
-    // 2. Init broadcast channel
     initBroadcast();
 
-    // 3. Wait for Supabase → load fresh
     if (typeof window.onSupabaseReady === 'function') {
       window.onSupabaseReady((c) => {
         client = c;
         load(false).then(() => {
-          // Setup realtime after first load
           initRealtime();
-
-          // Show maintenance if enabled
           showMaintenanceOverlay();
-
-          // Dispatch ready event
           window.dispatchEvent(new CustomEvent('settings-ready', {
             detail: { settings: { ...settings } }
           }));
-
           log('Ready');
         });
       });
     } else {
-      // Try to auto-detect supabaseClient
       const start = Date.now();
       const checkInterval = setInterval(() => {
         if (window.supabaseClient) {
@@ -739,50 +723,6 @@
     }
   }
 
-  /* ============================================
-     EXPOSE PUBLIC API
-     ============================================ */
-  window.SettingsManager = {
-    // Lifecycle
-    init,
-    load,
-    refresh,
-
-    // Read
-    get,
-    getAll,
-
-    // Write
-    update,
-    apply,
-
-    // Listeners
-    onChange,
-    onAnyChange,
-
-    // Helpers
-    isMaintenanceMode,
-    isRegistrationOpen,
-    getMaxFileSizeBytes,
-    getMaxFileSizeMB,
-    getSplashDuration,
-    getDefaultTheme,
-
-    // Branding utilities (exposed for reuse)
-    applyBranding,
-    applyLogo,
-
-    // Cache
-    clearCache,
-
-    // Constants
-    DEFAULTS,
-    CACHE_TTL
-  };
-
-  /* ============================================
-     AUTO-INIT
-     ============================================ */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
