@@ -7,13 +7,14 @@
 <meta name="description" content="تتبع حالة طلب العضوية — نقابة تكنولوجيا المعلومات والبرمجيات" />
 <title>تتبع الطلب — نقابة تكنولوجيا المعلومات والبرمجيات</title>
 
-<!-- FAVICON -->
 <link rel="icon" id="faviconLink" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <link rel="stylesheet" href="css/themes.css" />
 <link rel="stylesheet" href="css/style.css" />
@@ -33,12 +34,7 @@
     font-family: 'Tajawal', sans-serif;
     font-size: clamp(28px, 5vw, 42px);
     font-weight: 900;
-    background: linear-gradient(
-      90deg,
-      var(--accent),
-      var(--accent-2),
-      var(--accent)
-    );
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
@@ -48,9 +44,7 @@
     line-height: 1.3;
   }
 
-  @keyframes shine {
-    to { background-position: 200% center; }
-  }
+  @keyframes shine { to { background-position: 200% center; } }
 
   .track-hero p {
     font-size: 15px;
@@ -60,7 +54,6 @@
     line-height: 1.8;
   }
 
-  /* Container */
   .track-container {
     max-width: 900px;
     margin: 0 auto;
@@ -90,12 +83,7 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--accent),
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
     opacity: 0.5;
   }
 
@@ -110,11 +98,7 @@
     width: 44px;
     height: 44px;
     border-radius: var(--radius-md);
-    background: linear-gradient(
-      135deg,
-      rgba(var(--accent-rgb), 0.15),
-      rgba(var(--accent-2-rgb), 0.15)
-    );
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-2-rgb), 0.15));
     border: 1px solid rgba(var(--accent-rgb), 0.3);
     display: flex;
     align-items: center;
@@ -153,11 +137,9 @@
     margin-bottom: 18px;
   }
 
-  /* OR divider */
   .or-divider {
     position: relative;
     text-align: center;
-    margin: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -173,13 +155,8 @@
     background: var(--border-soft);
   }
 
-  .or-divider::before {
-    right: 0;
-  }
-
-  .or-divider::after {
-    left: 0;
-  }
+  .or-divider::before { right: 0; }
+  .or-divider::after { left: 0; }
 
   .or-divider span {
     background: var(--card-bg);
@@ -200,19 +177,10 @@
     margin-top: 18px;
   }
 
-  .search-actions .btn {
-    flex: 1;
-  }
+  .search-actions .btn { flex: 1; }
 
-  /* Recent box */
-  #recentBox {
-    margin-bottom: 20px;
-  }
-
-  /* Alert box */
-  #resultBox {
-    margin-top: 20px;
-  }
+  #recentBox { margin-bottom: 20px; }
+  #resultBox { margin-top: 20px; }
 
   /* Result wrapper */
   .result-wrap {
@@ -245,11 +213,7 @@
     width: 180px;
     height: 180px;
     border-radius: 50%;
-    background: radial-gradient(
-      circle,
-      rgba(var(--accent-rgb), 0.15),
-      transparent 70%
-    );
+    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.15), transparent 70%);
     pointer-events: none;
   }
 
@@ -263,10 +227,7 @@
     z-index: 1;
   }
 
-  .result-info {
-    flex: 1;
-    min-width: 240px;
-  }
+  .result-info { flex: 1; min-width: 240px; }
 
   .result-label {
     font-size: 12px;
@@ -390,15 +351,130 @@
 
   .progress-fill {
     height: 100%;
-    background: linear-gradient(
-      90deg,
-      var(--accent),
-      var(--accent-2)
-    );
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
     box-shadow: 0 0 15px var(--accent);
     border-radius: var(--radius-full);
     transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   }
+
+  /* Missing docs banner */
+  .missing-docs-banner {
+    background: rgba(var(--warning-rgb), 0.08);
+    border: 1.5px solid var(--warning);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 20px;
+    animation: pulseWarning 2s ease-in-out infinite;
+  }
+
+  @keyframes pulseWarning {
+    0%, 100% { box-shadow: 0 0 15px rgba(var(--warning-rgb), 0.3); }
+    50%      { box-shadow: 0 0 30px rgba(var(--warning-rgb), 0.5); }
+  }
+
+  .missing-docs-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--warning);
+    margin-bottom: 14px;
+  }
+
+  .missing-docs-title svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  .missing-docs-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+  }
+
+  .missing-doc-item {
+    padding: 14px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(var(--warning-rgb), 0.3);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .missing-doc-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .missing-doc-name svg {
+    width: 16px;
+    height: 16px;
+    stroke: var(--warning);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  .upload-missing-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: rgba(var(--warning-rgb), 0.15);
+    border: 1.5px solid var(--warning);
+    border-radius: 8px;
+    color: var(--warning);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .upload-missing-btn:hover {
+    background: rgba(var(--warning-rgb), 0.25);
+    transform: translateY(-1px);
+  }
+
+  .upload-missing-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .missing-doc-input {
+    display: none;
+  }
+
+  .missing-doc-status {
+    font-size: 12px;
+    color: var(--success);
+    font-weight: 700;
+    display: none;
+  }
+
+  .missing-doc-status.show { display: inline; }
 
   /* Details grid */
   .details-grid {
@@ -441,10 +517,7 @@
     stroke-linejoin: round;
   }
 
-  .detail-card-content {
-    min-width: 0;
-    flex: 1;
-  }
+  .detail-card-content { min-width: 0; flex: 1; }
 
   .detail-card-label {
     font-size: 11.5px;
@@ -578,17 +651,9 @@
     flex-wrap: wrap;
   }
 
-  .timeline-row.done .timeline-row-title {
-    color: var(--success);
-  }
-
-  .timeline-row.current .timeline-row-title {
-    color: var(--warning);
-  }
-
-  .timeline-row.skipped .timeline-row-title {
-    color: rgba(var(--danger-rgb), 0.7);
-  }
+  .timeline-row.done .timeline-row-title { color: var(--success); }
+  .timeline-row.current .timeline-row-title { color: var(--warning); }
+  .timeline-row.skipped .timeline-row-title { color: rgba(var(--danger-rgb), 0.7); }
 
   .now-badge {
     font-size: 10.5px;
@@ -628,13 +693,21 @@
 
   .timeline-notes {
     margin-top: 8px;
-    padding: 8px 12px;
+    padding: 10px 14px;
     background: rgba(var(--accent-rgb), 0.05);
-    border-right: 2px solid var(--accent);
+    border-right: 3px solid var(--accent);
     border-radius: var(--radius-sm);
     font-size: 12.5px;
     color: var(--text-muted);
     line-height: 1.6;
+  }
+
+  .timeline-notes-by {
+    display: block;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    font-style: italic;
   }
 
   /* Rejection notice */
@@ -677,70 +750,98 @@
     min-width: 140px;
   }
 
-  /* Responsive */
+  /* Upload spinner */
+  .upload-spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(var(--warning-rgb), 0.3);
+    border-top-color: var(--warning);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Toast */
+  .toast-mini {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    z-index: 99999;
+    background: rgba(var(--success-rgb), 0.15);
+    border: 1.5px solid var(--success);
+    color: var(--success);
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    font-size: 13.5px;
+    font-weight: 700;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    opacity: 0;
+    transition: all 0.35s;
+    pointer-events: none;
+  }
+
+  .toast-mini.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Print */
+  @media print {
+    @page { size: A4; margin: 10mm; }
+
+    body {
+      padding: 0 !important;
+      background: white !important;
+      color: black !important;
+    }
+
+    .navbar, .footer, .search-card, .result-actions,
+    .upload-missing-btn, .bg-grid, .bg-glow, .bg-layer,
+    .track-hero { display: none !important; }
+
+    .timeline-card, .result-header, .detail-card, .missing-docs-banner {
+      background: white !important;
+      border: 1px solid #999 !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+    }
+
+    .result-tracking span,
+    .detail-card-value,
+    .timeline-row-title,
+    .detail-card-label,
+    .timeline-row-desc,
+    .timeline-row-date,
+    .result-label {
+      color: black !important;
+      text-shadow: none !important;
+    }
+
+    .result-header::before { display: none !important; }
+  }
+
   @media (max-width: 768px) {
-    .track-hero {
-      padding: 110px 18px 30px;
-    }
-
-    .search-fields {
-      grid-template-columns: 1fr;
-    }
-
-    .or-divider {
-      display: none;
-    }
-
-    .search-actions {
-      flex-direction: column;
-    }
-
-    .qr-box img {
-      width: 90px;
-      height: 90px;
-    }
-
-    .result-header-inner {
-      flex-direction: column;
-    }
-
-    .qr-box {
-      align-self: center;
-    }
-
-    .timeline-card {
-      padding: 20px 16px;
-    }
-
-    .result-actions {
-      flex-direction: column;
-    }
+    .track-hero { padding: 110px 18px 30px; }
+    .search-fields { grid-template-columns: 1fr; }
+    .or-divider { display: none; }
+    .search-actions { flex-direction: column; }
+    .qr-box img { width: 90px; height: 90px; }
+    .result-header-inner { flex-direction: column; }
+    .qr-box { align-self: center; }
+    .timeline-card { padding: 20px 16px; }
+    .result-actions { flex-direction: column; }
   }
 
   @media (max-width: 480px) {
-    .search-card,
-    .result-header {
-      padding: 20px 16px;
-    }
-
-    .timeline-row {
-      padding-right: 40px;
-    }
-
-    .timeline-dot {
-      width: 22px;
-      height: 22px;
-      right: 5px;
-    }
-
-    .timeline-track::before {
-      right: 15px;
-    }
-
-    .qr-box img {
-      width: 80px;
-      height: 80px;
-    }
+    .search-card, .result-header { padding: 20px 16px; }
+    .timeline-row { padding-right: 40px; }
+    .timeline-dot { width: 22px; height: 22px; right: 5px; }
+    .timeline-track::before { right: 15px; }
+    .qr-box img { width: 80px; height: 80px; }
   }
 </style>
 </head>
@@ -766,7 +867,7 @@
         </svg>
       </div>
       <div class="logo-text">
-        <div class="logo-main" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
+        <div class="logo-main" data-site-name>نقابة تكنولوجيا المعلومات</div>
         <div class="logo-sub">IT WORKERS SYNDICATE</div>
       </div>
     </a>
@@ -808,7 +909,7 @@
 <!-- CONTAINER -->
 <div class="track-container">
 
-  <!-- SEARCH CARD -->
+  <!-- SEARCH -->
   <div class="search-card">
     <div class="search-header">
       <div class="search-icon-wrap">
@@ -826,32 +927,14 @@
     <div class="search-fields">
       <div class="form-group" style="margin:0;">
         <label for="trackingInput">رقم التتبع</label>
-        <input
-          type="text"
-          id="trackingInput"
-          placeholder="ITS-202601-12345"
-          dir="ltr"
-          style="text-align:right;"
-          autocomplete="off"
-        />
+        <input type="text" id="trackingInput" placeholder="ITS-2026-00001" dir="ltr" style="text-align:right;" autocomplete="off" />
       </div>
 
-      <div class="or-divider">
-        <span>أو</span>
-      </div>
+      <div class="or-divider"><span>أو</span></div>
 
       <div class="form-group" style="margin:0;grid-column:span 2;">
         <label for="nationalIdInput">الرقم القومي</label>
-        <input
-          type="text"
-          id="nationalIdInput"
-          placeholder="29901234567890"
-          maxlength="14"
-          inputmode="numeric"
-          dir="ltr"
-          style="text-align:right;"
-          autocomplete="off"
-        />
+        <input type="text" id="nationalIdInput" placeholder="29901234567890" maxlength="14" inputmode="numeric" dir="ltr" style="text-align:right;" autocomplete="off" />
       </div>
     </div>
 
@@ -872,14 +955,16 @@
       </button>
     </div>
 
-    <!-- Recent -->
     <div id="recentBox"></div>
   </div>
 
-  <!-- RESULT BOX -->
+  <!-- RESULT -->
   <div id="resultBox"></div>
 
 </div>
+
+<!-- TOAST -->
+<div class="toast-mini" id="toastMini"></div>
 
 <!-- FOOTER -->
 <footer class="footer" style="margin-top:40px;">
@@ -898,17 +983,11 @@
 <script src="js/track.js"></script>
 
 <script>
-  /* ============================================
-     MOBILE NAV
-     ============================================ */
   window.toggleMobileNav = function () {
     const nav = document.getElementById('navLinks');
     if (nav) nav.classList.toggle('open');
   };
 
-  /* ============================================
-     NAVBAR SCROLL
-     ============================================ */
   (function () {
     const navbar = document.getElementById('navbar');
     if (!navbar) return;
@@ -918,9 +997,7 @@
     }, { passive: true });
   })();
 
-  /* ============================================
-     BACKGROUND PARTICLES
-     ============================================ */
+  /* Background particles */
   (function () {
     const canvas = document.getElementById('bgCanvas');
     if (!canvas) return;
@@ -928,8 +1005,7 @@
     let W = 0, H = 0, dots = [];
 
     function accentRgb() {
-      const raw = getComputedStyle(document.documentElement)
-        .getPropertyValue('--accent-rgb').trim();
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim();
       if (raw) {
         const parts = raw.split(',').map(s => parseInt(s.trim()));
         return { r: parts[0] || 0, g: parts[1] || 240, b: parts[2] || 255 };
@@ -939,12 +1015,9 @@
 
     function resize() {
       const dpr = window.devicePixelRatio || 1;
-      W = window.innerWidth;
-      H = window.innerHeight;
-      canvas.width = W * dpr;
-      canvas.height = H * dpr;
-      canvas.style.width = W + 'px';
-      canvas.style.height = H + 'px';
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       init();
     }
@@ -966,18 +1039,14 @@
     function loop() {
       const rgb = accentRgb();
       ctx.clearRect(0, 0, W, H);
-
       dots.forEach((d, i) => {
-        d.x += d.vx;
-        d.y += d.vy;
+        d.x += d.vx; d.y += d.vy;
         if (d.x < 0 || d.x > W) d.vx *= -1;
         if (d.y < 0 || d.y > H) d.vy *= -1;
-
         ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.5)`;
         ctx.beginPath();
         ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
         ctx.fill();
-
         for (let j = i + 1; j < dots.length; j++) {
           const dx = d.x - dots[j].x;
           const dy = d.y - dots[j].y;
@@ -992,7 +1061,6 @@
           }
         }
       });
-
       requestAnimationFrame(loop);
     }
 
@@ -1005,13 +1073,10 @@
     loop();
   })();
 
-  /* ============================================
-     CLEAR BUTTON
-     ============================================ */
+  /* Clear button */
   (function () {
     const clearBtn = document.getElementById('clearBtn');
     if (!clearBtn) return;
-
     clearBtn.addEventListener('click', () => {
       const t = document.getElementById('trackingInput');
       const n = document.getElementById('nationalIdInput');
@@ -1023,9 +1088,7 @@
     });
   })();
 
-  /* ============================================
-     FORCE NUMERIC (National ID)
-     ============================================ */
+  /* Force numeric */
   (function () {
     const nationalId = document.getElementById('nationalIdInput');
     if (!nationalId) return;
@@ -1034,6 +1097,17 @@
     });
   })();
 
+  /* Toast helper (يعرضه track.js) */
+  window.showTrackToast = function (msg, type) {
+    const toast = document.getElementById('toastMini');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.className = 'toast-mini show';
+    toast.style.background = type === 'error' ? 'rgba(var(--danger-rgb),0.15)' : 'rgba(var(--success-rgb),0.15)';
+    toast.style.borderColor = type === 'error' ? 'var(--danger)' : 'var(--success)';
+    toast.style.color = type === 'error' ? 'var(--danger)' : 'var(--success)';
+    setTimeout(() => toast.classList.remove('show'), 2800);
+  };
 </script>
 
 </body>
