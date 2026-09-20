@@ -580,10 +580,6 @@ DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS settings CASCADE;
 DROP TABLE IF EXISTS tracking_counters CASCADE;
 
--- Drop Storage Buckets (سيتم حذف الملفات)
-DELETE FROM storage.objects WHERE bucket_id IN ('attachments', 'branding');
-DELETE FROM storage.buckets WHERE id IN ('attachments', 'branding');
-
 -- تأكيد
 SELECT 'تم مسح كل الجداول والـ Buckets' AS status;`;
 
