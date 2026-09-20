@@ -8,13 +8,19 @@
   /* ============================================
      STATE
      ============================================ */
-  const channels = new Map();       // channelName → channel
-  const listeners = new Map();      // "table:event" → [callbacks]
-  const tableCounts = new Map();    // tableName → number of subscribers
+  const channels = new Map();
+  const listeners = new Map();
+  const tableCounts = new Map();
+  const channelStatus = new Map();
 
   let client = null;
   let initialized = false;
-  let connectionStatus = 'disconnected'; // disconnected | connecting | connected | error
+  let connectionStatus = 'disconnected';
+  let reconnectAttempts = 0;
+  let reconnectTimer = null;
+
+  const MAX_RECONNECT_ATTEMPTS = 10;
+  const RECONNECT_DELAY_BASE = 2000;
 
   /* ============================================
      CONSTANTS
@@ -27,26 +33,65 @@
     'payments',
     'settings',
     'members',
-    'user_preferences'
+    'user_preferences',
+    'branches',
+    'users',
+    'membership_subscriptions',
+    'user_sessions',
+    'user_actions',
+    'audit_log'
   ];
 
+  const BROADCAST_CHANNEL = 'its:broadcast';
+  const PRESENCE_CHANNEL = 'its:presence';
+
   /* ============================================
-     STATUS HELPERS
+     STATUS
      ============================================ */
   function setStatus(newStatus) {
     if (connectionStatus === newStatus) return;
+    const oldStatus = connectionStatus;
     connectionStatus = newStatus;
+
     window.dispatchEvent(new CustomEvent('realtime-status', {
-      detail: { status: newStatus }
+      detail: { status: newStatus, previous: oldStatus }
     }));
+
+    if (newStatus === 'connected') {
+      reconnectAttempts = 0;
+      console.log('[Realtime] Connected');
+    } else if (newStatus === 'error') {
+      console.warn('[Realtime] Error occurred');
+      scheduleReconnect();
+    } else if (newStatus === 'disconnected') {
+      console.warn('[Realtime] Disconnected');
+    }
   }
 
   function getStatus() {
     return connectionStatus;
   }
 
+  function scheduleReconnect() {
+    if (reconnectTimer) return;
+    if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+      console.warn('[Realtime] Max reconnect attempts reached');
+      return;
+    }
+
+    reconnectAttempts++;
+    const delay = Math.min(RECONNECT_DELAY_BASE * Math.pow(1.5, reconnectAttempts - 1), 30000);
+
+    console.log(`[Realtime] Reconnecting in ${Math.round(delay / 1000)}s (attempt ${reconnectAttempts})`);
+
+    reconnectTimer = setTimeout(async () => {
+      reconnectTimer = null;
+      await reconnectAll();
+    }, delay);
+  }
+
   /* ============================================
-     LISTENER MANAGEMENT
+     LISTENERS
      ============================================ */
   function listenerKey(table, event) {
     return `${table}:${event}`;
@@ -61,7 +106,6 @@
 
     tableCounts.set(table, (tableCounts.get(table) || 0) + 1);
 
-    // Return unsubscribe function
     return function unsubscribe() {
       const arr = listeners.get(key);
       if (arr) {
@@ -75,17 +119,10 @@
   }
 
   function emit(table, event, payload) {
-    const key = listenerKey(table, event);
-    const generalKey = listenerKey(table, '*');
-
-    const specific = listeners.get(key) || [];
-    const general = listeners.get(generalKey) || [];
-
-    // Also fire all-table listeners
-    const allTableKey = listenerKey('*', event);
-    const allTableAllEventsKey = listenerKey('*', '*');
-    const allTable = listeners.get(allTableKey) || [];
-    const allAll = listeners.get(allTableAllEventsKey) || [];
+    const specific = listeners.get(listenerKey(table, event)) || [];
+    const general = listeners.get(listenerKey(table, '*')) || [];
+    const allTable = listeners.get(listenerKey('*', event)) || [];
+    const allAll = listeners.get(listenerKey('*', '*')) || [];
 
     const all = [...specific, ...general, ...allTable, ...allAll];
     const seen = new Set();
@@ -107,13 +144,18 @@
   }
 
   /* ============================================
-     SUBSCRIBE TO TABLE
+     SUBSCRIBE
      ============================================ */
   function subscribeToTable(table) {
     if (!client) return null;
-    if (channels.has(table)) return channels.get(table);
+    if (channels.has(table)) {
+      const existing = channels.get(table);
+      // لو القناة مشتركة، رجعها
+      if (channelStatus.get(table) === 'subscribed') return existing;
+    }
 
     const channelName = `its:realtime:${table}`;
+
     const channel = client
       .channel(channelName)
       .on(
@@ -124,15 +166,24 @@
           emit(table, eventType, payload);
         }
       )
-      .subscribe((status) => {
+      .subscribe((status, err) => {
+        channelStatus.set(table, status.toLowerCase());
+
         if (status === 'SUBSCRIBED') {
-          setStatus('connected');
-        } else if (status === 'CHANNEL_ERROR') {
-          setStatus('error');
-        } else if (status === 'TIMED_OUT') {
+          // لو كل الجداول مشتركة، اعتبر الاتصال سليم
+          const allSubscribed = WATCHED_TABLES.every(t => {
+            const s = channelStatus.get(t);
+            return s === 'subscribed' || !channels.has(t);
+          });
+          if (allSubscribed || channels.size > 0) {
+            setStatus('connected');
+          }
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.warn(`[Realtime] ${table}: ${status}`, err);
+          channelStatus.set(table, 'error');
           setStatus('error');
         } else if (status === 'CLOSED') {
-          // Channel closed
+          channelStatus.set(table, 'closed');
         }
       });
 
@@ -140,9 +191,6 @@
     return channel;
   }
 
-  /* ============================================
-     UNSUBSCRIBE FROM TABLE
-     ============================================ */
   async function unsubscribeFromTable(table) {
     const channel = channels.get(table);
     if (!channel || !client) return;
@@ -153,15 +201,21 @@
       console.warn('[Realtime] Remove channel failed:', e);
     }
     channels.delete(table);
+    channelStatus.delete(table);
+  }
+
+  async function reconnectAll() {
+    const tables = Array.from(channels.keys());
+    for (const t of tables) {
+      await unsubscribeFromTable(t);
+    }
+    tables.forEach(t => subscribeToTable(t));
   }
 
   /* ============================================
      PUBLIC: watch
-     Subscribe to changes on a table.
-     Returns unsubscribe function.
      ============================================ */
   function watch(table, options, callback) {
-    // Support: watch(table, callback)
     if (typeof options === 'function') {
       callback = options;
       options = { event: '*' };
@@ -169,7 +223,6 @@
     options = options || {};
     const event = options.event || '*';
 
-    // Make sure table is subscribed at the channel level
     if (client && !channels.has(table) && table !== '*') {
       subscribeToTable(table);
     }
@@ -177,9 +230,6 @@
     return addListener(table, event, callback);
   }
 
-  /* ============================================
-     PUBLIC: watchMany
-     ============================================ */
   function watchMany(tables, callback) {
     const unsubs = [];
     tables.forEach(t => {
@@ -190,10 +240,6 @@
     };
   }
 
-  /* ============================================
-     PUBLIC: watchRow
-     Watch specific row (by id) on a table.
-     ============================================ */
   function watchRow(table, rowId, callback) {
     return watch(table, '*', (info) => {
       const record = info.payload.new || info.payload.old || {};
@@ -203,16 +249,10 @@
     });
   }
 
-  /* ============================================
-     PUBLIC: unwatch
-     ============================================ */
-  function unwatch(table) {
+  async function unwatch(table) {
     return unsubscribeFromTable(table);
   }
 
-  /* ============================================
-     PUBLIC: unwatchAll
-     ============================================ */
   async function unwatchAll() {
     const tables = Array.from(channels.keys());
     for (const t of tables) {
@@ -220,29 +260,78 @@
     }
     listeners.clear();
     tableCounts.clear();
+    channelStatus.clear();
   }
 
   /* ============================================
-     BROADCAST CHANNEL (for custom messages)
+     WATCH & RELOAD HELPERS
+     ============================================ */
+  function watchAndReload(table, loaderFn, options) {
+    options = options || {};
+    if (options.immediate !== false && typeof loaderFn === 'function') {
+      loaderFn();
+    }
+    return watch(table, '*', window.debounce(() => {
+      if (typeof loaderFn === 'function') loaderFn();
+    }, options.debounceMs || 250));
+  }
+
+  function watchManyAndReload(tables, loaderFn, options) {
+    options = options || {};
+    if (options.immediate !== false && typeof loaderFn === 'function') {
+      loaderFn();
+    }
+    const debounced = window.debounce(() => {
+      if (typeof loaderFn === 'function') loaderFn();
+    }, options.debounceMs || 250);
+
+    const unsubs = tables.map(t => watch(t, '*', debounced));
+    return function () {
+      unsubs.forEach(fn => { try { fn(); } catch (e) {} });
+    };
+  }
+
+  /* ============================================
+     BROADCAST CHANNEL
      ============================================ */
   let broadcastChannel = null;
+  let broadcastReady = false;
 
   function initBroadcast() {
     if (!client || broadcastChannel) return broadcastChannel;
 
-    broadcastChannel = client.channel('its:broadcast', {
+    broadcastChannel = client.channel(BROADCAST_CHANNEL, {
       config: {
-        broadcast: { self: false }
+        broadcast: { self: false, ack: false }
       }
     });
 
     broadcastChannel
       .on('broadcast', { event: 'notification' }, (payload) => {
         window.dispatchEvent(new CustomEvent('broadcast-notification', {
-          detail: payload.payload
+          detail: payload.payload || payload
         }));
       })
-      .subscribe();
+      .on('broadcast', { event: 'settings-updated' }, (payload) => {
+        window.dispatchEvent(new CustomEvent('broadcast-settings', {
+          detail: payload.payload || payload
+        }));
+      })
+      .on('broadcast', { event: 'logo-updated' }, (payload) => {
+        window.dispatchEvent(new CustomEvent('broadcast-logo', {
+          detail: payload.payload || payload
+        }));
+      })
+      .on('broadcast', { event: 'data-changed' }, (payload) => {
+        window.dispatchEvent(new CustomEvent('broadcast-data', {
+          detail: payload.payload || payload
+        }));
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          broadcastReady = true;
+        }
+      });
 
     return broadcastChannel;
   }
@@ -262,10 +351,11 @@
   }
 
   /* ============================================
-     PRESENCE (who's online)
+     PRESENCE
      ============================================ */
   let presenceChannel = null;
   const presenceState = new Map();
+  let currentPresenceInfo = null;
 
   function initPresence(userInfo) {
     if (!client) return null;
@@ -275,11 +365,11 @@
       return presenceChannel;
     }
 
-    presenceChannel = client.channel('its:presence', {
+    const key = userInfo?.id || 'anon-' + Math.random().toString(36).slice(2, 9);
+
+    presenceChannel = client.channel(PRESENCE_CHANNEL, {
       config: {
-        presence: {
-          key: userInfo?.id || 'anon-' + Math.random().toString(36).slice(2, 9)
-        }
+        presence: { key }
       }
     });
 
@@ -287,8 +377,8 @@
       .on('presence', { event: 'sync' }, () => {
         const state = presenceChannel.presenceState();
         presenceState.clear();
-        Object.entries(state).forEach(([key, arr]) => {
-          presenceState.set(key, arr);
+        Object.entries(state).forEach(([k, arr]) => {
+          presenceState.set(k, arr);
         });
         window.dispatchEvent(new CustomEvent('presence-sync', {
           detail: { state: Object.fromEntries(presenceState) }
@@ -306,6 +396,7 @@
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED' && userInfo) {
+          currentPresenceInfo = userInfo;
           try {
             await presenceChannel.track(userInfo);
           } catch (e) {}
@@ -316,12 +407,17 @@
   }
 
   async function trackPresence(userInfo) {
+    if (!userInfo) return;
+
     if (!presenceChannel) {
       initPresence(userInfo);
+      currentPresenceInfo = userInfo;
       return;
     }
+
     try {
       await presenceChannel.track(userInfo);
+      currentPresenceInfo = userInfo;
     } catch (e) {}
   }
 
@@ -333,35 +429,55 @@
     return all;
   }
 
-  /* ============================================
-     POSTGRES CHANGE HELPERS
-     ============================================ */
-
-  /* Auto-reload data when table changes */
-  function watchAndReload(table, loaderFn, options) {
-    options = options || {};
-    if (options.immediate !== false && typeof loaderFn === 'function') {
-      loaderFn();
-    }
-    return watch(table, '*', window.debounce(() => {
-      if (typeof loaderFn === 'function') loaderFn();
-    }, options.debounceMs || 250));
+  function getPresenceState() {
+    return Object.fromEntries(presenceState);
   }
 
-  /* Watch multiple tables, reload once */
-  function watchManyAndReload(tables, loaderFn, options) {
-    options = options || {};
-    if (options.immediate !== false && typeof loaderFn === 'function') {
-      loaderFn();
-    }
-    const debounced = window.debounce(() => {
-      if (typeof loaderFn === 'function') loaderFn();
-    }, options.debounceMs || 250);
+  /* ============================================
+     AUTO PRESENCE (لو المستخدم مسجل دخول)
+     ============================================ */
+  async function autoPresence() {
+    if (!client) return;
+    try {
+      const { data } = await client.auth.getSession();
+      const user = data?.session?.user;
+      if (!user) return;
 
-    const unsubs = tables.map(t => watch(t, '*', debounced));
-    return function () {
-      unsubs.forEach(fn => { try { fn(); } catch (e) {} });
-    };
+      // جيب اسم المستخدم ودوره
+      let fullName = user.email;
+      let role = 'committee';
+
+      try {
+        const { data: userData } = await client
+          .from('users')
+          .select('full_name, role')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (userData) {
+          fullName = userData.full_name || fullName;
+          role = userData.role || role;
+        }
+      } catch (e) {}
+
+      const info = {
+        id: user.id,
+        email: user.email,
+        full_name: fullName,
+        role,
+        online_at: new Date().toISOString()
+      };
+
+      initPresence(info);
+    } catch (e) {}
+  }
+
+  /* ============================================
+     BATCH OPERATIONS
+     ============================================ */
+  async function batchSubscribe(tables) {
+    if (!client) return;
+    tables.forEach(t => subscribeToTable(t));
   }
 
   /* ============================================
@@ -370,7 +486,6 @@
   async function init() {
     if (initialized) return;
     if (typeof window.onSupabaseReady !== 'function') {
-      // Wait for supabase-config to define it
       setTimeout(init, 100);
       return;
     }
@@ -379,41 +494,72 @@
       client = c;
       initialized = true;
 
-      // Subscribe to all watched tables eagerly
+      setStatus('connecting');
+
+      // Subscribe to all watched tables
       WATCHED_TABLES.forEach(t => subscribeToTable(t));
 
-      // Init broadcast + presence channels
+      // Init broadcast
       initBroadcast();
 
+      // Init presence if logged in
+      setTimeout(autoPresence, 1000);
+
       window.dispatchEvent(new CustomEvent('realtime-initialized'));
+    });
+
+    // Network status
+    window.addEventListener('online', () => {
+      console.log('[Realtime] Back online');
+      reconnectAll();
+    });
+
+    window.addEventListener('offline', () => {
+      console.log('[Realtime] Offline');
+      setStatus('disconnected');
     });
   }
 
   /* ============================================
-     EXPOSE PUBLIC API
+     PUBLIC API
      ============================================ */
   window.Realtime = {
+    // Subscribe
     watch,
     watchMany,
     watchRow,
     unwatch,
     unwatchAll,
+
+    // Helpers
     watchAndReload,
     watchManyAndReload,
-    emit,
-    addListener,
 
+    // Listener management
+    addListener,
+    emit,
+
+    // Broadcast
     initBroadcast,
     sendBroadcast,
 
+    // Presence
     initPresence,
     trackPresence,
     getOnlineUsers,
+    getPresenceState,
 
+    // Status
     getStatus,
     getChannels: () => Array.from(channels.keys()),
     getListeners: () => Object.fromEntries(listeners),
+    getChannelStatus: () => Object.fromEntries(channelStatus),
 
+    // Batch
+    batchSubscribe,
+    reconnectAll,
+
+    // Constants
     WATCHED_TABLES
   };
 
