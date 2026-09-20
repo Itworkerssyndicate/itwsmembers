@@ -7,7 +7,6 @@
 <meta name="description" content="لوحة لجنة العضويات — نقابة تكنولوجيا المعلومات والبرمجيات" />
 <title>لوحة اللجنة — نقابة تكنولوجيا المعلومات والبرمجيات</title>
 
-<!-- FAVICON -->
 <link rel="icon" id="faviconLink" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
 
@@ -44,21 +43,13 @@
     flex-wrap: wrap;
   }
 
-  .page-header-info {
-    flex: 1;
-    min-width: 240px;
-  }
+  .page-header-info { flex: 1; min-width: 240px; }
 
   .page-header-title {
     font-family: 'Tajawal', sans-serif;
     font-size: clamp(24px, 3.5vw, 32px);
     font-weight: 900;
-    background: linear-gradient(
-      90deg,
-      var(--accent),
-      var(--accent-2),
-      var(--accent)
-    );
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
@@ -68,9 +59,7 @@
     line-height: 1.3;
   }
 
-  @keyframes shine {
-    to { background-position: 200% center; }
-  }
+  @keyframes shine { to { background-position: 200% center; } }
 
   .page-header-sub {
     font-size: 13.5px;
@@ -93,11 +82,7 @@
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    background: linear-gradient(
-      135deg,
-      rgba(var(--accent-rgb), 0.2),
-      rgba(var(--accent-2-rgb), 0.2)
-    );
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.2), rgba(var(--accent-2-rgb), 0.2));
     border: 1.5px solid rgba(var(--accent-rgb), 0.4);
     display: flex;
     align-items: center;
@@ -116,9 +101,7 @@
     stroke-linejoin: round;
   }
 
-  .user-info {
-    line-height: 1.25;
-  }
+  .user-info { line-height: 1.25; }
 
   .user-name {
     font-size: 13.5px;
@@ -140,14 +123,8 @@
     flex-wrap: wrap;
   }
 
-  .top-actions .btn {
-    flex-shrink: 0;
-  }
-
-  /* ============ STATS GRID ============ */
-  .stats-section {
-    margin-bottom: 28px;
-  }
+  /* ============ STATS ============ */
+  .stats-section { margin-bottom: 28px; }
 
   .stats-section-title {
     font-family: 'Tajawal', sans-serif;
@@ -216,33 +193,24 @@
 
   .filters-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
     gap: 12px;
     align-items: end;
   }
 
-  .filters-grid .form-group {
-    margin: 0;
-  }
-
+  .filters-grid .form-group { margin: 0; }
   .filters-grid .form-group label {
     font-size: 12px;
     margin-bottom: 6px;
   }
-
   .filters-grid input,
   .filters-grid select {
     padding: 10px 14px;
     font-size: 13.5px;
   }
 
-  .search-input-wrap {
-    position: relative;
-  }
-
-  .search-input-wrap input {
-    padding-right: 42px;
-  }
+  .search-input-wrap { position: relative; }
+  .search-input-wrap input { padding-right: 42px; }
 
   .search-input-wrap .search-icon {
     position: absolute;
@@ -312,22 +280,24 @@
 
   .table-wrap {
     overflow-x: auto;
+    max-height: 70vh;
   }
 
   table {
     width: 100%;
-    min-width: 900px;
+    min-width: 1100px;
   }
 
   table th {
     position: sticky;
     top: 0;
     z-index: 5;
+    background: rgba(10, 12, 20, 0.98);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
 
-  /* Row avatar */
+  /* Row */
   .member-cell {
     display: flex;
     align-items: center;
@@ -338,11 +308,7 @@
     width: 36px;
     height: 36px;
     border-radius: var(--radius-sm);
-    background: linear-gradient(
-      135deg,
-      rgba(var(--accent-rgb), 0.15),
-      rgba(var(--accent-2-rgb), 0.15)
-    );
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-2-rgb), 0.15));
     border: 1px solid rgba(var(--accent-rgb), 0.25);
     display: flex;
     align-items: center;
@@ -354,10 +320,7 @@
     flex-shrink: 0;
   }
 
-  .member-info {
-    min-width: 0;
-    line-height: 1.25;
-  }
+  .member-info { min-width: 0; line-height: 1.25; }
 
   .member-name {
     font-weight: 700;
@@ -381,6 +344,18 @@
     color: var(--accent);
     font-weight: 600;
     letter-spacing: 0.5px;
+  }
+
+  .governorate-cell {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(var(--accent-rgb), 0.06);
+    border: 1px solid rgba(var(--accent-rgb), 0.18);
+    border-radius: var(--radius-full);
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
   }
 
   .type-badge {
@@ -446,7 +421,6 @@
     border-color: rgba(var(--accent-rgb), 0.25);
     color: var(--accent);
   }
-
   .row-btn.view-btn:hover {
     background: rgba(var(--accent-rgb), 0.2);
     transform: translateY(-2px);
@@ -457,7 +431,6 @@
     border-color: rgba(var(--success-rgb), 0.25);
     color: var(--success);
   }
-
   .row-btn.edit-btn:hover {
     background: rgba(var(--success-rgb), 0.2);
     transform: translateY(-2px);
@@ -470,64 +443,68 @@
   }
 
   /* ============ MODALS ============ */
-  .modal-content {
-    max-height: 90vh;
+  .modal-content { max-height: 90vh; }
+
+  /* ============ REPORT SECTION ============ */
+  .report-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    padding: 20px;
+  }
+
+  .report-gov-card {
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    transition: all 0.2s;
+  }
+
+  .report-gov-card:hover {
+    border-color: rgba(var(--accent-rgb), 0.4);
+    background: rgba(var(--accent-rgb), 0.05);
+  }
+
+  .report-gov-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .report-gov-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent);
+    text-shadow: var(--glow-accent);
   }
 
   /* ============ RESPONSIVE ============ */
   @media (max-width: 1024px) {
-    .filters-grid {
-      grid-template-columns: 1fr 1fr;
-    }
+    .filters-grid { grid-template-columns: 1fr 1fr 1fr; }
   }
 
   @media (max-width: 768px) {
-    body {
-      padding: 90px 0 30px;
-    }
-
-    .dashboard-wrap {
-      padding: 0 16px;
-    }
-
-    .page-header {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .user-badge {
-      justify-content: center;
-    }
-
-    .top-actions {
-      flex-direction: column;
-    }
-
-    .top-actions .btn {
-      width: 100%;
-    }
-
-    .filters-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .table-card-header {
-      flex-direction: column;
-      align-items: stretch;
-    }
+    body { padding: 90px 0 30px; }
+    .dashboard-wrap { padding: 0 16px; }
+    .page-header { flex-direction: column; align-items: stretch; }
+    .user-badge { justify-content: center; }
+    .top-actions { flex-direction: column; }
+    .top-actions .btn { width: 100%; }
+    .filters-grid { grid-template-columns: 1fr; }
+    .table-card-header { flex-direction: column; align-items: stretch; }
   }
 
   /* ============ PRINT ============ */
   @media print {
-    .navbar,
-    .top-actions,
-    .filters-card,
-    #paginationBox,
-    .row-actions,
-    .footer,
-    .bg-grid,
-    .bg-glow,
-    .bg-layer {
+    .navbar, .top-actions, .filters-card, #paginationBox,
+    .row-actions, .footer, .bg-grid, .bg-glow, .bg-layer,
+    .user-badge, .tabs-nav {
       display: none !important;
     }
 
@@ -537,9 +514,11 @@
       color: black !important;
     }
 
-    .table-card {
-      border: 1px solid #000;
+    .table-card, .stat-card, .filters-card {
+      border: 1px solid #000 !important;
       background: white !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
     }
 
     table th {
@@ -547,17 +526,11 @@
       color: black !important;
     }
 
-    .stat-card {
-      border: 1px solid #999 !important;
-      background: white !important;
-    }
-
-    .stat-num {
+    .member-name, .tracking-cell, .type-badge,
+    .governorate-cell, .time-cell, .table-card-title,
+    .table-card-count {
       color: black !important;
-    }
-
-    .stat-label {
-      color: #333 !important;
+      text-shadow: none !important;
     }
   }
 </style>
@@ -584,15 +557,18 @@
         </svg>
       </div>
       <div class="logo-text">
-        <div class="logo-main" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
-        <div class="logo-sub">DASHBOARD</div>
+        <div class="logo-main" data-site-name>نقابة تكنولوجيا المعلومات</div>
+        <div class="logo-sub">COMMITTEE DASHBOARD</div>
       </div>
     </a>
 
     <nav class="nav-links" id="navLinks">
       <a href="dashboard.html" class="active">لوحة اللجنة</a>
+      <a href="members.html">الأعضاء</a>
+      <a href="revenue.html">الإيرادات</a>
+      <a href="subscriptions.html">الاشتراكات</a>
       <a href="admin.html" id="adminLink" style="display:none;">لوحة النقيب</a>
-      <a href="#" id="logoutBtn" class="btn-login" style="background:rgba(255,85,85,0.1) !important; border-color:rgba(255,85,85,0.4) !important; color:var(--danger) !important;">
+      <a href="#" id="logoutBtn" class="btn-login" style="background:rgba(var(--danger-rgb),0.1) !important; border-color:rgba(var(--danger-rgb),0.4) !important; color:var(--danger) !important;">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
           <polyline points="16 17 21 12 16 7" />
@@ -666,6 +642,15 @@
       </svg>
       <span>طباعة</span>
     </button>
+
+    <button type="button" class="btn btn-outline" id="reportToggleBtn">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <line x1="12" y1="20" x2="12" y2="10" />
+        <line x1="18" y1="20" x2="18" y2="4" />
+        <line x1="6" y1="20" x2="6" y2="16" />
+      </svg>
+      <span>تقرير المحافظات</span>
+    </button>
   </div>
 
   <!-- STATS -->
@@ -679,7 +664,6 @@
       <span>نظرة سريعة</span>
     </div>
     <div id="statsGrid">
-      <!-- Skeletons -->
       <div class="skeleton-card" style="height:110px;border-radius:var(--radius-lg);"></div>
       <div class="skeleton-card" style="height:110px;border-radius:var(--radius-lg);"></div>
       <div class="skeleton-card" style="height:110px;border-radius:var(--radius-lg);"></div>
@@ -688,6 +672,21 @@
       <div class="skeleton-card" style="height:110px;border-radius:var(--radius-lg);"></div>
     </div>
   </section>
+
+  <!-- GOVERNORATE REPORT (Toggle) -->
+  <div class="table-card" id="reportCard" style="display:none;margin-bottom:20px;">
+    <div class="table-card-header">
+      <div class="table-card-title">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+        <span>تقرير الطلبات حسب المحافظة</span>
+      </div>
+      <div class="table-card-count" id="reportTotal">—</div>
+    </div>
+    <div class="report-grid" id="reportGrid"></div>
+  </div>
 
   <!-- FILTERS -->
   <div class="filters-card">
@@ -708,12 +707,7 @@
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
         </div>
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="الاسم، رقم التتبع، الموبايل، الرقم القومي..."
-          autocomplete="off"
-        />
+        <input type="text" id="searchInput" placeholder="الاسم، رقم التتبع، الموبايل، الرقم القومي..." autocomplete="off" />
       </div>
 
       <div class="form-group">
@@ -721,9 +715,14 @@
         <select id="statusFilter">
           <option value="all">كل الحالات</option>
           <option value="pending">بانتظار الفحص</option>
+          <option value="ai_review">فحص تلقائي</option>
           <option value="under_review">تحت المراجعة</option>
-          <option value="approved">مقبول / مدفوع</option>
-          <option value="card_ready">الكارنية جاهز</option>
+          <option value="needs_docs">مستندات ناقصة</option>
+          <option value="approved">مقبول</option>
+          <option value="awaiting_payment">بانتظار الدفع</option>
+          <option value="paid">تم الدفع</option>
+          <option value="awaiting_membership_no">بانتظار رقم العضوية</option>
+          <option value="card_ready">كارنية جاهز</option>
           <option value="delivered">تم الاستلام</option>
           <option value="rejected">مرفوض</option>
         </select>
@@ -733,6 +732,40 @@
         <label for="typeFilter">نوع العضوية</label>
         <select id="typeFilter">
           <option value="all">كل الأنواع</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="govFilter">المحافظة</label>
+        <select id="govFilter">
+          <option value="all">كل المحافظات</option>
+          <option>القاهرة</option>
+          <option>الجيزة</option>
+          <option>الإسكندرية</option>
+          <option>الدقهلية</option>
+          <option>الشرقية</option>
+          <option>القليوبية</option>
+          <option>المنوفية</option>
+          <option>الغربية</option>
+          <option>البحيرة</option>
+          <option>كفر الشيخ</option>
+          <option>دمياط</option>
+          <option>بورسعيد</option>
+          <option>الإسماعيلية</option>
+          <option>السويس</option>
+          <option>شمال سيناء</option>
+          <option>جنوب سيناء</option>
+          <option>الفيوم</option>
+          <option>بني سويف</option>
+          <option>المنيا</option>
+          <option>أسيوط</option>
+          <option>سوهاج</option>
+          <option>قنا</option>
+          <option>الأقصر</option>
+          <option>أسوان</option>
+          <option>البحر الأحمر</option>
+          <option>الوادي الجديد</option>
+          <option>مطروح</option>
         </select>
       </div>
 
@@ -768,6 +801,7 @@
             <th>العضو</th>
             <th>رقم التتبع</th>
             <th>نوع العضوية</th>
+            <th>المحافظة</th>
             <th>الحالة</th>
             <th>الموبايل</th>
             <th>التاريخ</th>
@@ -776,7 +810,7 @@
         </thead>
         <tbody id="appsTableBody">
           <tr>
-            <td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">
+            <td colspan="8" style="text-align:center;padding:40px;color:var(--text-dim);">
               جاري التحميل...
             </td>
           </tr>
@@ -804,15 +838,7 @@
 <div id="statusModal" class="modal modal-sm">
   <div class="modal-content">
 
-    <div style="
-      padding:20px 24px;
-      border-bottom:1px solid var(--border-soft);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      background:linear-gradient(135deg, rgba(var(--accent-rgb), 0.04), transparent);
-    ">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg, rgba(var(--accent-rgb), 0.04), transparent);">
       <div style="display:flex;align-items:center;gap:10px;">
         <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;">
           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -822,12 +848,7 @@
           تحديث الحالة
         </h3>
       </div>
-      <button type="button" onclick="closeStatusModal()" style="
-        width:32px;height:32px;border-radius:var(--radius-sm);
-        background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
-        color:var(--text-muted);cursor:pointer;
-        display:flex;align-items:center;justify-content:center;
-      ">
+      <button type="button" onclick="closeStatusModal()" style="width:32px;height:32px;border-radius:var(--radius-sm);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;">
         <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;">
           <line x1="18" y1="6" x2="6" y2="18" />
           <line x1="6" y1="6" x2="18" y2="18" />
@@ -846,7 +867,10 @@
           <option value="needs_docs">مستندات ناقصة</option>
           <option value="approved">مقبول مبدئيًا</option>
           <option value="rejected">مرفوض</option>
+          <option value="awaiting_payment">بانتظار الدفع</option>
           <option value="paid">تم الدفع</option>
+          <option value="awaiting_membership_no">بانتظار رقم العضوية</option>
+          <option value="membership_no_assigned">تم إصدار رقم العضوية</option>
           <option value="card_processing">جاري تجهيز الكارنية</option>
           <option value="card_ready">الكارنية جاهز</option>
           <option value="delivered">تم الاستلام</option>
@@ -854,26 +878,44 @@
         </select>
       </div>
 
+      <div class="form-group" id="missingDocsField" style="display:none;">
+        <label>الأوراق الناقصة</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <label class="form-check" style="padding:10px 12px;background:rgba(0,0,0,0.3);border:1px solid var(--border-soft);border-radius:8px;font-size:12.5px;">
+            <input type="checkbox" name="missing_doc" value="id_front" />
+            <span>بطاقة (وجه)</span>
+          </label>
+          <label class="form-check" style="padding:10px 12px;background:rgba(0,0,0,0.3);border:1px solid var(--border-soft);border-radius:8px;font-size:12.5px;">
+            <input type="checkbox" name="missing_doc" value="id_back" />
+            <span>بطاقة (ظهر)</span>
+          </label>
+          <label class="form-check" style="padding:10px 12px;background:rgba(0,0,0,0.3);border:1px solid var(--border-soft);border-radius:8px;font-size:12.5px;">
+            <input type="checkbox" name="missing_doc" value="certificate" />
+            <span>الشهادة</span>
+          </label>
+          <label class="form-check" style="padding:10px 12px;background:rgba(0,0,0,0.3);border:1px solid var(--border-soft);border-radius:8px;font-size:12.5px;">
+            <input type="checkbox" name="missing_doc" value="photo" />
+            <span>الصورة</span>
+          </label>
+          <label class="form-check" style="padding:10px 12px;background:rgba(0,0,0,0.3);border:1px solid var(--border-soft);border-radius:8px;font-size:12.5px;">
+            <input type="checkbox" name="missing_doc" value="work_certificate" />
+            <span>إثبات عمل</span>
+          </label>
+          <label class="form-check" style="padding:10px 12px;background:rgba(0,0,0,0.3);border:1px solid var(--border-soft);border-radius:8px;font-size:12.5px;">
+            <input type="checkbox" name="missing_doc" value="criminal_record" />
+            <span>فيش وتشبيه</span>
+          </label>
+        </div>
+      </div>
+
       <div class="form-group">
-        <label for="statusNotes">ملاحظات (اختياري)</label>
-        <textarea
-          id="statusNotes"
-          placeholder="أضف ملاحظات حول هذا التحديث..."
-          rows="3"
-        ></textarea>
+        <label for="statusNotes">ملاحظات (تظهر في الـ Timeline)</label>
+        <textarea id="statusNotes" placeholder="أضف ملاحظات واضحة ستظهر للعضو في شاشة التتبع..." rows="3"></textarea>
       </div>
     </div>
 
-    <div style="
-      padding:16px 24px;
-      border-top:1px solid var(--border-soft);
-      display:flex;
-      gap:10px;
-      justify-content:flex-end;
-    ">
-      <button type="button" class="btn btn-ghost" onclick="closeStatusModal()">
-        إلغاء
-      </button>
+    <div style="padding:16px 24px;border-top:1px solid var(--border-soft);display:flex;gap:10px;justify-content:flex-end;">
+      <button type="button" class="btn btn-ghost" onclick="closeStatusModal()">إلغاء</button>
       <button type="button" class="btn btn-primary" id="saveStatusBtn">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <polyline points="20 6 9 17 4 12" />
@@ -902,17 +944,12 @@
 <script src="js/dashboard.js"></script>
 
 <script>
-  /* ============================================
-     MOBILE NAV
-     ============================================ */
   window.toggleMobileNav = function () {
     const nav = document.getElementById('navLinks');
     if (nav) nav.classList.toggle('open');
   };
 
-  /* ============================================
-     BACKGROUND PARTICLES
-     ============================================ */
+  /* Background particles */
   (function () {
     const canvas = document.getElementById('bgCanvas');
     if (!canvas) return;
@@ -920,8 +957,7 @@
     let W = 0, H = 0, dots = [];
 
     function accentRgb() {
-      const raw = getComputedStyle(document.documentElement)
-        .getPropertyValue('--accent-rgb').trim();
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim();
       if (raw) {
         const parts = raw.split(',').map(s => parseInt(s.trim()));
         return { r: parts[0] || 0, g: parts[1] || 240, b: parts[2] || 255 };
@@ -931,12 +967,9 @@
 
     function resize() {
       const dpr = window.devicePixelRatio || 1;
-      W = window.innerWidth;
-      H = window.innerHeight;
-      canvas.width = W * dpr;
-      canvas.height = H * dpr;
-      canvas.style.width = W + 'px';
-      canvas.style.height = H + 'px';
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       init();
     }
@@ -958,18 +991,14 @@
     function loop() {
       const rgb = accentRgb();
       ctx.clearRect(0, 0, W, H);
-
       dots.forEach((d, i) => {
-        d.x += d.vx;
-        d.y += d.vy;
+        d.x += d.vx; d.y += d.vy;
         if (d.x < 0 || d.x > W) d.vx *= -1;
         if (d.y < 0 || d.y > H) d.vy *= -1;
-
         ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.4)`;
         ctx.beginPath();
         ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
         ctx.fill();
-
         for (let j = i + 1; j < dots.length; j++) {
           const dx = d.x - dots[j].x;
           const dy = d.y - dots[j].y;
@@ -984,7 +1013,6 @@
           }
         }
       });
-
       requestAnimationFrame(loop);
     }
 
@@ -997,15 +1025,20 @@
     loop();
   })();
 
-  /* ============================================
-     SEARCH — Force numeric for national ID-like input
-     ============================================ */
+  /* Report toggle */
   (function () {
-    const s = document.getElementById('searchInput');
-    if (!s) return;
-    // Do nothing — search accepts both text and numbers
-  })();
+    const btn = document.getElementById('reportToggleBtn');
+    const card = document.getElementById('reportCard');
+    if (!btn || !card) return;
 
+    btn.addEventListener('click', () => {
+      const isHidden = card.style.display === 'none';
+      card.style.display = isHidden ? 'block' : 'none';
+      if (isHidden) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  })();
 </script>
 
 </body>
