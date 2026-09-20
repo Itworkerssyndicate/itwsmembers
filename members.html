@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="neon-dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#000000" />
+<meta name="description" content="إدارة الأعضاء — نقابة تكنولوجيا المعلومات والبرمجيات" />
+<title>إدارة الأعضاء — نقابة تكنولوجيا المعلومات والبرمجيات</title>
+
+<link rel="icon" id="faviconLink" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="css/themes.css" />
+<link rel="stylesheet" href="css/style.css" />
+
+<style>
+  /* ============================================
+     PAGE-SPECIFIC: MEMBERS
+     ============================================ */
+  body { padding: 100px 0 40px; }
+
+  .members-wrap {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Page header */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .page-header-info { flex: 1; min-width: 240px; }
+
+  .page-header-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: clamp(24px, 3.5vw, 32px);
+    font-weight: 900;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 3s linear infinite;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  @keyframes shine { to { background-position: 200% center; } }
+  .page-header-sub { font-size: 13.5px; color: var(--text-muted); }
+
+  .user-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 18px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .user-avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.2), rgba(var(--accent-2-rgb), 0.2));
+    border: 1.5px solid rgba(var(--accent-rgb), 0.4);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: var(--glow-accent);
+  }
+  .user-avatar svg {
+    width: 20px; height: 20px;
+    stroke: var(--accent); fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .user-info { line-height: 1.25; }
+  .user-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
+  .user-role { font-size: 11.5px; color: var(--text-dim); letter-spacing: 0.5px; }
+
+  /* Quick stats */
+  .quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .quick-stat {
+    padding: 18px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .quick-stat-icon {
+    width: 46px; height: 46px;
+    border-radius: var(--radius-md);
+    background: rgba(var(--accent-rgb), 0.08);
+    border: 1px solid rgba(var(--accent-rgb), 0.25);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .quick-stat-icon svg {
+    width: 22px; height: 22px;
+    stroke: var(--accent); fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .quick-stat-info { min-width: 0; }
+  .quick-stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent);
+    text-shadow: var(--glow-accent);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .quick-stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* Filters */
+  .filters-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    margin-bottom: 20px;
+  }
+  .filters-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .filters-header svg {
+    width: 18px; height: 18px;
+    stroke: var(--accent); fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .filters-header-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .filters-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: 12px;
+    align-items: end;
+  }
+  .filters-grid .form-group { margin: 0; }
+  .filters-grid .form-group label {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+  .filters-grid input,
+  .filters-grid select {
+    padding: 10px 14px;
+    font-size: 13.5px;
+  }
+
+  .search-input-wrap { position: relative; }
+  .search-input-wrap input { padding-right: 42px; }
+  .search-input-wrap .search-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px; height: 16px;
+    pointer-events: none;
+  }
+  .search-input-wrap .search-icon svg {
+    width: 100%; height: 100%;
+    stroke: var(--text-dim); fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  /* Actions row */
+  .actions-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  /* Table */
+  .table-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .table-card-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .table-card-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .table-card-title svg {
+    width: 18px; height: 18px;
+    stroke: var(--accent); fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .table-card-count {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    max-height: 70vh;
+  }
+  table {
+    width: 100%;
+    min-width: 1300px;
+  }
+  table th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: rgba(10, 12, 20, 0.98);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Member cell */
+  .member-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .member-avatar {
+    width: 38px; height: 38px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-2-rgb), 0.15));
+    border: 1px solid rgba(var(--accent-rgb), 0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 11px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .member-info { min-width: 0; line-height: 1.25; }
+  .member-name {
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+  }
+  .member-nid {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  /* Membership No badge */
+  .mno-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: linear-gradient(135deg, rgba(var(--success-rgb), 0.15), rgba(var(--accent-rgb), 0.1));
+    border: 1.5px solid var(--success);
+    border-radius: var(--radius-full);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--success);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .mno-pending {
+    display: inline-block;
+    padding: 4px 12px;
+    background: rgba(var(--warning-rgb), 0.1);
+    border: 1.5px dashed var(--warning);
+    border-radius: var(--radius-full);
+    font-size: 11.5px;
+    color: var(--warning);
+    font-weight: 700;
+  }
+
+  /* Branch badge */
+  .branch-cell {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(var(--accent-rgb), 0.06);
+    border: 1px solid rgba(var(--accent-rgb), 0.18);
+    border-radius: var(--radius-full);
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* Subscription status */
+  .sub-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 11.5px;
+    font-weight: 700;
+    border: 1.5px solid;
+    white-space: nowrap;
+  }
+  .sub-active {
+    background: rgba(var(--success-rgb), 0.1);
+    border-color: var(--success);
+    color: var(--success);
+  }
+  .sub-soon {
+    background: rgba(var(--warning-rgb), 0.1);
+    border-color: var(--warning);
+    color: var(--warning);
+  }
+  .sub-expired {
+    background: rgba(var(--danger-rgb), 0.1);
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+  .sub-status .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* Actions */
+  .row-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+  }
+  .row-btn {
+    width: 32px; height: 32px;
+    border-radius: var(--radius-sm);
+    border: 1px solid;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .row-btn svg {
+    width: 14px; height: 14px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .row-btn.view-btn {
+    background: rgba(var(--accent-rgb), 0.08);
+    border-color: rgba(var(--accent-rgb), 0.25);
+    color: var(--accent);
+  }
+  .row-btn.view-btn:hover {
+    background: rgba(var(--accent-rgb), 0.2);
+    transform: translateY(-2px);
+  }
+  .row-btn.key-btn {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.25);
+    color: #f59e0b;
+  }
+  .row-btn.key-btn:hover {
+    background: rgba(245, 158, 11, 0.2);
+    transform: translateY(-2px);
+  }
+  .row-btn.refresh-btn {
+    background: rgba(var(--success-rgb), 0.08);
+    border-color: rgba(var(--success-rgb), 0.25);
+    color: var(--success);
+  }
+  .row-btn.refresh-btn:hover {
+    background: rgba(var(--success-rgb), 0.2);
+    transform: translateY(-2px);
+  }
+
+  /* Pagination */
+  #paginationBox {
+    padding: 16px 22px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  /* Modal */
+  .modal-content { max-height: 90vh; }
+  .modal-header-custom {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.04), transparent);
+  }
+  .modal-header-custom h3 {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .modal-footer-custom {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-soft);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .close-btn {
+    width: 32px; height: 32px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .close-btn:hover {
+    background: rgba(var(--danger-rgb), 0.15);
+    border-color: rgba(var(--danger-rgb), 0.4);
+    color: var(--danger);
+  }
+  .close-btn svg {
+    width: 14px; height: 14px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round;
+  }
+
+  /* Detail grid */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .detail-item {
+    padding: 12px 14px;
+    background: rgba(10, 12, 20, 0.5);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+  }
+  .detail-item-label {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+  .detail-item-value {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .filters-grid { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 90px 0 30px; }
+    .members-wrap { padding: 0 16px; }
+    .page-header { flex-direction: column; align-items: stretch; }
+    .user-badge { justify-content: center; }
+    .filters-grid { grid-template-columns: 1fr; }
+    .actions-row { flex-direction: column; }
+    .actions-row .btn { width: 100%; }
+    .table-card-header { flex-direction: column; align-items: stretch; }
+    .quick-stats { grid-template-columns: 1fr; }
+  }
+
+  /* Print */
+  @media print {
+    .navbar, .actions-row, .filters-card, #paginationBox,
+    .row-actions, .footer, .bg-grid, .bg-glow, .bg-layer,
+    .user-badge, .quick-stats {
+      display: none !important;
+    }
+    body { padding: 0 !important; background: white !important; color: black !important; }
+    .table-card { border: 1px solid #000 !important; background: white !important; box-shadow: none !important; }
+    table th { background: #f0f0f0 !important; color: black !important; }
+    .member-name, .mno-badge, .branch-cell, .sub-status,
+    .table-card-title, .table-card-count {
+      color: black !important;
+      text-shadow: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND -->
+<canvas id="bgCanvas" class="bg-layer"></canvas>
+<div class="bg-grid"></div>
+<div class="bg-glow glow-1"></div>
+<div class="bg-glow glow-2"></div>
+
+<!-- NAVBAR -->
+<header class="navbar scrolled" id="navbar">
+  <div class="nav-container">
+
+    <a href="home.html" class="nav-logo">
+      <div class="logo-badge">
+        <img id="navLogoImg" src="" alt="شعار النقابة" style="display:none;" />
+        <svg class="logo-fallback" id="navLogoFallback" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+          <line x1="14" y1="4" x2="10" y2="20" />
+        </svg>
+      </div>
+      <div class="logo-text">
+        <div class="logo-main" data-site-name>نقابة تكنولوجيا المعلومات</div>
+        <div class="logo-sub">MEMBERS MANAGEMENT</div>
+      </div>
+    </a>
+
+    <nav class="nav-links" id="navLinks">
+      <a href="dashboard.html">لوحة اللجنة</a>
+      <a href="members.html" class="active">الأعضاء</a>
+      <a href="revenue.html">الإيرادات</a>
+      <a href="subscriptions.html">الاشتراكات</a>
+      <a href="admin.html" id="adminLink" style="display:none;">لوحة النقيب</a>
+      <a href="#" id="logoutBtn" class="btn-login" style="background:rgba(var(--danger-rgb),0.1) !important; border-color:rgba(var(--danger-rgb),0.4) !important; color:var(--danger) !important;">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+        <span>خروج</span>
+      </a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="icon-btn" onclick="toggleMobileNav()" id="mobileToggle" aria-label="القائمة">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+    </div>
+
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="members-wrap">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-header-info">
+      <div class="page-header-title">إدارة الأعضاء</div>
+      <div class="page-header-sub">قاعدة بيانات الأعضاء + الاشتراكات + الاعتماد</div>
+    </div>
+
+    <div class="user-badge">
+      <div class="user-avatar">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      </div>
+      <div class="user-info">
+        <div class="user-name" data-user-name>—</div>
+        <div class="user-role" data-user-role>—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK STATS -->
+  <div class="quick-stats" id="quickStats">
+    <div class="quick-stat">
+      <div class="quick-stat-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      </div>
+      <div class="quick-stat-info">
+        <div class="quick-stat-value" id="statTotalMembers">—</div>
+        <div class="quick-stat-label">إجمالي الأعضاء</div>
+      </div>
+    </div>
+
+    <div class="quick-stat">
+      <div class="quick-stat-icon" style="background:rgba(var(--success-rgb),0.08);border-color:rgba(var(--success-rgb),0.25);">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:var(--success);">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+      </div>
+      <div class="quick-stat-info">
+        <div class="quick-stat-value" id="statActiveSubs" style="color:var(--success);">—</div>
+        <div class="quick-stat-label">اشتراكات نشطة</div>
+      </div>
+    </div>
+
+    <div class="quick-stat">
+      <div class="quick-stat-icon" style="background:rgba(var(--warning-rgb),0.08);border-color:rgba(var(--warning-rgb),0.25);">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:var(--warning);">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      </div>
+      <div class="quick-stat-info">
+        <div class="quick-stat-value" id="statExpiringSoon" style="color:var(--warning);">—</div>
+        <div class="quick-stat-label">تنتهي خلال 30 يوم</div>
+      </div>
+    </div>
+
+    <div class="quick-stat">
+      <div class="quick-stat-icon" style="background:rgba(var(--danger-rgb),0.08);border-color:rgba(var(--danger-rgb),0.25);">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:var(--danger);">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="15" y1="9" x2="9" y2="15" />
+          <line x1="9" y1="9" x2="15" y2="15" />
+        </svg>
+      </div>
+      <div class="quick-stat-info">
+        <div class="quick-stat-value" id="statExpired" style="color:var(--danger);">—</div>
+        <div class="quick-stat-label">اشتراكات منتهية</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters-card">
+    <div class="filters-header">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+      </svg>
+      <div class="filters-header-title">البحث والفلاتر</div>
+    </div>
+
+    <div class="filters-grid">
+
+      <div class="form-group search-input-wrap">
+        <label for="searchInput">بحث</label>
+        <div class="search-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        </div>
+        <input type="text" id="searchInput" placeholder="الاسم، رقم العضوية، الرقم القومي، الموبايل..." autocomplete="off" />
+      </div>
+
+      <div class="form-group">
+        <label for="branchFilter">الشعبة</label>
+        <select id="branchFilter">
+          <option value="all">كل الشعب</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="govFilter">المحافظة</label>
+        <select id="govFilter">
+          <option value="all">كل المحافظات</option>
+          <option>القاهرة</option>
+          <option>الجيزة</option>
+          <option>الإسكندرية</option>
+          <option>الدقهلية</option>
+          <option>الشرقية</option>
+          <option>القليوبية</option>
+          <option>المنوفية</option>
+          <option>الغربية</option>
+          <option>البحيرة</option>
+          <option>كفر الشيخ</option>
+          <option>دمياط</option>
+          <option>بورسعيد</option>
+          <option>الإسماعيلية</option>
+          <option>السويس</option>
+          <option>شمال سيناء</option>
+          <option>جنوب سيناء</option>
+          <option>الفيوم</option>
+          <option>بني سويف</option>
+          <option>المنيا</option>
+          <option>أسيوط</option>
+          <option>سوهاج</option>
+          <option>قنا</option>
+          <option>الأقصر</option>
+          <option>أسوان</option>
+          <option>البحر الأحمر</option>
+          <option>الوادي الجديد</option>
+          <option>مطروح</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="typeFilter">نوع العضوية</label>
+        <select id="typeFilter">
+          <option value="all">كل الأنواع</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="subFilter">حالة الاشتراك</label>
+        <select id="subFilter">
+          <option value="all">الكل</option>
+          <option value="active">نشط</option>
+          <option value="soon">ينتهي قريبًا</option>
+          <option value="expired">منتهي</option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions-row">
+    <button type="button" class="btn btn-outline" id="refreshBtn">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="1 4 1 10 7 10" />
+        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+      </svg>
+      <span>تحديث</span>
+    </button>
+
+    <button type="button" class="btn btn-outline" id="exportCsvBtn">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+      </svg>
+      <span>تصدير Excel (CSV)</span>
+    </button>
+
+    <button type="button" class="btn btn-outline" id="exportPdfBtn">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+      </svg>
+      <span>طباعة / PDF</span>
+    </button>
+
+    <button type="button" class="btn btn-outline" id="pendingApprovalBtn">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <span>بانتظار رقم العضوية</span>
+    </button>
+
+    <button type="button" class="btn btn-primary" id="headApprovalBtn" style="display:none;">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 7l4 5 5-7 5 7 4-5v10H3V7z" />
+        <path d="M5 20h14" />
+      </svg>
+      <span>اعتماد النقيب</span>
+    </button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-card">
+    <div class="table-card-header">
+      <div class="table-card-title">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        <span>الأعضاء</span>
+      </div>
+      <div class="table-card-count" id="tableCount">—</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>العضو</th>
+            <th>رقم العضوية</th>
+            <th>الشعبة</th>
+            <th>المحافظة</th>
+            <th>الاشتراك</th>
+            <th>المتبقي</th>
+            <th>الموبايل</th>
+            <th style="text-align:center;">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="membersTableBody">
+          <tr>
+            <td colspan="8" style="text-align:center;padding:40px;color:var(--text-dim);">
+              جاري التحميل...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="paginationBox"></div>
+  </div>
+
+</div>
+
+<!-- ============================================
+     MEMBER DETAIL MODAL
+     ============================================ -->
+<div id="memberModal" class="modal modal-lg">
+  <div class="modal-content">
+    <div id="memberModalContent"></div>
+  </div>
+</div>
+
+<!-- ============================================
+     ASSIGN MEMBERSHIP NO MODAL
+     ============================================ -->
+<div id="assignNoModal" class="modal modal-sm">
+  <div class="modal-content">
+
+    <div class="modal-header-custom">
+      <h3>تسجيل رقم العضوية</h3>
+      <button type="button" class="close-btn" onclick="closeAssignModal()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" id="assignAppId" />
+
+      <div class="notice info" style="padding:12px 16px;background:rgba(var(--accent-rgb),0.06);border:1px solid rgba(var(--accent-rgb),0.25);border-radius:10px;font-size:12.5px;color:var(--accent);margin-bottom:16px;line-height:1.7;">
+        <strong>ملاحظة:</strong> رقم العضوية يتم إصداره بشكل تسلسلي. يمكنك تعديله يدويًا.
+      </div>
+
+      <div class="form-group">
+        <label for="assignMemberName">العضو</label>
+        <input type="text" id="assignMemberName" disabled style="opacity:0.7;" />
+      </div>
+
+      <div class="form-group">
+        <label for="assignBranch">الشعبة</label>
+        <select id="assignBranch">
+          <option value="">-- اختر الشعبة --</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="assignNo">رقم العضوية</label>
+        <input type="text" id="assignNo" placeholder="MEM-2026-00001" dir="ltr" style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;" />
+        <span class="form-hint">سيتم توليده تلقائيًا لو تركته فاضيًا</span>
+      </div>
+
+      <div class="form-group" style="margin-bottom:0;">
+        <label for="assignDuration">مدة العضوية (شهور)</label>
+        <input type="number" id="assignDuration" value="12" min="1" max="120" />
+      </div>
+    </div>
+
+    <div class="modal-footer-custom">
+      <button type="button" class="btn btn-ghost" onclick="closeAssignModal()">إلغاء</button>
+      <button type="button" class="btn btn-primary" id="confirmAssignBtn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        <span>اعتماد رقم العضوية</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer" style="margin-top:40px;">
+  <div class="container">
+    <div class="footer-bottom" style="border-top:none;padding-top:0;justify-content:center;">
+      <div>© 2026 <span data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</span> — جميع الحقوق محفوظة</div>
+    </div>
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="js/supabase-config.js"></script>
+<script src="js/theme-manager.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/realtime.js"></script>
+<script src="js/members.js"></script>
+
+<script>
+  window.toggleMobileNav = function () {
+    const nav = document.getElementById('navLinks');
+    if (nav) nav.classList.toggle('open');
+  };
+
+  /* Background particles */
+  (function () {
+    const canvas = document.getElementById('bgCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0, dots = [];
+
+    function accentRgb() {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim();
+      if (raw) {
+        const parts = raw.split(',').map(s => parseInt(s.trim()));
+        return { r: parts[0] || 0, g: parts[1] || 240, b: parts[2] || 255 };
+      }
+      return { r: 0, g: 240, b: 255 };
+    }
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      init();
+    }
+
+    function init() {
+      const count = Math.min(45, Math.max(18, Math.floor(W / 34)));
+      dots = [];
+      for (let i = 0; i < count; i++) {
+        dots.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.25,
+          vy: (Math.random() - 0.5) * 0.25,
+          r: Math.random() * 1.3 + 0.5
+        });
+      }
+    }
+
+    function loop() {
+      const rgb = accentRgb();
+      ctx.clearRect(0, 0, W, H);
+      dots.forEach((d, i) => {
+        d.x += d.vx; d.y += d.vy;
+        if (d.x < 0 || d.x > W) d.vx *= -1;
+        if (d.y < 0 || d.y > H) d.vy *= -1;
+        ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.4)`;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        ctx.fill();
+        for (let j = i + 1; j < dots.length; j++) {
+          const dx = d.x - dots[j].x;
+          const dy = d.y - dots[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 130) {
+            ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.07 * (1 - dist / 130)})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(d.x, d.y);
+            ctx.lineTo(dots[j].x, dots[j].y);
+            ctx.stroke();
+          }
+        }
+      });
+      requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('resize', () => {
+      clearTimeout(window.__membersResizeT);
+      window.__membersResizeT = setTimeout(resize, 200);
+    });
+
+    resize();
+    loop();
+  })();
+</script>
+
+</body>
+</html>
