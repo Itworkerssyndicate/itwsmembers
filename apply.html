@@ -7,7 +7,6 @@
 <meta name="description" content="تقديم طلب عضوية — نقابة تكنولوجيا المعلومات والبرمجيات" />
 <title>تقديم عضوية — نقابة تكنولوجيا المعلومات والبرمجيات</title>
 
-<!-- FAVICON -->
 <link rel="icon" id="faviconLink" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
 
@@ -37,12 +36,7 @@
     font-family: 'Tajawal', sans-serif;
     font-size: clamp(28px, 5vw, 42px);
     font-weight: 900;
-    background: linear-gradient(
-      90deg,
-      var(--accent),
-      var(--accent-2),
-      var(--accent)
-    );
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
@@ -52,9 +46,7 @@
     line-height: 1.3;
   }
 
-  @keyframes shine {
-    to { background-position: 200% center; }
-  }
+  @keyframes shine { to { background-position: 200% center; } }
 
   .apply-hero p {
     font-size: 15px;
@@ -124,7 +116,7 @@
     flex-shrink: 0;
   }
 
-  /* Form container */
+  /* Container */
   .apply-container {
     max-width: 880px;
     margin: 0 auto;
@@ -154,12 +146,7 @@
     right: 0;
     width: 100%;
     height: 2px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--accent),
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
     opacity: 0.4;
   }
 
@@ -176,11 +163,7 @@
     width: 42px;
     height: 42px;
     border-radius: var(--radius-md);
-    background: linear-gradient(
-      135deg,
-      rgba(var(--accent-rgb), 0.15),
-      rgba(var(--accent-2-rgb), 0.15)
-    );
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-2-rgb), 0.15));
     border: 1px solid rgba(var(--accent-rgb), 0.3);
     display: flex;
     align-items: center;
@@ -212,13 +195,12 @@
     color: var(--text-dim);
   }
 
-  /* Price display */
   #priceDisplay {
     margin-top: 14px;
     display: none;
   }
 
-  /* File grid */
+  /* Files grid */
   .files-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -226,7 +208,21 @@
     margin-top: 8px;
   }
 
-  /* Terms box */
+  /* Optional label */
+  .optional-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(var(--warning-rgb), 0.15);
+    border: 1px solid var(--warning);
+    border-radius: 100px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--warning);
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  /* Terms */
   .terms-box {
     padding: 16px 18px;
     background: rgba(var(--accent-rgb), 0.04);
@@ -236,11 +232,6 @@
     color: var(--text-muted);
     line-height: 1.75;
     margin-bottom: 16px;
-  }
-
-  .terms-box strong {
-    color: var(--accent);
-    font-weight: 700;
   }
 
   /* Submit area */
@@ -282,101 +273,393 @@
     flex-shrink: 0;
   }
 
-  .info-banner strong {
-    color: var(--accent);
-    font-weight: 700;
+  /* Camera buttons inside file-upload */
+  .upload-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
-  /* Draft indicator */
-  .draft-indicator {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    z-index: 90;
-    padding: 8px 14px;
-    background: rgba(var(--accent-rgb), 0.1);
-    border: 1px solid rgba(var(--accent-rgb), 0.3);
-    border-radius: var(--radius-full);
-    font-size: 11.5px;
-    font-weight: 600;
-    color: var(--accent);
-    display: flex;
+  .upload-actions button {
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
+    gap: 6px;
+    padding: 7px 14px;
+    background: rgba(var(--accent-rgb), 0.08);
+    border: 1.5px solid rgba(var(--accent-rgb), 0.3);
+    border-radius: 8px;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .upload-actions button:hover {
+    background: rgba(var(--accent-rgb), 0.18);
+    transform: translateY(-1px);
+  }
+
+  .upload-actions button svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Camera modal */
+  .camera-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(0, 0, 0, 0.95);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
   }
 
-  .draft-indicator.visible {
-    opacity: 1;
+  .camera-modal.open {
+    display: flex;
   }
 
-  .draft-indicator .dot {
-    width: 6px;
-    height: 6px;
+  .camera-modal-content {
+    background: #000;
+    border: 2px solid var(--accent);
+    border-radius: var(--radius-xl);
+    max-width: 800px;
+    width: 100%;
+    max-height: 95vh;
+    overflow: hidden;
+    box-shadow: var(--glow-accent);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .camera-header {
+    padding: 16px 20px;
+    background: rgba(var(--accent-rgb), 0.08);
+    border-bottom: 1px solid rgba(var(--accent-rgb), 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .camera-header h3 {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .camera-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255, 85, 85, 0.15);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .camera-close svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .camera-body {
+    position: relative;
+    background: #000;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    overflow: hidden;
+  }
+
+  #cameraVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    max-height: 60vh;
+  }
+
+  /* Guide overlay */
+  .camera-guide {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .guide-box {
+    width: 85%;
+    height: 55%;
+    border: 3px dashed var(--accent);
+    border-radius: 12px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    position: relative;
+  }
+
+  .guide-box::before,
+  .guide-box::after {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border: 3px solid var(--accent);
+  }
+
+  .guide-box::before {
+    top: -3px;
+    right: -3px;
+    border-bottom: none;
+    border-left: none;
+    border-top-right-radius: 12px;
+  }
+
+  .guide-box::after {
+    bottom: -3px;
+    left: -3px;
+    border-top: none;
+    border-right: none;
+    border-bottom-left-radius: 12px;
+  }
+
+  .camera-hint {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 12.5px;
+    font-weight: 600;
+    border: 1px solid var(--accent);
+    white-space: nowrap;
+  }
+
+  .camera-footer {
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border-top: 1px solid rgba(var(--accent-rgb), 0.3);
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .camera-btn {
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.25s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .camera-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .camera-btn-capture {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #000;
+    box-shadow: var(--glow-accent);
+  }
+
+  .camera-btn-capture:hover {
+    transform: translateY(-2px);
+  }
+
+  .camera-btn-switch {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+  }
+
+  .camera-btn-switch:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  /* AI Analysis Overlay */
+  .ai-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99998;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .ai-overlay.open {
+    display: flex;
+  }
+
+  .ai-card {
+    background: var(--card-bg-solid);
+    border: 2px solid var(--accent);
+    border-radius: var(--radius-xl);
+    padding: 32px 28px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--glow-accent);
+  }
+
+  .ai-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
     border-radius: 50%;
-    background: var(--accent);
-    animation: pulseDot 1.5s ease-in-out infinite;
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-2-rgb), 0.15));
+    border: 2px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    animation: aiPulse 2s ease-in-out infinite;
   }
 
-  @keyframes pulseDot {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50%      { transform: scale(1.4); opacity: 0.6; }
+  @keyframes aiPulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.4); }
+    50% { box-shadow: 0 0 60px rgba(var(--accent-rgb), 0.7); }
+  }
+
+  .ai-icon svg {
+    width: 36px;
+    height: 36px;
+    stroke: var(--accent);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    animation: aiRotate 3s linear infinite;
+  }
+
+  @keyframes aiRotate {
+    to { transform: rotate(360deg); }
+  }
+
+  .ai-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .ai-status {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    min-height: 20px;
+  }
+
+  .ai-progress {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .ai-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    box-shadow: 0 0 15px var(--accent);
+    transition: width 0.4s;
+  }
+
+  .ai-result {
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.7;
+    display: none;
+  }
+
+  .ai-result.show { display: block; }
+  .ai-result.success {
+    background: rgba(var(--success-rgb), 0.1);
+    border: 1.5px solid var(--success);
+    color: var(--success);
+  }
+  .ai-result.error {
+    background: rgba(var(--danger-rgb), 0.1);
+    border: 1.5px solid var(--danger);
+    color: var(--danger);
+  }
+  .ai-result.warning {
+    background: rgba(var(--warning-rgb), 0.1);
+    border: 1.5px solid var(--warning);
+    color: var(--warning);
+  }
+
+  .ai-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
   /* Responsive */
   @media (max-width: 768px) {
-    .files-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .form-section {
-      padding: 22px 18px;
-    }
-
-    .apply-hero {
-      padding: 110px 18px 30px;
-    }
-
-    .steps-indicator {
-      gap: 0;
-    }
-
-    .step-pill {
-      padding: 8px 12px;
-      font-size: 11.5px;
-    }
-
-    .step-pill .pill-label {
-      display: none;
-    }
-
-    .step-divider {
-      width: 12px;
-    }
-
-    .submit-area .btn {
-      min-width: 100%;
-    }
+    .files-grid { grid-template-columns: 1fr; }
+    .form-section { padding: 22px 18px; }
+    .apply-hero { padding: 110px 18px 30px; }
+    .steps-indicator { gap: 0; }
+    .step-pill { padding: 8px 12px; font-size: 11.5px; }
+    .step-pill .pill-label { display: none; }
+    .step-divider { width: 12px; }
+    .submit-area .btn { min-width: 100%; }
+    .camera-modal-content { max-height: 100vh; }
   }
 
   @media (max-width: 480px) {
-    .form-section-icon {
-      width: 36px;
-      height: 36px;
-    }
-
-    .form-section-icon svg {
-      width: 18px;
-      height: 18px;
-    }
-
-    .form-section-title {
-      font-size: 16px;
-    }
+    .form-section-icon { width: 36px; height: 36px; }
+    .form-section-icon svg { width: 18px; height: 18px; }
+    .form-section-title { font-size: 16px; }
   }
 </style>
 </head>
@@ -402,7 +685,7 @@
         </svg>
       </div>
       <div class="logo-text">
-        <div class="logo-main" id="navSiteName" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
+        <div class="logo-main" data-site-name>نقابة تكنولوجيا المعلومات</div>
         <div class="logo-sub">IT WORKERS SYNDICATE</div>
       </div>
     </a>
@@ -440,7 +723,6 @@
   <h1>فورم تقديم العضوية</h1>
   <p>املأ البيانات التالية بعناية، وارفع المستندات المطلوبة. مدة التقديم لا تتجاوز 5 دقائق.</p>
 
-  <!-- Steps indicator -->
   <div class="steps-indicator">
     <div class="step-pill active" data-step-pill="1">
       <span class="pill-num">1</span>
@@ -454,7 +736,7 @@
     <div class="step-divider"></div>
     <div class="step-pill" data-step-pill="3">
       <span class="pill-num">3</span>
-      <span class="pill-label">المراجعة</span>
+      <span class="pill-label">الفحص</span>
     </div>
     <div class="step-divider"></div>
     <div class="step-pill" data-step-pill="4">
@@ -464,10 +746,9 @@
   </div>
 </section>
 
-<!-- FORM CONTAINER -->
+<!-- CONTAINER -->
 <div class="apply-container">
 
-  <!-- Info banner -->
   <div class="info-banner">
     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <circle cx="12" cy="12" r="10" />
@@ -475,11 +756,10 @@
       <line x1="12" y1="8" x2="12.01" y2="8" />
     </svg>
     <div>
-      <strong>ملاحظة:</strong> تأكد من صحة بياناتك، سيتم مراجعتها من لجنة العضويات. الوقت المتوقع للرد: 24-48 ساعة.
+      <strong>ملاحظة:</strong> سيتم فحص مستنداتك تلقائيًا عند الرفع. تأكد من وضوح الصور.
     </div>
   </div>
 
-  <!-- Alert box -->
   <div id="alertBox"></div>
 
   <!-- FORM -->
@@ -503,75 +783,28 @@
       <div class="form-row">
         <div class="form-group">
           <label for="full_name">الاسم الرباعي <span class="required">*</span></label>
-          <input
-            type="text"
-            id="full_name"
-            name="full_name"
-            placeholder="مثال: أحمد محمد علي حسن"
-            required
-            minlength="6"
-            autocomplete="name"
-          />
+          <input type="text" id="full_name" name="full_name" placeholder="مثال: أحمد محمد علي حسن" required minlength="6" autocomplete="name" />
         </div>
-
         <div class="form-group">
           <label for="national_id">الرقم القومي (14 رقم) <span class="required">*</span></label>
-          <input
-            type="text"
-            id="national_id"
-            name="national_id"
-            placeholder="29901234567890"
-            required
-            pattern="\d{14}"
-            maxlength="14"
-            inputmode="numeric"
-            dir="ltr"
-            style="text-align:right;"
-          />
+          <input type="text" id="national_id" name="national_id" placeholder="29901234567890" required pattern="\d{14}" maxlength="14" inputmode="numeric" dir="ltr" style="text-align:right;" />
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
           <label for="phone">رقم الموبايل <span class="required">*</span></label>
-          <input
-            type="tel"
-            id="phone"
-            name="phone"
-            placeholder="01xxxxxxxxx"
-            required
-            pattern="01[0125]\d{8}"
-            maxlength="11"
-            inputmode="numeric"
-            dir="ltr"
-            style="text-align:right;"
-            autocomplete="tel"
-          />
+          <input type="tel" id="phone" name="phone" placeholder="01xxxxxxxxx" required pattern="01[0125]\d{8}" maxlength="11" inputmode="numeric" dir="ltr" style="text-align:right;" autocomplete="tel" />
         </div>
-
         <div class="form-group">
           <label for="email">البريد الإلكتروني</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            placeholder="example@email.com"
-            dir="ltr"
-            style="text-align:right;"
-            autocomplete="email"
-          />
+          <input type="email" id="email" name="email" placeholder="example@email.com" dir="ltr" style="text-align:right;" autocomplete="email" />
         </div>
       </div>
 
       <div class="form-group">
         <label for="address">العنوان</label>
-        <input
-          type="text"
-          id="address"
-          name="address"
-          placeholder="المحافظة - المدينة - الشارع"
-          autocomplete="street-address"
-        />
+        <input type="text" id="address" name="address" placeholder="المحافظة - المدينة - الشارع" autocomplete="street-address" />
       </div>
     </div>
 
@@ -598,40 +831,38 @@
           </select>
           <div id="priceDisplay"></div>
         </div>
-
         <div class="form-group">
           <label for="qualification">المؤهل الدراسي</label>
-          <input
-            type="text"
-            id="qualification"
-            name="qualification"
-            placeholder="بكالوريوس حاسبات ومعلومات"
-          />
+          <input type="text" id="qualification" name="qualification" placeholder="بكالوريوس حاسبات ومعلومات" />
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
           <label for="graduation_year">سنة التخرج</label>
-          <input
-            type="number"
-            id="graduation_year"
-            name="graduation_year"
-            placeholder="2024"
-            min="1970"
-            max="2030"
-            inputmode="numeric"
-          />
+          <input type="number" id="graduation_year" name="graduation_year" placeholder="2024" min="1970" max="2030" inputmode="numeric" />
         </div>
+        <div class="form-group">
+          <label for="grade">التقدير العام</label>
+          <select id="grade" name="grade">
+            <option value="">-- اختر التقدير --</option>
+            <option value="امتياز">امتياز</option>
+            <option value="جيد جداً">جيد جداً</option>
+            <option value="جيد">جيد</option>
+            <option value="مقبول">مقبول</option>
+            <option value="بدون تقدير">بدون تقدير</option>
+          </select>
+        </div>
+      </div>
 
+      <div class="form-row">
         <div class="form-group">
           <label for="employer">جهة العمل / الجامعة</label>
-          <input
-            type="text"
-            id="employer"
-            name="employer"
-            placeholder="اسم الشركة أو الجامعة"
-          />
+          <input type="text" id="employer" name="employer" placeholder="اسم الشركة أو الجامعة" />
+        </div>
+        <div class="form-group">
+          <label for="job_title">المسمى الوظيفي</label>
+          <input type="text" id="job_title" name="job_title" placeholder="مطور برمجيات، محلل بيانات..." />
         </div>
       </div>
 
@@ -670,7 +901,41 @@
       </div>
     </div>
 
-    <!-- ============ SECTION 3: ATTACHMENTS ============ -->
+    <!-- ============ SECTION 3: OTHER SYNDICATE ============ -->
+    <div class="form-section">
+      <div class="form-section-header">
+        <div class="form-section-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+        </div>
+        <div>
+          <div class="form-section-title">الانتماءات النقابية</div>
+          <div class="form-section-sub">هل أنت مقيد في نقابة أخرى؟</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>هل أنت مقيد في نقابة أخرى؟</label>
+        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
+          <label class="form-check" style="flex:1;min-width:140px;padding:14px 18px;background:rgba(0,0,0,0.3);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;">
+            <input type="radio" name="is_other_syndicate" value="no" checked />
+            <span>لا، لست مقيدًا في نقابة أخرى</span>
+          </label>
+          <label class="form-check" style="flex:1;min-width:140px;padding:14px 18px;background:rgba(0,0,0,0.3);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;">
+            <input type="radio" name="is_other_syndicate" value="yes" />
+            <span>نعم، أنا مقيد في نقابة أخرى</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group" id="otherSyndicateField" style="display:none;">
+        <label for="other_syndicate">اسم النقابة الأخرى <span class="required">*</span></label>
+        <input type="text" id="other_syndicate" name="other_syndicate" placeholder="مثال: نقابة المهندسين، نقابة التجاريين..." />
+      </div>
+    </div>
+
+    <!-- ============ SECTION 4: ATTACHMENTS ============ -->
     <div class="form-section">
       <div class="form-section-header">
         <div class="form-section-icon">
@@ -699,8 +964,17 @@
                 <circle cx="12" cy="13" r="4" />
               </svg>
             </div>
-            <div class="text">اضغط لاختيار صورة</div>
+            <div class="text">اضغط لاختيار صورة أو التقط مباشرة</div>
             <div class="filename"></div>
+            <div class="upload-actions">
+              <button type="button" onclick="event.preventDefault();event.stopPropagation();openCamera('id_front')">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+                التقاط صورة
+              </button>
+            </div>
           </label>
           <div class="ai-check" id="check-id_front"></div>
         </div>
@@ -716,8 +990,17 @@
                 <circle cx="12" cy="13" r="4" />
               </svg>
             </div>
-            <div class="text">اضغط لاختيار صورة</div>
+            <div class="text">اضغط لاختيار صورة أو التقط مباشرة</div>
             <div class="filename"></div>
+            <div class="upload-actions">
+              <button type="button" onclick="event.preventDefault();event.stopPropagation();openCamera('id_back')">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+                التقاط صورة
+              </button>
+            </div>
           </label>
           <div class="ai-check" id="check-id_back"></div>
         </div>
@@ -733,8 +1016,17 @@
                 <polyline points="14 2 14 8 20 8" />
               </svg>
             </div>
-            <div class="text">اضغط لاختيار ملف</div>
+            <div class="text">اضغط لاختيار ملف أو التقط مباشرة</div>
             <div class="filename"></div>
+            <div class="upload-actions">
+              <button type="button" onclick="event.preventDefault();event.stopPropagation();openCamera('certificate')">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+                التقاط صورة
+              </button>
+            </div>
           </label>
           <div class="ai-check" id="check-certificate"></div>
         </div>
@@ -750,16 +1042,61 @@
                 <circle cx="12" cy="7" r="4" />
               </svg>
             </div>
-            <div class="text">اضغط لاختيار صورة</div>
+            <div class="text">اضغط لاختيار صورة أو التقط مباشرة</div>
             <div class="filename"></div>
+            <div class="upload-actions">
+              <button type="button" onclick="event.preventDefault();event.stopPropagation();openCamera('photo')">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+                التقاط صورة
+              </button>
+            </div>
           </label>
           <div class="ai-check" id="check-photo"></div>
+        </div>
+
+        <!-- Work Certificate (Optional) -->
+        <div class="form-group">
+          <label>شهادة إثبات عمل <span class="optional-tag">اختياري</span></label>
+          <label class="file-upload" id="upload-work_certificate">
+            <input type="file" name="work_certificate" accept="image/*,application/pdf" />
+            <div class="icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="7" width="20" height="14" rx="2" />
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+              </svg>
+            </div>
+            <div class="text">اضغط لاختيار ملف</div>
+            <div class="filename"></div>
+          </label>
+          <div class="ai-check" id="check-work_certificate"></div>
+        </div>
+
+        <!-- Criminal Record (Optional) -->
+        <div class="form-group">
+          <label>فيش وتشبيه <span class="optional-tag">اختياري</span></label>
+          <label class="file-upload" id="upload-criminal_record">
+            <input type="file" name="criminal_record" accept="image/*,application/pdf" />
+            <div class="icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="9" y1="13" x2="15" y2="13" />
+                <line x1="9" y1="17" x2="15" y2="17" />
+              </svg>
+            </div>
+            <div class="text">اضغط لاختيار ملف</div>
+            <div class="filename"></div>
+          </label>
+          <div class="ai-check" id="check-criminal_record"></div>
         </div>
 
       </div>
     </div>
 
-    <!-- ============ SECTION 4: TERMS ============ -->
+    <!-- ============ SECTION 5: TERMS ============ -->
     <div class="form-section">
       <div class="form-section-header">
         <div class="form-section-icon">
@@ -793,7 +1130,6 @@
         </svg>
         <span>إرسال الطلب</span>
       </button>
-
       <a href="home.html" class="btn btn-outline btn-lg">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <line x1="19" y1="12" x2="5" y2="12" />
@@ -807,9 +1143,84 @@
 
 </div>
 
-<!-- Draft indicator -->
-<div class="draft-indicator" id="draftIndicator">
-  <span class="dot"></span>
+<!-- ============================================
+     CAMERA MODAL
+     ============================================ -->
+<div class="camera-modal" id="cameraModal">
+  <div class="camera-modal-content">
+    <div class="camera-header">
+      <h3 id="cameraTitle">التقاط صورة</h3>
+      <button type="button" class="camera-close" onclick="closeCamera()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+    <div class="camera-body">
+      <video id="cameraVideo" autoplay playsinline muted></video>
+      <div class="camera-guide">
+        <div class="guide-box"></div>
+      </div>
+      <div class="camera-hint" id="cameraHint">ضع المستند داخل الإطار</div>
+    </div>
+    <div class="camera-footer">
+      <button type="button" class="camera-btn camera-btn-switch" onclick="switchCamera()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="23 4 23 10 17 10" />
+          <polyline points="1 20 1 14 7 14" />
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+        </svg>
+        تبديل الكاميرا
+      </button>
+      <button type="button" class="camera-btn camera-btn-capture" onclick="capturePhoto()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" />
+        </svg>
+        التقاط
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     AI ANALYSIS OVERLAY
+     ============================================ -->
+<div class="ai-overlay" id="aiOverlay">
+  <div class="ai-card">
+    <div class="ai-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+    </div>
+    <div class="ai-title" id="aiTitle">جاري الفحص الذكي</div>
+    <div class="ai-status" id="aiStatus">بدء التحليل...</div>
+    <div class="ai-progress">
+      <div class="ai-progress-fill" id="aiProgressFill"></div>
+    </div>
+    <div class="ai-result" id="aiResult"></div>
+    <div class="ai-actions" id="aiActions" style="display:none;">
+      <button type="button" class="btn btn-outline" onclick="retakePhoto()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="1 4 1 10 7 10" />
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+        </svg>
+        <span>صور تاني</span>
+      </button>
+      <button type="button" class="btn btn-primary" id="aiAcceptBtn" onclick="acceptPhoto()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        <span>استخدام الصورة</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DRAFT INDICATOR -->
+<div class="draft-indicator" id="draftIndicator" style="position:fixed;bottom:20px;left:20px;z-index:90;padding:8px 14px;background:rgba(var(--accent-rgb),0.1);border:1px solid rgba(var(--accent-rgb),0.3);border-radius:100px;font-size:11.5px;font-weight:600;color:var(--accent);display:flex;align-items:center;gap:8px;opacity:0;pointer-events:none;transition:opacity 0.3s;backdrop-filter:blur(10px);">
+  <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulseDot 1.5s ease-in-out infinite;"></span>
   <span>تم حفظ المسودة تلقائيًا</span>
 </div>
 
@@ -938,7 +1349,7 @@
   })();
 
   /* ============================================
-     STEP INDICATOR — Visual Feedback on Scroll
+     STEP INDICATOR
      ============================================ */
   (function () {
     const sections = document.querySelectorAll('.form-section');
@@ -960,28 +1371,7 @@
   })();
 
   /* ============================================
-     DRAFT INDICATOR
-     ============================================ */
-  (function () {
-    const indicator = document.getElementById('draftIndicator');
-    if (!indicator) return;
-
-    let timer = null;
-
-    // Listen for input events to show indicator
-    document.addEventListener('input', (e) => {
-      if (!e.target.closest('#applyForm')) return;
-      if (e.target.type === 'file') return;
-      indicator.classList.add('visible');
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        indicator.classList.remove('visible');
-      }, 2000);
-    });
-  })();
-
-  /* ============================================
-     NATIONAL ID / PHONE — Force numeric
+     NATIONAL ID / PHONE NUMERIC ONLY
      ============================================ */
   (function () {
     const nationalId = document.getElementById('national_id');
@@ -1000,6 +1390,27 @@
     }
   })();
 
+  /* ============================================
+     OTHER SYNDICATE TOGGLE
+     ============================================ */
+  (function () {
+    const radios = document.querySelectorAll('input[name="is_other_syndicate"]');
+    const field = document.getElementById('otherSyndicateField');
+    const input = document.getElementById('other_syndicate');
+
+    radios.forEach(r => {
+      r.addEventListener('change', () => {
+        if (r.value === 'yes' && r.checked) {
+          field.style.display = 'block';
+          input.required = true;
+        } else if (r.value === 'no' && r.checked) {
+          field.style.display = 'none';
+          input.required = false;
+          input.value = '';
+        }
+      });
+    });
+  })();
 </script>
 
 </body>
