@@ -12,20 +12,23 @@
   const SUPABASE_KEY = 'sb_publishable_uh_nhMGHE5OoO4VI097w_g_-64KUF80';
 
   /* ============================================
-     LOAD SUPABASE LIBRARY (Dynamic)
+     STATE
      ============================================ */
   let client = null;
   let ready = false;
   const readyCallbacks = [];
+  let currentSessionId = null;
+  let sessionStartTime = null;
 
+  /* ============================================
+     LOAD SUPABASE LIBRARY
+     ============================================ */
   function loadSupabaseLibrary() {
     return new Promise((resolve, reject) => {
-      // Already loaded?
       if (window.supabase && window.supabase.createClient) {
         return resolve();
       }
 
-      // Check if script already exists
       const existing = document.querySelector('script[data-supabase-lib]');
       if (existing) {
         existing.addEventListener('load', () => resolve());
@@ -33,7 +36,6 @@
         return;
       }
 
-      // Create new script
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
       script.async = true;
@@ -81,7 +83,7 @@
       window.SUPABASE_KEY = SUPABASE_KEY;
       ready = true;
 
-      // Fire all pending callbacks
+      // Fire callbacks
       readyCallbacks.forEach(cb => {
         try { cb(client); } catch (e) { console.error('Callback error:', e); }
       });
@@ -90,10 +92,121 @@
       // Dispatch event
       window.dispatchEvent(new CustomEvent('supabase-ready', { detail: { client } }));
 
+      // Init session tracking
+      initSessionTracking();
+
     } catch (err) {
       console.error('[Supabase] Init failed:', err);
       window.dispatchEvent(new CustomEvent('supabase-error', { detail: { error: err } }));
     }
+  }
+
+  /* ============================================
+     SESSION TRACKING
+     ============================================ */
+  async function initSessionTracking() {
+    if (!client) return;
+
+    try {
+      const { data } = await client.auth.getSession();
+      if (data?.session?.user) {
+        await startSession();
+      }
+
+      // Listen for auth changes
+      client.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          await startSession();
+          // Update last_login_at
+          try {
+            await client
+              .from('users')
+              .update({ last_login_at: new Date().toISOString() })
+              .eq('id', session.user.id);
+          } catch (e) {}
+        } else if (event === 'SIGNED_OUT') {
+          await endSession();
+        }
+      });
+    } catch (e) {
+      console.warn('[Session] Init failed:', e);
+    }
+
+    // End session on page unload
+    window.addEventListener('beforeunload', () => {
+      endSession();
+    });
+  }
+
+  async function startSession() {
+    if (!client) return;
+
+    try {
+      const { data } = await client.auth.getSession();
+      const user = data?.session?.user;
+      if (!user) return;
+
+      sessionStartTime = Date.now();
+
+      const { data: sessionData, error } = await client
+        .from('user_sessions')
+        .insert([{
+          user_id: user.id,
+          login_at: new Date().toISOString(),
+          user_agent: navigator.userAgent.substring(0, 255),
+          device: getDeviceInfo(),
+          is_active: true
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        console.warn('[Session] Start failed:', error.message);
+        return;
+      }
+
+      currentSessionId = sessionData?.id || null;
+      try {
+        localStorage.setItem('its_session_id', currentSessionId);
+      } catch (e) {}
+    } catch (e) {
+      console.warn('[Session] Start error:', e);
+    }
+  }
+
+  async function endSession() {
+    if (!client || !currentSessionId) return;
+
+    try {
+      const duration = sessionStartTime
+        ? Math.round((Date.now() - sessionStartTime) / 1000)
+        : null;
+
+      await client
+        .from('user_sessions')
+        .update({
+          logout_at: new Date().toISOString(),
+          duration_seconds: duration,
+          is_active: false
+        })
+        .eq('id', currentSessionId);
+
+      try {
+        localStorage.removeItem('its_session_id');
+      } catch (e) {}
+
+      currentSessionId = null;
+    } catch (e) {}
+  }
+
+  function getDeviceInfo() {
+    const ua = navigator.userAgent;
+    if (/mobile/i.test(ua)) return 'Mobile';
+    if (/tablet/i.test(ua)) return 'Tablet';
+    if (/iPad/i.test(ua)) return 'iPad';
+    if (/Android/i.test(ua)) return 'Android';
+    if (/iPhone/i.test(ua)) return 'iPhone';
+    return 'Desktop';
   }
 
   /* ============================================
@@ -110,7 +223,7 @@
   };
 
   /* ============================================
-     PUBLIC: getSupabase (sync)
+     PUBLIC: getSupabase
      ============================================ */
   window.getSupabase = function () {
     return client;
@@ -174,13 +287,13 @@
       .replace(/'/g, '&#39;');
   };
 
-  /* Validate Egyptian national ID */
+  /* Validate national ID */
   window.validateNationalId = function (id) {
     if (!id) return false;
     return /^\d{14}$/.test(String(id).trim());
   };
 
-  /* Validate Egyptian phone */
+  /* Validate phone */
   window.validatePhone = function (phone) {
     if (!phone) return false;
     return /^01[0125]\d{8}$/.test(String(phone).trim());
@@ -188,24 +301,23 @@
 
   /* Validate email */
   window.validateEmail = function (email) {
-    if (!email) return true; // Optional
+    if (!email) return true;
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim());
   };
 
-  /* Generate tracking number (client-side preview only) */
+  /* Generate tracking number (client preview) */
   window.generateTrackingNumber = function () {
     const now = new Date();
     const yyyy = now.getFullYear();
     const mm = String(now.getMonth() + 1).padStart(2, '0');
     const rand = String(Math.floor(Math.random() * 100000)).padStart(5, '0');
-    return `ITS-${yyyy}${mm}-${rand}`;
+    return `ITS-${yyyy}-${rand}`;
   };
 
   /* Toast notification */
   window.showToast = function (message, type = 'info', duration = 3500) {
     type = type || 'info';
 
-    // Remove existing toast
     const existing = document.getElementById('itsToast');
     if (existing) existing.remove();
 
@@ -257,7 +369,7 @@
     }, duration);
   };
 
-  /* Debounce helper */
+  /* Debounce */
   window.debounce = function (fn, delay = 300) {
     let timer = null;
     return function (...args) {
@@ -266,7 +378,7 @@
     };
   };
 
-  /* Throttle helper */
+  /* Throttle */
   window.throttle = function (fn, limit = 300) {
     let inThrottle = false;
     return function (...args) {
@@ -285,7 +397,6 @@
       window.showToast('تم النسخ', 'success', 2000);
       return true;
     } catch (e) {
-      // Fallback
       const ta = document.createElement('textarea');
       ta.value = text;
       ta.style.position = 'fixed';
@@ -314,14 +425,14 @@
     return (bytes / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
   };
 
-  /* Truncate text */
+  /* Truncate */
   window.truncate = function (str, len = 40) {
     if (!str) return '';
     str = String(str);
     return str.length > len ? str.slice(0, len) + '...' : str;
   };
 
-  /* Get initials from name */
+  /* Initials */
   window.getInitials = function (name) {
     if (!name) return '?';
     const parts = String(name).trim().split(/\s+/);
@@ -332,8 +443,6 @@
   /* ============================================
      AUTH HELPERS
      ============================================ */
-
-  /* Get current session */
   window.getCurrentSession = async function () {
     if (!client) return null;
     try {
@@ -344,7 +453,6 @@
     }
   };
 
-  /* Get current user */
   window.getCurrentUser = async function () {
     if (!client) return null;
     try {
@@ -355,10 +463,10 @@
     }
   };
 
-  /* Sign out */
   window.signOut = async function (redirect = 'login.html') {
     if (!client) return;
     try {
+      await endSession();
       await client.auth.signOut();
       window.location.href = redirect;
     } catch (e) {
@@ -367,7 +475,6 @@
     }
   };
 
-  /* Check auth and redirect if not logged */
   window.requireAuth = async function (redirect = 'login.html') {
     const session = await window.getCurrentSession();
     if (!session) {
@@ -375,6 +482,45 @@
       return null;
     }
     return session;
+  };
+
+  /* Get user role */
+  window.getUserRole = async function () {
+    if (!client) return null;
+    try {
+      const user = await window.getCurrentUser();
+      if (!user) return null;
+
+      const { data, error } = await client
+        .from('users')
+        .select('role, full_name')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (error) return null;
+      return data || null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  /* Log user action */
+  window.logUserAction = async function (action, entity, entityId, details) {
+    if (!client) return;
+    try {
+      const user = await window.getCurrentUser();
+      if (!user) return;
+
+      await client.from('user_actions').insert([{
+        user_id: user.id,
+        user_email: user.email,
+        action,
+        entity,
+        entity_id: entityId ? String(entityId) : null,
+        details,
+        created_at: new Date().toISOString()
+      }]);
+    } catch (e) {}
   };
 
   /* ============================================
