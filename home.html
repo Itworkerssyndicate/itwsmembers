@@ -4,11 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="theme-color" content="#000000" />
-<meta name="description" content="منظومة العضوية الرقمية لنقابة تكنولوجيا المعلومات والبرمجيات — قدّم طلب عضويتك وتابع حالة طلبك إلكترونيًا." />
-
+<meta name="description" content="نقابة تكنولوجيا المعلومات والبرمجيات — منظومة العضوية الرقمية" />
 <title>نقابة تكنولوجيا المعلومات والبرمجيات</title>
 
-<!-- OPEN GRAPH -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="نقابة تكنولوجيا المعلومات والبرمجيات" />
 <meta property="og:title" content="نقابة تكنولوجيا المعلومات والبرمجيات" />
@@ -16,12 +14,10 @@
 <meta property="og:image" content="https://zenhokbsuxgiyptmdphs.supabase.co/storage/v1/object/public/branding/logo.png" />
 <meta property="og:locale" content="ar_EG" />
 
-<!-- TWITTER -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="نقابة تكنولوجيا المعلومات والبرمجيات" />
 <meta name="twitter:image" content="https://zenhokbsuxgiyptmdphs.supabase.co/storage/v1/object/public/branding/logo.png" />
 
-<!-- FAVICON -->
 <link rel="icon" id="faviconLink" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
 
@@ -33,7 +29,7 @@
 
 <style>
   /* ============================================
-     PAGE-SPECIFIC: ABOUT CARD
+     ABOUT CARD
      ============================================ */
   .about-card {
     position: relative;
@@ -59,11 +55,7 @@
     width: 300px;
     height: 300px;
     border-radius: 50%;
-    background: radial-gradient(
-      circle,
-      rgba(var(--accent-rgb), 0.15),
-      transparent 70%
-    );
+    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.15), transparent 70%);
     pointer-events: none;
   }
 
@@ -72,11 +64,7 @@
     width: 140px;
     height: 140px;
     border-radius: var(--radius-xl);
-    background: radial-gradient(
-      circle at 30% 30%,
-      rgba(var(--accent-rgb), 0.15),
-      rgba(0, 0, 0, 0.4) 70%
-    );
+    background: radial-gradient(circle at 30% 30%, rgba(var(--accent-rgb), 0.15), rgba(0, 0, 0, 0.4) 70%);
     border: 2px solid rgba(var(--accent-rgb), 0.35);
     display: flex;
     align-items: center;
@@ -117,12 +105,7 @@
     color: var(--text);
     margin-bottom: 12px;
     line-height: 1.35;
-    background: linear-gradient(
-      90deg,
-      var(--accent),
-      var(--accent-2),
-      var(--accent)
-    );
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
@@ -130,9 +113,7 @@
     animation: shine 3s linear infinite;
   }
 
-  @keyframes shine {
-    to { background-position: 200% center; }
-  }
+  @keyframes shine { to { background-position: 200% center; } }
 
   .about-text {
     font-size: 15px;
@@ -141,7 +122,6 @@
     white-space: pre-line;
   }
 
-  /* Feature card with logo */
   .feature-icon img {
     max-width: 100%;
     max-height: 100%;
@@ -149,24 +129,12 @@
     filter: drop-shadow(0 0 8px var(--accent));
   }
 
-  /* Feature card animation */
-  .feature-card {
-    animation: fadeUp 0.6s both;
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Code card body (text mode) */
   .code-body.text-mode {
     white-space: pre-wrap;
     word-break: break-word;
     color: rgba(255, 255, 255, 0.85);
   }
 
-  /* Responsive */
   @media (max-width: 768px) {
     .about-card {
       grid-template-columns: 1fr;
@@ -174,7 +142,6 @@
       padding: 28px 22px;
       text-align: center;
     }
-
     .about-logo {
       width: 110px;
       height: 110px;
@@ -183,15 +150,13 @@
   }
 
   @media (max-width: 480px) {
-    .about-card {
-      padding: 22px 18px;
-    }
+    .about-card { padding: 22px 18px; }
   }
 </style>
 </head>
 <body>
 
-<!-- BACKGROUND LAYERS -->
+<!-- BACKGROUND -->
 <canvas id="bgCanvas"></canvas>
 <div class="bg-grid"></div>
 <div class="bg-glow glow-1"></div>
@@ -202,7 +167,7 @@
   <div class="nav-container">
 
     <a href="home.html" class="nav-logo">
-      <div class="logo-badge" id="navLogoBadge">
+      <div class="logo-badge">
         <img id="navLogoImg" src="" alt="شعار النقابة" style="display:none;" />
         <svg class="logo-fallback" id="navLogoFallback" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <polyline points="16 18 22 12 16 6" />
@@ -211,7 +176,7 @@
         </svg>
       </div>
       <div class="logo-text">
-        <div class="logo-main" id="navSiteName" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
+        <div class="logo-main" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
         <div class="logo-sub">IT WORKERS SYNDICATE</div>
       </div>
     </a>
@@ -274,9 +239,7 @@
   </button>
 </div>
 
-<!-- ============================================
-     HERO SECTION
-     ============================================ -->
+<!-- HERO -->
 <section class="hero">
   <div class="hero-inner">
 
@@ -294,7 +257,6 @@
 
       <p class="hero-desc" data-setting="hero_description">
         قدّم طلب عضويتك إلكترونيًا، ارفع مستنداتك، وتابع حالة طلبك لحظة بلحظة.
-        منظومة سريعة، آمنة، وشفافة بالكامل.
       </p>
 
       <div class="hero-actions">
@@ -325,22 +287,17 @@
           <div class="code-dots">
             <span></span><span></span><span></span>
           </div>
-          <div class="code-title" id="codeCardName" data-setting="code_card_name">member.js</div>
+          <div class="code-title" data-setting="code_card_name">syndicate.js</div>
         </div>
-        <pre class="code-body" id="codeCardBody"><code><span class="c-key">const</span> <span class="c-var">member</span> = {
-  <span class="c-prop">name</span>: <span class="c-str">"أحمد محمد"</span>,
-  <span class="c-prop">type</span>: <span class="c-str">"خريج"</span>,
-  <span class="c-prop">status</span>: <span class="c-ok">"APPROVED"</span>,
-  <span class="c-prop">tracking</span>: <span class="c-str">"ITS-202601-12345"</span>,
-  <span class="c-prop">joined</span>: <span class="c-num">2026</span>
-};
-
-<span class="c-cmt">// Real-time synced</span>
-<span class="c-key">await</span> <span class="c-fn">notify</span>(<span class="c-var">member</span>);</code></pre>
+        <pre class="code-body" id="codeCardBody"><code><span class="c-key">const</span> <span class="c-var">syndicate</span> = {
+  <span class="c-prop">vision</span>: <span class="c-str">"نُنمّي المهارات"</span>,
+  <span class="c-prop">mission</span>: <span class="c-str">"نُوحّد الكفاءات"</span>,
+  <span class="c-prop">community</span>: <span class="c-str">"نبني مستقبل رقمي"</span>
+};</code></pre>
         <div class="code-footer">
           <span class="code-status">
             <span class="dot-live"></span>
-            <span id="codeCardStatus" data-setting="code_card_status">LIVE</span>
+            <span data-setting="code_card_status">ACTIVE</span>
           </span>
           <span class="code-time" id="liveClock">--:--:--</span>
         </div>
@@ -350,13 +307,11 @@
   </div>
 </section>
 
-<!-- ============================================
-     ABOUT CARD (Optional — from settings)
-     ============================================ -->
+<!-- ABOUT CARD -->
 <section class="section about-section" id="aboutSection" style="display:none;padding-top:0;">
   <div class="container">
     <div class="about-card">
-      <div class="about-logo" id="aboutLogoBox">
+      <div class="about-logo">
         <img id="aboutLogoImg" src="" alt="" style="display:none;" />
         <svg class="logo-fallback" id="aboutLogoFallback" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <polyline points="16 18 22 12 16 6" />
@@ -365,42 +320,36 @@
         </svg>
       </div>
       <div class="about-content">
-        <h2 class="about-title" id="aboutTitle">عن النقابة</h2>
-        <p class="about-text" id="aboutText"></p>
+        <h2 class="about-title" data-setting="about_card_title">عن النقابة</h2>
+        <p class="about-text" data-setting="about_card_text"></p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============================================
-     FEATURES SECTION (Dynamic from settings)
-     ============================================ -->
+<!-- FEATURES -->
 <section class="section features-section">
   <div class="container">
 
     <div class="section-head">
-      <div class="section-label" data-setting="features_label">المميزات</div>
       <h2 class="section-title" data-setting="features_title">لماذا منصتنا؟</h2>
       <p class="section-desc" data-setting="features_subtitle">منظومة متكاملة صُمّمت خصيصًا لنقابة تكنولوجيا المعلومات</p>
     </div>
 
     <div class="features-grid" id="featuresGrid">
-      <div class="skeleton-card" style="height:200px;"></div>
-      <div class="skeleton-card" style="height:200px;"></div>
-      <div class="skeleton-card" style="height:200px;"></div>
+      <div class="skeleton-card" style="height:200px;border-radius:var(--radius-lg);"></div>
+      <div class="skeleton-card" style="height:200px;border-radius:var(--radius-lg);"></div>
+      <div class="skeleton-card" style="height:200px;border-radius:var(--radius-lg);"></div>
     </div>
 
   </div>
 </section>
 
-<!-- ============================================
-     MEMBERSHIP TYPES (Realtime)
-     ============================================ -->
+<!-- TYPES -->
 <section class="section types-section">
   <div class="container">
 
     <div class="section-head">
-      <div class="section-label" data-setting="types_label">العضويات</div>
       <h2 class="section-title" data-setting="types_title">أنواع العضوية</h2>
       <p class="section-desc" data-setting="types_subtitle">اختر النوع المناسب لك وابدأ التقديم فورًا</p>
     </div>
@@ -415,14 +364,11 @@
   </div>
 </section>
 
-<!-- ============================================
-     STEPS SECTION
-     ============================================ -->
+<!-- STEPS -->
 <section class="section steps-section">
   <div class="container">
 
     <div class="section-head">
-      <div class="section-label" data-setting="steps_label">الخطوات</div>
       <h2 class="section-title" data-setting="steps_title">كيف تقدم؟</h2>
       <p class="section-desc" data-setting="steps_subtitle">4 خطوات بسيطة تفصلك عن عضويتك</p>
     </div>
@@ -487,9 +433,7 @@
   </div>
 </section>
 
-<!-- ============================================
-     CTA SECTION
-     ============================================ -->
+<!-- CTA -->
 <section class="section cta-section">
   <div class="container">
     <div class="cta-box">
@@ -509,9 +453,7 @@
   </div>
 </section>
 
-<!-- ============================================
-     FOOTER
-     ============================================ -->
+<!-- FOOTER -->
 <footer class="footer">
   <div class="container">
 
@@ -519,7 +461,7 @@
 
       <div class="footer-col">
         <div class="footer-logo">
-          <div class="logo-badge" id="footerLogoBadge">
+          <div class="logo-badge">
             <img id="footerLogoImg" src="" alt="شعار النقابة" style="display:none;" />
             <svg class="logo-fallback" id="footerLogoFallback" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <polyline points="16 18 22 12 16 6" />
@@ -528,7 +470,7 @@
             </svg>
           </div>
           <div>
-            <div class="footer-logo-main" id="footerSiteName" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
+            <div class="footer-logo-main" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
             <div class="footer-logo-sub">IT WORKERS SYNDICATE</div>
           </div>
         </div>
@@ -571,12 +513,16 @@
             <span data-contact-address>القاهرة، مصر</span>
           </li>
         </ul>
+
+        <a href="apply.html" id="footerButton" class="btn btn-primary btn-sm" style="margin-top:18px;display:inline-flex;" data-setting="footer_button_name">
+          تقديم عضوية
+        </a>
       </div>
 
     </div>
 
     <div class="footer-bottom">
-      <div>© 2026 <span data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</span> — جميع الحقوق محفوظة</div>
+      <div data-footer-text>© 2026 نقابة تكنولوجيا المعلومات والبرمجيات — جميع الحقوق محفوظة</div>
       <div class="footer-head">
         النقيب العام: <strong data-head-name>م / محمود جميل</strong>
       </div>
@@ -598,19 +544,16 @@
 (function () {
   'use strict';
 
-  /* Mobile Nav */
   window.toggleMobileNav = function () {
     const nav = document.getElementById('navLinks');
     if (nav) nav.classList.toggle('open');
   };
 
-  /* Theme Panel */
   window.toggleThemePanel = function () {
     const panel = document.getElementById('themePanel');
     if (panel) panel.classList.toggle('open');
   };
 
-  /* Close on outside click */
   document.addEventListener('click', (e) => {
     const panel = document.getElementById('themePanel');
     if (!panel) return;
@@ -634,7 +577,7 @@
   tickClock();
   setInterval(tickClock, 1000);
 
-  /* Navbar scroll effect */
+  /* Navbar scroll */
   const navbar = document.getElementById('navbar');
   window.addEventListener('scroll', () => {
     if (!navbar) return;
@@ -642,101 +585,92 @@
     else navbar.classList.remove('scrolled');
   }, { passive: true });
 
-  /* Background Particles */
+  /* Background particles */
   const canvas = document.getElementById('bgCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let W = 0, H = 0, dots = [];
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0, dots = [];
 
-  function accentRgb() {
-    const raw = getComputedStyle(document.documentElement)
-      .getPropertyValue('--accent-rgb').trim();
-    if (raw) {
-      const parts = raw.split(',').map(s => parseInt(s.trim()));
-      return { r: parts[0] || 0, g: parts[1] || 240, b: parts[2] || 255 };
-    }
-    return { r: 0, g: 240, b: 255 };
-  }
-
-  function resize() {
-    const dpr = window.devicePixelRatio || 1;
-    W = window.innerWidth;
-    H = window.innerHeight;
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    init();
-  }
-
-  function init() {
-    const count = Math.min(60, Math.max(25, Math.floor(W / 30)));
-    dots = [];
-    for (let i = 0; i < count; i++) {
-      dots.push({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: (Math.random() - 0.5) * 0.35,
-        r: Math.random() * 1.5 + 0.5
-      });
-    }
-  }
-
-  function loop() {
-    const rgb = accentRgb();
-    ctx.clearRect(0, 0, W, H);
-
-    dots.forEach((d, i) => {
-      d.x += d.vx;
-      d.y += d.vy;
-      if (d.x < 0 || d.x > W) d.vx *= -1;
-      if (d.y < 0 || d.y > H) d.vy *= -1;
-
-      ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.55)`;
-      ctx.beginPath();
-      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-      ctx.fill();
-
-      for (let j = i + 1; j < dots.length; j++) {
-        const dx = d.x - dots[j].x;
-        const dy = d.y - dots[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 130) {
-          ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.12 * (1 - dist / 130)})`;
-          ctx.lineWidth = 0.5;
-          ctx.beginPath();
-          ctx.moveTo(d.x, d.y);
-          ctx.lineTo(dots[j].x, dots[j].y);
-          ctx.stroke();
-        }
+    function accentRgb() {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim();
+      if (raw) {
+        const parts = raw.split(',').map(s => parseInt(s.trim()));
+        return { r: parts[0] || 0, g: parts[1] || 240, b: parts[2] || 255 };
       }
+      return { r: 0, g: 240, b: 255 };
+    }
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      init();
+    }
+
+    function init() {
+      const count = Math.min(60, Math.max(25, Math.floor(W / 30)));
+      dots = [];
+      for (let i = 0; i < count; i++) {
+        dots.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.35,
+          vy: (Math.random() - 0.5) * 0.35,
+          r: Math.random() * 1.5 + 0.5
+        });
+      }
+    }
+
+    function loop() {
+      const rgb = accentRgb();
+      ctx.clearRect(0, 0, W, H);
+      dots.forEach((d, i) => {
+        d.x += d.vx; d.y += d.vy;
+        if (d.x < 0 || d.x > W) d.vx *= -1;
+        if (d.y < 0 || d.y > H) d.vy *= -1;
+        ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.55)`;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        ctx.fill();
+        for (let j = i + 1; j < dots.length; j++) {
+          const dx = d.x - dots[j].x;
+          const dy = d.y - dots[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 130) {
+            ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.12 * (1 - dist / 130)})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(d.x, d.y);
+            ctx.lineTo(dots[j].x, dots[j].y);
+            ctx.stroke();
+          }
+        }
+      });
+      requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('resize', () => {
+      clearTimeout(window.__bgResizeT);
+      window.__bgResizeT = setTimeout(resize, 200);
     });
 
-    requestAnimationFrame(loop);
+    resize();
+    loop();
   }
-
-  window.addEventListener('resize', () => {
-    clearTimeout(window.__bgResizeT);
-    window.__bgResizeT = setTimeout(resize, 200);
-  });
-
-  resize();
-  loop();
-
 })();
 </script>
 
 <script>
 /* ============================================
-   DYNAMIC CONTENT — Features + About Card + Code Card
+   DYNAMIC: FEATURES + ABOUT CARD + CODE CARD + FOOTER BUTTON
    ============================================ */
 (function () {
   'use strict';
 
   /* ============================================
-     ICON LIBRARY
+     ICON LIBRARY (نفس اللي في admin.js)
      ============================================ */
   const ICONS = {
     zap: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
@@ -757,10 +691,8 @@
     heart: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
   };
 
-  const DEFAULT_ICON_KEY = 'check';
-
   function getIconSvg(name) {
-    return ICONS[name] || ICONS[DEFAULT_ICON_KEY];
+    return ICONS[name] || ICONS.check;
   }
 
   function escapeHtml(str) {
@@ -774,18 +706,6 @@
   }
 
   /* ============================================
-     DEFAULT FEATURES CARDS
-     ============================================ */
-  const DEFAULT_FEATURES = [
-    { icon: 'zap', title: 'تقديم في دقائق', text: 'فورم ذكي يوجهك خطوة بخطوة لإتمام طلبك بأسرع وقت ممكن.' },
-    { icon: 'activity', title: 'فحص تلقائي', text: 'تحقق ذكي من صحة وجودة مستنداتك قبل الإرسال مباشرة.' },
-    { icon: 'trending', title: 'تتبع مباشر', text: 'تابع حالة طلبك لحظة بلحظة بدون تحديث الصفحة.' },
-    { icon: 'shield', title: 'أمان كامل', text: 'تشفير البيانات وصلاحيات دقيقة لكل مستخدم في النظام.' },
-    { icon: 'palette', title: 'ثيمات متعددة', text: 'اختر الثيم اللي يريحك، أو استخدم ثيم النقابة الرسمي.' },
-    { icon: 'smartphone', title: 'يعمل على كل الأجهزة', text: 'تجربة سلسة على الموبايل والتابلت والكمبيوتر.' }
-  ];
-
-  /* ============================================
      RENDER FEATURES
      ============================================ */
   function renderFeatures(cards) {
@@ -793,9 +713,12 @@
     if (!grid) return;
 
     if (!Array.isArray(cards) || !cards.length) {
-      grid.innerHTML = '<div class="empty-state">لا توجد مميزات مضافة حالياً</div>';
+      grid.innerHTML = '';
+      grid.parentElement.parentElement.style.display = 'none';
       return;
     }
+
+    grid.parentElement.parentElement.style.display = '';
 
     grid.innerHTML = cards.map((c, i) => {
       const iconHTML = c.logo
@@ -803,7 +726,7 @@
         : getIconSvg(c.icon);
 
       return `
-        <div class="feature-card" style="animation-delay:${i * 0.06}s">
+        <div class="feature-card" style="animation:fadeUp 0.6s ${i * 0.08}s both;">
           <div class="feature-icon">${iconHTML}</div>
           <h3>${escapeHtml(c.title || '')}</h3>
           <p>${escapeHtml(c.text || '')}</p>
@@ -819,35 +742,19 @@
     const section = document.getElementById('aboutSection');
     if (!section) return;
 
-    const enabled = settings.about_card_enabled === 'true' ||
-                    settings.about_card_enabled === true;
-
+    const enabled = settings.about_card_enabled === 'true' || settings.about_card_enabled === true;
     if (!enabled) {
       section.style.display = 'none';
       return;
     }
 
-    const title = settings.about_card_title || 'عن النقابة';
-    const text = settings.about_card_text || '';
-    const logo = settings.about_card_logo || '';
-
-    const titleEl = document.getElementById('aboutTitle');
-    const textEl = document.getElementById('aboutText');
+    const logo = settings.about_card_logo;
     const imgEl = document.getElementById('aboutLogoImg');
     const fbEl = document.getElementById('aboutLogoFallback');
 
-    if (titleEl) titleEl.textContent = title;
-    if (textEl) textEl.textContent = text;
-
     if (logo && imgEl && fbEl) {
-      imgEl.onload = () => {
-        imgEl.style.display = 'block';
-        fbEl.style.display = 'none';
-      };
-      imgEl.onerror = () => {
-        imgEl.style.display = 'none';
-        fbEl.style.display = 'block';
-      };
+      imgEl.onload = () => { imgEl.style.display = 'block'; fbEl.style.display = 'none'; };
+      imgEl.onerror = () => { imgEl.style.display = 'none'; fbEl.style.display = 'block'; };
       imgEl.src = logo;
     } else if (imgEl && fbEl) {
       imgEl.style.display = 'none';
@@ -858,84 +765,90 @@
   }
 
   /* ============================================
-     APPLY SETTINGS TO PAGE
+     RENDER CODE CARD
+     ============================================ */
+  function renderCodeCard(settings) {
+    const body = document.getElementById('codeCardBody');
+    if (!body) return;
+
+    const content = settings.code_card_content;
+    if (content) {
+      body.textContent = content;
+      body.classList.add('text-mode');
+    }
+  }
+
+  /* ============================================
+     RENDER FOOTER BUTTON
+     ============================================ */
+  function renderFooterButton(settings) {
+    const btn = document.getElementById('footerButton');
+    if (!btn) return;
+
+    const name = settings.footer_button_name;
+    const url = settings.footer_button_url;
+
+    if (name && url) {
+      btn.textContent = name;
+      btn.href = url;
+      btn.style.display = 'inline-flex';
+    } else {
+      btn.style.display = 'none';
+    }
+  }
+
+  /* ============================================
+     APPLY SETTINGS
      ============================================ */
   function applyCustomSettings(settings) {
     if (!settings) return;
 
-    /* 1. Features Cards */
+    // Features
     let cards = [];
     try {
       const raw = settings.features_cards;
       if (raw) {
         const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-        if (Array.isArray(parsed) && parsed.length) cards = parsed;
+        if (Array.isArray(parsed)) cards = parsed;
       }
     } catch (e) {
-      console.warn('[Home] Invalid features_cards JSON, using defaults');
+      console.warn('[Home] Invalid features_cards JSON');
     }
-    if (!cards.length) cards = DEFAULT_FEATURES;
 
     renderFeatures(cards);
-
-    /* 2. About Card */
     renderAbout(settings);
-
-    /* 3. Code Card Content */
-    const codeBody = document.getElementById('codeCardBody');
-    if (codeBody && settings.code_card_content) {
-      // Use textContent to preserve any admin-provided code as plain text
-      codeBody.textContent = settings.code_card_content;
-      codeBody.classList.add('text-mode');
-    }
-
-    /* 4. Code Card Status (color fallback) */
-    const statusEl = document.getElementById('codeCardStatus');
-    if (statusEl && settings.code_card_status) {
-      statusEl.textContent = settings.code_card_status;
-    }
-
-    /* 5. Hero Description (already handled by [data-setting], but textContent with newlines) */
-    const heroDesc = document.querySelector('[data-setting="hero_description"]');
-    if (heroDesc) {
-      heroDesc.style.whiteSpace = 'pre-line';
-    }
-
-    /* 6. Footer description */
-    const footerDesc = document.querySelector('[data-setting="footer_description"]');
-    if (footerDesc) {
-      footerDesc.style.whiteSpace = 'pre-line';
-    }
+    renderCodeCard(settings);
+    renderFooterButton(settings);
   }
 
   /* ============================================
-     INIT — Wait for settings-ready
+     INIT
      ============================================ */
   function init() {
-    // Render defaults first (fast paint)
-    renderFeatures(DEFAULT_FEATURES);
+    // Render placeholder first
+    renderFeatures([]);
 
-    // When settings.js is ready, apply custom
+    // Wait for settings
     window.addEventListener('settings-ready', (e) => {
       const s = e.detail?.settings || null;
       applyCustomSettings(s || (window.SettingsManager?.getAll?.() || null));
     });
 
-    // Fallback: if settings already loaded before our listener
+    // Fallback
     if (window.SettingsManager && typeof window.SettingsManager.getAll === 'function') {
-      const s = window.SettingsManager.getAll();
-      if (s && (s.features_cards || s.site_name)) {
-        setTimeout(() => applyCustomSettings(s), 50);
-      }
+      setTimeout(() => {
+        const s = window.SettingsManager.getAll();
+        if (s && (s.features_cards || s.site_name)) {
+          applyCustomSettings(s);
+        }
+      }, 500);
     }
 
-    // Also listen to settings changes (from admin panel in another tab)
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'its_site_settings' && e.newValue) {
-        try {
-          const data = JSON.parse(e.newValue);
-          applyCustomSettings(data);
-        } catch (err) {}
+    // Watch for changes
+    window.addEventListener('broadcast-settings', () => {
+      if (window.SettingsManager) {
+        const s = window.SettingsManager.getAll();
+        applyCustomSettings(s);
       }
     });
   }
@@ -1018,14 +931,11 @@
         const { data, error } = await client
           .from('membership_types')
           .select('*')
-          .order('id', { ascending: true });
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true });
 
         if (error) {
           console.error('[Home] Load types error:', error);
-          const grid = document.getElementById('typesGrid');
-          if (grid) {
-            grid.innerHTML = '<div class="empty-state">تعذّر تحميل أنواع العضوية. حاول تحديث الصفحة.</div>';
-          }
           return;
         }
         renderTypes(data);
