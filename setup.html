@@ -1225,9 +1225,59 @@ WITH CHECK (is_head());
 
 -- ============ STORAGE ============
 
+-- ============ STORAGE ============
+
+-- حذف الـ Storage Policies القديمة أولاً
+DROP POLICY IF EXISTS "att_storage_upload" ON storage.objects;
+DROP POLICY IF EXISTS "att_storage_read" ON storage.objects;
+DROP POLICY IF EXISTS "att_storage_staff_update" ON storage.objects;
+DROP POLICY IF EXISTS "att_storage_staff_delete" ON storage.objects;
+DROP POLICY IF EXISTS "branding_public_read" ON storage.objects;
+DROP POLICY IF EXISTS "branding_auth_upload" ON storage.objects;
+DROP POLICY IF EXISTS "branding_auth_update" ON storage.objects;
+DROP POLICY IF EXISTS "branding_auth_delete" ON storage.objects;
+
+-- إنشاء الـ Buckets
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('attachments', 'attachments', FALSE)
 ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('branding', 'branding', TRUE)
+ON CONFLICT (id) DO NOTHING;
+
+-- إنشاء الـ Policies الجديدة
+CREATE POLICY "att_storage_upload" ON storage.objects
+FOR INSERT TO anon, authenticated
+WITH CHECK (bucket_id = 'attachments');
+
+CREATE POLICY "att_storage_read" ON storage.objects
+FOR SELECT TO anon, authenticated
+USING (bucket_id = 'attachments');
+
+CREATE POLICY "att_storage_staff_update" ON storage.objects
+FOR UPDATE TO authenticated
+USING (bucket_id = 'attachments' AND is_staff());
+
+CREATE POLICY "att_storage_staff_delete" ON storage.objects
+FOR DELETE TO authenticated
+USING (bucket_id = 'attachments' AND is_head());
+
+CREATE POLICY "branding_public_read" ON storage.objects
+FOR SELECT TO public
+USING (bucket_id = 'branding');
+
+CREATE POLICY "branding_auth_upload" ON storage.objects
+FOR INSERT TO authenticated
+WITH CHECK (bucket_id = 'branding' AND is_head());
+
+CREATE POLICY "branding_auth_update" ON storage.objects
+FOR UPDATE TO authenticated
+USING (bucket_id = 'branding' AND is_head());
+
+CREATE POLICY "branding_auth_delete" ON storage.objects
+FOR DELETE TO authenticated
+USING (bucket_id = 'branding' AND is_head());
 
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('branding', 'branding', TRUE)
