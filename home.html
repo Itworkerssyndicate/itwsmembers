@@ -4,9 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="theme-color" content="#000000" />
-<meta name="description" content="نقابة تكنولوجيا المعلومات والبرمجيات — منظومة العضوية الرقمية" />
+<meta name="description" content="منظومة العضوية الرقمية لنقابة تكنولوجيا المعلومات والبرمجيات" />
 <title>نقابة تكنولوجيا المعلومات والبرمجيات</title>
 
+<!-- OPEN GRAPH -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="نقابة تكنولوجيا المعلومات والبرمجيات" />
 <meta property="og:title" content="نقابة تكنولوجيا المعلومات والبرمجيات" />
@@ -24,135 +25,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
 <link rel="stylesheet" href="css/themes.css" />
 <link rel="stylesheet" href="css/style.css" />
-
-<style>
-  /* ============================================
-     ABOUT CARD
-     ============================================ */
-  .about-card {
-    position: relative;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 32px;
-    align-items: center;
-    padding: 40px;
-    background: var(--card-bg);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-xl);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    overflow: hidden;
-    box-shadow: var(--shadow-lg);
-  }
-
-  .about-card::before {
-    content: '';
-    position: absolute;
-    top: -100px;
-    right: -100px;
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.15), transparent 70%);
-    pointer-events: none;
-  }
-
-  .about-logo {
-    position: relative;
-    width: 140px;
-    height: 140px;
-    border-radius: var(--radius-xl);
-    background: radial-gradient(circle at 30% 30%, rgba(var(--accent-rgb), 0.15), rgba(0, 0, 0, 0.4) 70%);
-    border: 2px solid rgba(var(--accent-rgb), 0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    flex-shrink: 0;
-    box-shadow: var(--glow-accent);
-    z-index: 1;
-  }
-
-  .about-logo img {
-    width: 82%;
-    height: 82%;
-    object-fit: contain;
-    filter: drop-shadow(0 0 12px var(--accent));
-  }
-
-  .about-logo svg.logo-fallback {
-    width: 55%;
-    height: 55%;
-    stroke: var(--accent);
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .about-content {
-    position: relative;
-    z-index: 1;
-    min-width: 0;
-  }
-
-  .about-title {
-    font-family: 'Tajawal', sans-serif;
-    font-size: clamp(22px, 3vw, 30px);
-    font-weight: 900;
-    color: var(--text);
-    margin-bottom: 12px;
-    line-height: 1.35;
-    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shine 3s linear infinite;
-  }
-
-  @keyframes shine { to { background-position: 200% center; } }
-
-  .about-text {
-    font-size: 15px;
-    line-height: 1.85;
-    color: var(--text-muted);
-    white-space: pre-line;
-  }
-
-  .feature-icon img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    filter: drop-shadow(0 0 8px var(--accent));
-  }
-
-  .code-body.text-mode {
-    white-space: pre-wrap;
-    word-break: break-word;
-    color: rgba(255, 255, 255, 0.85);
-  }
-
-  @media (max-width: 768px) {
-    .about-card {
-      grid-template-columns: 1fr;
-      gap: 20px;
-      padding: 28px 22px;
-      text-align: center;
-    }
-    .about-logo {
-      width: 110px;
-      height: 110px;
-      margin: 0 auto;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .about-card { padding: 22px 18px; }
-  }
-</style>
 </head>
 <body>
 
@@ -205,7 +80,6 @@
           <path d="M12 2a10 10 0 1 0 0 20 2 2 0 0 0 0-4 6 6 0 0 1 0-12 2 2 0 0 0 0-4z" />
         </svg>
       </button>
-
       <button class="icon-btn" onclick="toggleMobileNav()" id="mobileToggle" aria-label="القائمة">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <line x1="3" y1="6" x2="21" y2="6" />
@@ -246,13 +120,13 @@
     <div class="hero-content">
       <div class="hero-badge">
         <span class="dot-pulse"></span>
-        <span>منظومة رقمية متكاملة</span>
+        <span data-setting="hero_badge">منظومة رقمية متكاملة</span>
       </div>
 
       <h1 class="hero-title">
-        <span class="glitch" data-text="انضم إلى نقابتك">انضم إلى نقابتك</span>
+        <span class="glitch" data-text="انضم إلى نقابتك" data-setting="hero_title_1">انضم إلى نقابتك</span>
         <br />
-        <span class="gradient-text">بخطوات رقمية</span>
+        <span class="gradient-text" data-setting="hero_title_2">بخطوات رقمية</span>
       </h1>
 
       <p class="hero-desc" data-setting="hero_description">
@@ -260,19 +134,19 @@
       </p>
 
       <div class="hero-actions">
-        <a href="apply.html" class="btn btn-primary btn-lg">
+        <a href="apply.html" class="btn btn-primary btn-lg" id="heroBtn1">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <line x1="22" y1="2" x2="11" y2="13" />
             <polygon points="22 2 15 22 11 13 2 9 22 2" />
           </svg>
-          <span>ابدأ التقديم</span>
+          <span data-setting="hero_btn1_text">ابدأ التقديم</span>
         </a>
-        <a href="track.html" class="btn btn-outline btn-lg">
+        <a href="track.html" class="btn btn-outline btn-lg" id="heroBtn2">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
-          <span>تتبع طلبك</span>
+          <span data-setting="hero_btn2_text">تتبع طلبك</span>
         </a>
       </div>
     </div>
@@ -328,9 +202,8 @@
 </section>
 
 <!-- FEATURES -->
-<section class="section features-section">
+<section class="section features-section" id="featuresSection">
   <div class="container">
-
     <div class="section-head">
       <h2 class="section-title" data-setting="features_title">لماذا منصتنا؟</h2>
       <p class="section-desc" data-setting="features_subtitle">منظومة متكاملة صُمّمت خصيصًا لنقابة تكنولوجيا المعلومات</p>
@@ -341,14 +214,12 @@
       <div class="skeleton-card" style="height:200px;border-radius:var(--radius-lg);"></div>
       <div class="skeleton-card" style="height:200px;border-radius:var(--radius-lg);"></div>
     </div>
-
   </div>
 </section>
 
 <!-- TYPES -->
 <section class="section types-section">
   <div class="container">
-
     <div class="section-head">
       <h2 class="section-title" data-setting="types_title">أنواع العضوية</h2>
       <p class="section-desc" data-setting="types_subtitle">اختر النوع المناسب لك وابدأ التقديم فورًا</p>
@@ -360,33 +231,28 @@
       <div class="skeleton-card"></div>
       <div class="skeleton-card"></div>
     </div>
-
   </div>
 </section>
 
 <!-- STEPS -->
 <section class="section steps-section">
   <div class="container">
-
     <div class="section-head">
       <h2 class="section-title" data-setting="steps_title">كيف تقدم؟</h2>
       <p class="section-desc" data-setting="steps_subtitle">4 خطوات بسيطة تفصلك عن عضويتك</p>
     </div>
 
-    <div class="steps-grid">
-
+    <div class="steps-grid" id="stepsGrid">
       <div class="step-card">
         <div class="step-num">01</div>
         <div class="step-icon">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             <polyline points="14 2 14 8 20 8" />
-            <line x1="9" y1="13" x2="15" y2="13" />
-            <line x1="9" y1="17" x2="15" y2="17" />
           </svg>
         </div>
-        <h3>املأ الفورم</h3>
-        <p>بياناتك الأساسية والمهنية في دقائق</p>
+        <h3 data-setting="step1_title">املأ الفورم</h3>
+        <p data-setting="step1_desc">بياناتك الأساسية والمهنية في دقائق</p>
       </div>
 
       <div class="step-card">
@@ -398,8 +264,8 @@
             <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
         </div>
-        <h3>ارفع المرفقات</h3>
-        <p>بطاقة + شهادة + صورة شخصية</p>
+        <h3 data-setting="step2_title">ارفع المرفقات</h3>
+        <p data-setting="step2_desc">بطاقة + شهادة + صورة شخصية</p>
       </div>
 
       <div class="step-card">
@@ -410,8 +276,8 @@
             <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
         </div>
-        <h3>فحص تلقائي</h3>
-        <p>تحقق فوري من صحة وجودة المستندات</p>
+        <h3 data-setting="step3_title">فحص تلقائي</h3>
+        <p data-setting="step3_desc">تحقق فوري من صحة وجودة المستندات</p>
       </div>
 
       <div class="step-card">
@@ -422,13 +288,11 @@
             <line x1="16" y1="2" x2="16" y2="6" />
             <line x1="8" y1="2" x2="8" y2="6" />
             <line x1="3" y1="10" x2="21" y2="10" />
-            <path d="M9 16l2 2 4-4" />
           </svg>
         </div>
-        <h3>استلم إيصالك</h3>
-        <p>رقم تتبع + QR لمتابعة الطلب</p>
+        <h3 data-setting="step4_title">استلم إيصالك</h3>
+        <p data-setting="step4_desc">رقم تتبع + QR لمتابعة الطلب</p>
       </div>
-
     </div>
   </div>
 </section>
@@ -441,12 +305,12 @@
       <h2 data-setting="cta_title">جاهز تبدأ رحلتك مع نقابتك؟</h2>
       <p data-setting="cta_subtitle">سجّل عضويتك الآن واستمتع بكل المزايا والخدمات</p>
       <div class="cta-actions">
-        <a href="apply.html" class="btn btn-primary btn-lg">
+        <a href="apply.html" class="btn btn-primary btn-lg" id="ctaBtn">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M9 11l3 3L22 4" />
             <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
           </svg>
-          <span>قدّم عضويتك الآن</span>
+          <span data-setting="cta_btn_text">قدّم عضويتك الآن</span>
         </a>
       </div>
     </div>
@@ -456,7 +320,6 @@
 <!-- FOOTER -->
 <footer class="footer">
   <div class="container">
-
     <div class="footer-grid">
 
       <div class="footer-col">
@@ -527,7 +390,6 @@
         النقيب العام: <strong data-head-name>م / محمود جميل</strong>
       </div>
     </div>
-
   </div>
 </footer>
 
@@ -664,14 +526,11 @@
 
 <script>
 /* ============================================
-   DYNAMIC: FEATURES + ABOUT CARD + CODE CARD + FOOTER BUTTON
+   DYNAMIC: FEATURES + ABOUT + CODE CARD + STEPS
    ============================================ */
 (function () {
   'use strict';
 
-  /* ============================================
-     ICON LIBRARY (نفس اللي في admin.js)
-     ============================================ */
   const ICONS = {
     zap: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
     shield: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
@@ -705,20 +564,18 @@
       .replace(/'/g, '&#39;');
   }
 
-  /* ============================================
-     RENDER FEATURES
-     ============================================ */
+  /* RENDER FEATURES */
   function renderFeatures(cards) {
     const grid = document.getElementById('featuresGrid');
+    const section = document.getElementById('featuresSection');
     if (!grid) return;
 
     if (!Array.isArray(cards) || !cards.length) {
-      grid.innerHTML = '';
-      grid.parentElement.parentElement.style.display = 'none';
+      if (section) section.style.display = 'none';
       return;
     }
 
-    grid.parentElement.parentElement.style.display = '';
+    if (section) section.style.display = '';
 
     grid.innerHTML = cards.map((c, i) => {
       const iconHTML = c.logo
@@ -735,9 +592,7 @@
     }).join('');
   }
 
-  /* ============================================
-     RENDER ABOUT CARD
-     ============================================ */
+  /* RENDER ABOUT */
   function renderAbout(settings) {
     const section = document.getElementById('aboutSection');
     if (!section) return;
@@ -764,13 +619,10 @@
     section.style.display = 'block';
   }
 
-  /* ============================================
-     RENDER CODE CARD
-     ============================================ */
+  /* RENDER CODE CARD */
   function renderCodeCard(settings) {
     const body = document.getElementById('codeCardBody');
     if (!body) return;
-
     const content = settings.code_card_content;
     if (content) {
       body.textContent = content;
@@ -778,9 +630,7 @@
     }
   }
 
-  /* ============================================
-     RENDER FOOTER BUTTON
-     ============================================ */
+  /* RENDER FOOTER BUTTON */
   function renderFooterButton(settings) {
     const btn = document.getElementById('footerButton');
     if (!btn) return;
@@ -797,13 +647,21 @@
     }
   }
 
-  /* ============================================
-     APPLY SETTINGS
-     ============================================ */
+  /* RENDER HERO BUTTONS */
+  function renderHeroButtons(settings) {
+    const btn1 = document.getElementById('heroBtn1');
+    const btn2 = document.getElementById('heroBtn2');
+    const ctaBtn = document.getElementById('ctaBtn');
+
+    if (btn1 && settings.hero_btn1_url) btn1.href = settings.hero_btn1_url;
+    if (btn2 && settings.hero_btn2_url) btn2.href = settings.hero_btn2_url;
+    if (ctaBtn && settings.cta_btn_url) ctaBtn.href = settings.cta_btn_url;
+  }
+
+  /* APPLY ALL */
   function applyCustomSettings(settings) {
     if (!settings) return;
 
-    // Features
     let cards = [];
     try {
       const raw = settings.features_cards;
@@ -819,22 +677,18 @@
     renderAbout(settings);
     renderCodeCard(settings);
     renderFooterButton(settings);
+    renderHeroButtons(settings);
   }
 
-  /* ============================================
-     INIT
-     ============================================ */
+  /* INIT */
   function init() {
-    // Render placeholder first
     renderFeatures([]);
 
-    // Wait for settings
     window.addEventListener('settings-ready', (e) => {
       const s = e.detail?.settings || null;
       applyCustomSettings(s || (window.SettingsManager?.getAll?.() || null));
     });
 
-    // Fallback
     if (window.SettingsManager && typeof window.SettingsManager.getAll === 'function') {
       setTimeout(() => {
         const s = window.SettingsManager.getAll();
@@ -844,11 +698,9 @@
       }, 500);
     }
 
-    // Watch for changes
     window.addEventListener('broadcast-settings', () => {
       if (window.SettingsManager) {
-        const s = window.SettingsManager.getAll();
-        applyCustomSettings(s);
+        applyCustomSettings(window.SettingsManager.getAll());
       }
     });
   }
@@ -858,7 +710,6 @@
   } else {
     init();
   }
-
 })();
 </script>
 
@@ -954,7 +805,6 @@
   } else {
     start();
   }
-
 })();
 </script>
 
