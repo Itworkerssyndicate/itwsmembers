@@ -1,7 +1,7 @@
 /* =====================================================
    IT SYNDICATE — Themes
-   Defines CSS variables for 7 themes.
-   Applied via [data-theme="..."] on <html>.
+   CSS Variables for 7 themes
+   Applied via [data-theme="..."] on <html>
    ===================================================== */
 
 /* ============================================
@@ -9,32 +9,28 @@
    ============================================ */
 :root,
 [data-theme="neon-dark"] {
-  /* Accents */
   --accent: #00f0ff;
   --accent-2: #b026ff;
   --accent-rgb: 0, 240, 255;
   --accent-2-rgb: 176, 38, 255;
 
-  /* Backgrounds */
   --bg: #000000;
   --bg-2: #0a0c14;
   --bg-3: #0f1220;
+
   --card-bg: rgba(10, 12, 20, 0.65);
   --card-bg-solid: #0a0c14;
   --overlay-bg: rgba(0, 0, 0, 0.85);
 
-  /* Borders */
   --border: rgba(0, 240, 255, 0.2);
   --border-strong: rgba(0, 240, 255, 0.4);
   --border-soft: rgba(0, 240, 255, 0.1);
 
-  /* Text */
   --text: #ffffff;
   --text-muted: rgba(255, 255, 255, 0.55);
   --text-dim: rgba(255, 255, 255, 0.35);
   --text-faint: rgba(255, 255, 255, 0.15);
 
-  /* Status */
   --success: #00ff9d;
   --success-rgb: 0, 255, 157;
   --warning: #ffb800;
@@ -44,21 +40,18 @@
   --info: #00f0ff;
   --info-rgb: 0, 240, 255;
 
-  /* Shadows */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.7);
   --glow-accent: 0 0 25px rgba(0, 240, 255, 0.4);
   --glow-accent-2: 0 0 25px rgba(176, 38, 255, 0.4);
 
-  /* Layout */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-full: 9999px;
 
-  /* Theme mode */
   --theme-mode: dark;
 }
 
@@ -74,6 +67,7 @@
   --bg: #0a0f1e;
   --bg-2: #0f172a;
   --bg-3: #1e293b;
+
   --card-bg: rgba(15, 23, 42, 0.7);
   --card-bg-solid: #0f172a;
   --overlay-bg: rgba(5, 8, 20, 0.85);
@@ -117,6 +111,7 @@
   --bg: #000000;
   --bg-2: #0a1a0f;
   --bg-3: #0f2417;
+
   --card-bg: rgba(10, 26, 15, 0.7);
   --card-bg-solid: #0a1a0f;
   --overlay-bg: rgba(0, 8, 4, 0.85);
@@ -160,6 +155,7 @@
   --bg: #1a0a0a;
   --bg-2: #2a1010;
   --bg-3: #3a1818;
+
   --card-bg: rgba(42, 16, 16, 0.7);
   --card-bg-solid: #2a1010;
   --overlay-bg: rgba(15, 5, 5, 0.85);
@@ -203,6 +199,7 @@
   --bg: #0f0524;
   --bg-2: #1a0a35;
   --bg-3: #251245;
+
   --card-bg: rgba(26, 10, 53, 0.7);
   --card-bg-solid: #1a0a35;
   --overlay-bg: rgba(8, 2, 20, 0.85);
@@ -246,6 +243,7 @@
   --bg: #f8fafc;
   --bg-2: #ffffff;
   --bg-3: #f1f5f9;
+
   --card-bg: rgba(255, 255, 255, 0.9);
   --card-bg-solid: #ffffff;
   --overlay-bg: rgba(15, 23, 42, 0.5);
@@ -289,6 +287,7 @@
   --bg: #050814;
   --bg-2: #0a1024;
   --bg-3: #101836;
+
   --card-bg: rgba(10, 16, 36, 0.7);
   --card-bg-solid: #0a1024;
   --overlay-bg: rgba(3, 5, 15, 0.85);
@@ -344,4 +343,15 @@ html.theme-transition *::after {
     color 0.4s ease,
     fill 0.4s ease,
     stroke 0.4s ease !important;
+}
+
+/* ============================================
+   SMOOTH COLOR-SCHEME
+   ============================================ */
+:root {
+  color-scheme: dark;
+}
+
+[data-theme="light-pro"] {
+  color-scheme: light;
 }
