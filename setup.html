@@ -76,11 +76,6 @@
     align-items: center;
     gap: 8px;
   }
-  .warning-box h3 svg {
-    width: 20px; height: 20px;
-    stroke: currentColor; fill: none;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-  }
   .warning-box ul {
     list-style: none;
     padding-right: 20px;
@@ -106,10 +101,6 @@
   .step.done {
     border-color: #00ff9d;
     box-shadow: 0 0 30px rgba(0,255,157,0.15);
-  }
-  .step.error {
-    border-color: #ff5555;
-    box-shadow: 0 0 30px rgba(255,85,85,0.15);
   }
   .step-header {
     display: flex; align-items: center; gap: 12px;
@@ -211,7 +202,6 @@
     font-size: 14px;
     font-family: inherit;
     outline: none;
-    transition: all 0.25s;
   }
   .field input:focus {
     border-color: #00f0ff;
@@ -279,7 +269,7 @@
   .credentials strong { color: #00f0ff; }
 
   .progress-bar {
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; gap: 4px;
     margin: 24px 0;
   }
   .progress-step {
@@ -323,23 +313,15 @@
       </svg>
     </div>
     <h1>إعداد المنصة الكامل</h1>
-    <p>مسح + بناء قاعدة بيانات فاضية + إنشاء النقيب العام</p>
+    <p>8 خطوات منفصلة — كل خطوة تخلص قبل اللي بعدها</p>
   </div>
 
   <div class="warning-box">
-    <h3>
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="12" y1="8" x2="12" y2="12"/>
-        <line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
-      <span>تحذير — قراءة ضرورية</span>
-    </h3>
+    <h3>⚠️ تحذير</h3>
     <ul>
-      <li>هيتم مسح <strong>كل الجداول والبيانات</strong> نهائيًا</li>
-      <li>هيتم مسح <strong>كل الملفات</strong> من Storage</li>
-      <li>هيتم مسح <strong>كل المستخدمين من جدول users</strong> (Auth يفضل)</li>
-      <li>قاعدة البيانات ستكون <strong>فاضية تمامًا</strong> بدون بيانات أولية</li>
+      <li>هيتم مسح كل الجداول والبيانات</li>
+      <li>هيتم مسح كل المستخدمين من جدول users (Auth يفضل)</li>
+      <li>قاعدة البيانات ستكون فاضية تمامًا</li>
       <li>النقيب العام هو الوحيد اللي هيتعمل تلقائيًا</li>
     </ul>
   </div>
@@ -349,138 +331,159 @@
     <div class="progress-step" data-step="2"></div>
     <div class="progress-step" data-step="3"></div>
     <div class="progress-step" data-step="4"></div>
+    <div class="progress-step" data-step="5"></div>
+    <div class="progress-step" data-step="6"></div>
+    <div class="progress-step" data-step="7"></div>
+    <div class="progress-step" data-step="8"></div>
   </div>
 
-  <!-- STEP 1 -->
+  <!-- STEP 1: DROP -->
   <div class="step" id="step1">
     <div class="step-header">
       <div class="step-num">1</div>
       <div class="step-title">مسح كل حاجة</div>
       <div class="step-status">جاهز</div>
     </div>
-    <div class="step-desc">
-      امسح كل الجداول والدوال والـ Policies. حساب النقيب في Auth مش هيتلمس.
-    </div>
+    <div class="step-desc">امسح كل الجداول والدوال والـ Policies.</div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="copyAndOpen('drop', this)">
-        📋 نسخ + فتح SQL Editor
-      </button>
-      <button class="btn btn-success" onclick="markStep(1)">
-        ✓ تم
-      </button>
+      <button class="btn btn-primary" onclick="copyAndOpen('drop', this)">📋 نسخ + فتح SQL Editor</button>
+      <button class="btn btn-success" onclick="markStep(1)">✓ تم</button>
     </div>
   </div>
 
-  <!-- STEP 2 -->
+  <!-- STEP 2: TABLES -->
   <div class="step" id="step2">
     <div class="step-header">
       <div class="step-num">2</div>
-      <div class="step-title">بناء قاعدة البيانات</div>
+      <div class="step-title">إنشاء الجداول</div>
       <div class="step-status">جاهز</div>
     </div>
-    <div class="step-desc">
-      إنشاء 21 جدول + الدوال + Triggers + الفهارس + RLS + Storage Buckets. قاعدة بيانات فاضية تمامًا.
-    </div>
+    <div class="step-desc">21 جدول أساسي (بدون Indexes أو Policies).</div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="copyAndOpen('build', this)">
-        📋 نسخ + فتح SQL Editor
-      </button>
-      <button class="btn btn-success" onclick="markStep(2)">
-        ✓ تم
-      </button>
+      <button class="btn btn-primary" onclick="copyAndOpen('tables', this)">📋 نسخ + فتح SQL Editor</button>
+      <button class="btn btn-success" onclick="markStep(2)">✓ تم</button>
     </div>
   </div>
 
-  <!-- STEP 3 -->
+  <!-- STEP 3: INDEXES -->
   <div class="step" id="step3">
     <div class="step-header">
       <div class="step-num">3</div>
+      <div class="step-title">الفهارس (Indexes)</div>
+      <div class="step-status">جاهز</div>
+    </div>
+    <div class="step-desc">40+ فهرس للأداء.</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="copyAndOpen('indexes', this)">📋 نسخ + فتح SQL Editor</button>
+      <button class="btn btn-success" onclick="markStep(3)">✓ تم</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: FUNCTIONS -->
+  <div class="step" id="step4">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <div class="step-title">الدوال</div>
+      <div class="step-status">جاهز</div>
+    </div>
+    <div class="step-desc">10 دوال (التسلسل، الأدوار، الصلاحيات).</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="copyAndOpen('functions', this)">📋 نسخ + فتح SQL Editor</button>
+      <button class="btn btn-success" onclick="markStep(4)">✓ تم</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: TRIGGERS -->
+  <div class="step" id="step5">
+    <div class="step-header">
+      <div class="step-num">5</div>
+      <div class="step-title">الـ Triggers</div>
+      <div class="step-status">جاهز</div>
+    </div>
+    <div class="step-desc">5 Triggers (التسلسل، التحديث، الحالات).</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="copyAndOpen('triggers', this)">📋 نسخ + فتح SQL Editor</button>
+      <button class="btn btn-success" onclick="markStep(5)">✓ تم</button>
+    </div>
+  </div>
+
+  <!-- STEP 6: RLS + POLICIES -->
+  <div class="step" id="step6">
+    <div class="step-header">
+      <div class="step-num">6</div>
+      <div class="step-title">RLS + Policies</div>
+      <div class="step-status">جاهز</div>
+    </div>
+    <div class="step-desc">تفعيل RLS + 50+ Policy.</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="copyAndOpen('rls', this)">📋 نسخ + فتح SQL Editor</button>
+      <button class="btn btn-success" onclick="markStep(6)">✓ تم</button>
+    </div>
+  </div>
+
+  <!-- STEP 7: STORAGE -->
+  <div class="step" id="step7">
+    <div class="step-header">
+      <div class="step-num">7</div>
+      <div class="step-title">Storage Buckets</div>
+      <div class="step-status">جاهز</div>
+    </div>
+    <div class="step-desc">4 Buckets + Policies.</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="copyAndOpen('storage', this)">📋 نسخ + فتح SQL Editor</button>
+      <button class="btn btn-success" onclick="markStep(7)">✓ تم</button>
+    </div>
+  </div>
+
+  <!-- STEP 8: HEAD -->
+  <div class="step" id="step8">
+    <div class="step-header">
+      <div class="step-num">8</div>
       <div class="step-title">إنشاء النقيب العام</div>
       <div class="step-status">جاهز</div>
     </div>
-    <div class="step-desc">
-      سيتم إنشاء حساب النقيب العام في Auth + إضافته في جدول users بدور head.
-    </div>
+    <div class="step-desc">حساب النقيب + إضافته في جدول users.</div>
 
     <div class="field">
       <label>الاسم الكامل</label>
       <input type="text" id="headName" value="م / محمود جميل" />
     </div>
-
     <div class="field">
       <label>البريد الإلكتروني</label>
       <input type="email" id="headEmail" placeholder="head@itsyndicate.eg" dir="ltr" />
-      <div class="hint">الإيميل ده اللي هيدخل بيه النقيب</div>
     </div>
-
     <div class="field">
-      <label>كلمة المرور (6 أحرف على الأقل)</label>
+      <label>كلمة المرور</label>
       <input type="password" id="headPassword" placeholder="••••••••" dir="ltr" />
-      <div class="hint">احفظها في مكان آمن</div>
     </div>
-
     <div class="field">
-      <label>Service Role Key (من Supabase → Settings → API)</label>
+      <label>Service Role Key</label>
       <input type="password" id="serviceKey" placeholder="sb_secret_..." dir="ltr" />
-      <div class="hint">مطلوب لإنشاء المستخدم — لا يُحفظ في أي مكان</div>
+      <div class="hint">من Supabase → Settings → API</div>
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-primary" id="createHeadBtn" onclick="createHead()">
-        👑 إنشاء النقيب العام
-      </button>
+      <button class="btn btn-primary" id="createHeadBtn" onclick="createHead()">👑 إنشاء النقيب العام</button>
+      <button class="btn btn-success" onclick="verifySetup()">🔍 تحقق</button>
     </div>
-
     <div class="log" id="logBox"></div>
-  </div>
-
-  <!-- STEP 4 -->
-  <div class="step" id="step4">
-    <div class="step-header">
-      <div class="step-num">4</div>
-      <div class="step-title">التحقق النهائي</div>
-      <div class="step-status">جاهز</div>
-    </div>
-    <div class="step-desc">
-      التأكد إن كل حاجة اتبنت صح.
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="verifySetup()">
-        🔍 تحقق من الإعداد
-      </button>
-    </div>
     <div class="result" id="verifyResult"></div>
   </div>
 
   <!-- SUCCESS -->
   <div class="result success" id="successBox">
     <div class="result-title">🎉 تم الإعداد بنجاح!</div>
-    <p>المنصة جاهزة للاستخدام.</p>
-    <div class="credentials" id="credBox">
+    <div class="credentials">
       <div>📧 <strong>الإيميل:</strong> <span id="showEmail">---</span></div>
       <div>🔒 <strong>الباسورد:</strong> <span id="showPassword">---</span></div>
     </div>
-    <div style="margin-top:14px;">
-      <strong>الخطوة القادمة:</strong> افتح لوحة النقيب (`admin.html`) وأضف:
-      <ul style="text-align:right;margin-top:8px;line-height:1.9;">
-        <li>اسم النقابة واللوجو</li>
-        <li>المحافظات (27 محافظة)</li>
-        <li>الشعب</li>
-        <li>أنواع العضوية</li>
-        <li>تصنيفات المصروفات</li>
-      </ul>
-    </div>
     <div class="btn-row" style="justify-content:center;margin-top:14px;">
-      <a href="login.html" class="btn btn-primary">
-        🚀 افتح صفحة الدخول
-      </a>
+      <a href="login.html" class="btn btn-primary">🚀 افتح صفحة الدخول</a>
     </div>
   </div>
 
   <div style="text-align:center;margin-top:20px;">
-    <button class="btn btn-outline" onclick="resetSteps()">
-      🔄 إعادة تعيين
-    </button>
+    <button class="btn btn-outline" onclick="resetSteps()">🔄 إعادة تعيين</button>
   </div>
 
 </div>
@@ -489,72 +492,44 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ============================================
-   CONFIG
-   ============================================ */
 const PROJECT_URL = 'https://zenhokbsuxgiyptmdphs.supabase.co';
 const PUBLISHABLE_KEY = 'sb_publishable_uh_nhMGHE5OoO4VI097w_g_-64KUF80';
 const SQL_EDITOR_URL = 'https://supabase.com/dashboard/project/zenhokbsuxgiyptmdphs/sql/new';
 
-/* ============================================
-   LOGGER
-   ============================================ */
 const logBox = document.getElementById('logBox');
-
 function log(msg, type = 'info') {
   logBox.classList.add('show');
   const time = new Date().toLocaleTimeString('en-GB');
   const div = document.createElement('div');
   div.className = 'log-line';
-  div.innerHTML = `
-    <span class="log-time">[${time}]</span>
-    <span class="log-msg ${type}">${msg}</span>
-  `;
+  div.innerHTML = `<span class="log-time">[${time}]</span><span class="log-msg ${type}">${msg}</span>`;
   logBox.appendChild(div);
   logBox.scrollTop = logBox.scrollHeight;
 }
 
 /* ============================================
-   SQL — DROP EVERYTHING
+   SQL 1: DROP
    ============================================ */
-const SQL_DROP = `-- ============================================
--- IT SYNDICATE — DROP EVERYTHING
--- ============================================
-
--- Storage Policies
-DO $$ 
-DECLARE pol RECORD;
+const SQL_DROP = `-- DROP EVERYTHING
+DO $$ DECLARE pol RECORD;
 BEGIN
-  FOR pol IN 
-    SELECT policyname FROM pg_policies 
-    WHERE schemaname = 'storage' AND tablename = 'objects'
-  LOOP
-    EXECUTE 'DROP POLICY IF EXISTS ' || quote_ident(pol.policyname) || ' ON storage.objects';
-  END LOOP;
+  FOR pol IN SELECT policyname FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects'
+  LOOP EXECUTE 'DROP POLICY IF EXISTS ' || quote_ident(pol.policyname) || ' ON storage.objects'; END LOOP;
 END $$;
 
--- Public Policies
-DO $$ 
-DECLARE pol RECORD;
+DO $$ DECLARE pol RECORD;
 BEGIN
-  FOR pol IN 
-    SELECT policyname, tablename FROM pg_policies 
-    WHERE schemaname = 'public'
-  LOOP
-    EXECUTE 'DROP POLICY IF EXISTS ' || quote_ident(pol.policyname) || ' ON ' || quote_ident(pol.tablename);
-  END LOOP;
+  FOR pol IN SELECT policyname, tablename FROM pg_policies WHERE schemaname = 'public'
+  LOOP EXECUTE 'DROP POLICY IF EXISTS ' || quote_ident(pol.policyname) || ' ON ' || quote_ident(pol.tablename); END LOOP;
 END $$;
 
--- Triggers
 DROP TRIGGER IF EXISTS trg_generate_tracking ON applications CASCADE;
 DROP TRIGGER IF EXISTS trg_update_apps ON applications CASCADE;
 DROP TRIGGER IF EXISTS trg_update_members ON members CASCADE;
 DROP TRIGGER IF EXISTS trg_update_users ON users CASCADE;
 DROP TRIGGER IF EXISTS trg_log_status ON applications CASCADE;
 
--- Functions
 DROP FUNCTION IF EXISTS generate_tracking_no() CASCADE;
-DROP FUNCTION IF EXISTS generate_membership_no() CASCADE;
 DROP FUNCTION IF EXISTS update_timestamp() CASCADE;
 DROP FUNCTION IF EXISTS log_status_change() CASCADE;
 DROP FUNCTION IF EXISTS is_head() CASCADE;
@@ -565,7 +540,6 @@ DROP FUNCTION IF EXISTS exec_sql(text) CASCADE;
 DROP FUNCTION IF EXISTS get_user_role() CASCADE;
 DROP FUNCTION IF EXISTS get_user_governorate() CASCADE;
 
--- Tables
 DROP TABLE IF EXISTS user_admin_actions CASCADE;
 DROP TABLE IF EXISTS member_payment_receipts CASCADE;
 DROP TABLE IF EXISTS health_care_members CASCADE;
@@ -591,28 +565,17 @@ DROP TABLE IF EXISTS tracking_counters CASCADE;
 SELECT 'DROP DONE' AS status;`;
 
 /* ============================================
-   SQL — BUILD (FULL, EMPTY)
+   SQL 2: TABLES
    ============================================ */
-const SQL_BUILD = `-- ============================================
--- IT SYNDICATE — BUILD FRESH DATABASE (EMPTY)
--- ============================================
-
+const SQL_TABLES = `-- TABLES
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- ============================================
--- 1. TABLES
--- ============================================
-
--- 1.1 Users
 CREATE TABLE users (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT UNIQUE,
   full_name TEXT,
-  role TEXT DEFAULT 'committee' CHECK (role IN (
-    'head', 'vice_president', 'deputy',
-    'committee', 'governorate_head', 'governorate_board'
-  )),
+  role TEXT DEFAULT 'committee' CHECK (role IN ('head','vice_president','deputy','committee','governorate_head','governorate_board')),
   governorate_id BIGINT,
   phone TEXT,
   is_active BOOLEAN DEFAULT TRUE,
@@ -628,7 +591,6 @@ CREATE TABLE users (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.2 Settings
 CREATE TABLE settings (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   key TEXT UNIQUE NOT NULL,
@@ -637,7 +599,6 @@ CREATE TABLE settings (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.3 User Preferences
 CREATE TABLE user_preferences (
   user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   theme TEXT DEFAULT 'neon-dark',
@@ -646,7 +607,6 @@ CREATE TABLE user_preferences (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.4 Governorates
 CREATE TABLE governorates (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
@@ -656,7 +616,6 @@ CREATE TABLE governorates (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.5 Branches
 CREATE TABLE branches (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
@@ -668,7 +627,6 @@ CREATE TABLE branches (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.6 Membership Types
 CREATE TABLE membership_types (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
@@ -682,7 +640,6 @@ CREATE TABLE membership_types (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.7 Members
 CREATE TABLE members (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   membership_no TEXT UNIQUE,
@@ -710,21 +667,18 @@ CREATE TABLE members (
   total_paid NUMERIC(10,2) DEFAULT 0,
   membership_start DATE,
   membership_end DATE,
-  card_status TEXT DEFAULT 'not_issued' CHECK (card_status IN (
-    'not_issued', 'processing', 'ready', 'delivered'
-  )),
+  card_status TEXT DEFAULT 'not_issued' CHECK (card_status IN ('not_issued','processing','ready','delivered')),
   card_image_url TEXT,
   card_issued_at TIMESTAMPTZ,
   card_delivered_at TIMESTAMPTZ,
   is_active BOOLEAN DEFAULT TRUE,
   registered_by_user_id UUID REFERENCES auth.users(id),
   registered_by_governorate_id BIGINT REFERENCES governorates(id),
-  registration_source TEXT CHECK (registration_source IN ('online', 'branch', 'committee')),
+  registration_source TEXT CHECK (registration_source IN ('online','branch','committee')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.8 Applications
 CREATE TABLE applications (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   tracking_no TEXT UNIQUE NOT NULL,
@@ -751,12 +705,7 @@ CREATE TABLE applications (
   health_care_amount NUMERIC(10,2) DEFAULT 0,
   membership_fee NUMERIC(10,2) DEFAULT 0,
   total_amount NUMERIC(10,2) DEFAULT 0,
-  status TEXT DEFAULT 'pending' CHECK (status IN (
-    'pending', 'ai_review', 'under_review', 'needs_docs',
-    'approved', 'rejected', 'awaiting_payment', 'payment_under_review',
-    'paid', 'awaiting_membership_no', 'membership_no_assigned',
-    'card_processing', 'card_ready', 'delivered', 'cancelled'
-  )),
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending','ai_review','under_review','needs_docs','approved','rejected','awaiting_payment','payment_under_review','paid','awaiting_membership_no','membership_no_assigned','card_processing','card_ready','delivered','cancelled')),
   ai_score NUMERIC(5,2),
   ai_notes TEXT,
   ai_verified BOOLEAN DEFAULT FALSE,
@@ -764,13 +713,11 @@ CREATE TABLE applications (
   missing_docs TEXT[],
   docs_requested_at TIMESTAMPTZ,
   docs_submitted_at TIMESTAMPTZ,
-  payment_method TEXT CHECK (payment_method IN ('online', 'branch_cash')),
+  payment_method TEXT CHECK (payment_method IN ('online','branch_cash')),
   payment_receipt_url TEXT,
   payment_receipt_uploaded_at TIMESTAMPTZ,
   payment_receipt_uploaded_by UUID REFERENCES auth.users(id),
-  payment_receipt_upload_source TEXT CHECK (payment_receipt_upload_source IN (
-    'member', 'branch_staff', 'committee', 'head'
-  )),
+  payment_receipt_upload_source TEXT CHECK (payment_receipt_upload_source IN ('member','branch_staff','committee','head')),
   payment_receipt_reviewed_at TIMESTAMPTZ,
   payment_receipt_reviewed_by UUID REFERENCES auth.users(id),
   payment_receipt_notes TEXT,
@@ -780,7 +727,7 @@ CREATE TABLE applications (
   card_delivered_at TIMESTAMPTZ,
   registered_by_user_id UUID REFERENCES auth.users(id),
   registered_by_governorate_id BIGINT REFERENCES governorates(id),
-  registration_source TEXT CHECK (registration_source IN ('online', 'branch', 'committee')),
+  registration_source TEXT CHECK (registration_source IN ('online','branch','committee')),
   reviewed_by UUID REFERENCES auth.users(id),
   reviewed_at TIMESTAMPTZ,
   approved_by UUID REFERENCES auth.users(id),
@@ -789,7 +736,6 @@ CREATE TABLE applications (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.9 Attachments
 CREATE TABLE attachments (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   application_id BIGINT REFERENCES applications(id) ON DELETE CASCADE,
@@ -805,7 +751,6 @@ CREATE TABLE attachments (
   uploaded_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.10 Status History
 CREATE TABLE status_history (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   application_id BIGINT REFERENCES applications(id) ON DELETE CASCADE,
@@ -819,7 +764,6 @@ CREATE TABLE status_history (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.11 Member Payment Receipts
 CREATE TABLE member_payment_receipts (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   member_id UUID REFERENCES members(id) ON DELETE CASCADE,
@@ -831,13 +775,13 @@ CREATE TABLE member_payment_receipts (
   file_type TEXT,
   file_size BIGINT,
   amount NUMERIC(10,2) NOT NULL,
-  payment_method TEXT CHECK (payment_method IN ('online', 'branch_cash')),
+  payment_method TEXT CHECK (payment_method IN ('online','branch_cash')),
   reference_no TEXT,
   uploaded_by UUID REFERENCES auth.users(id),
   uploaded_by_name TEXT,
   uploaded_by_role TEXT,
   upload_source TEXT,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'rejected')),
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending','confirmed','rejected')),
   reviewed_by UUID REFERENCES auth.users(id),
   reviewed_by_name TEXT,
   reviewed_at TIMESTAMPTZ,
@@ -848,7 +792,6 @@ CREATE TABLE member_payment_receipts (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.12 Health Care Members
 CREATE TABLE health_care_members (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   member_id UUID REFERENCES members(id) ON DELETE CASCADE,
@@ -867,7 +810,6 @@ CREATE TABLE health_care_members (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.13 Payments (Legacy)
 CREATE TABLE payments (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   application_id BIGINT REFERENCES applications(id) ON DELETE CASCADE,
@@ -880,14 +822,13 @@ CREATE TABLE payments (
   reference_no TEXT,
   governorate TEXT,
   notes TEXT,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'rejected', 'refunded')),
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending','confirmed','rejected','refunded')),
   confirmed_by UUID REFERENCES auth.users(id),
   confirmed_at TIMESTAMPTZ,
   paid_at TIMESTAMPTZ DEFAULT NOW(),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.14 Expense Categories
 CREATE TABLE expense_categories (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
@@ -899,7 +840,6 @@ CREATE TABLE expense_categories (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.15 Expenses
 CREATE TABLE expenses (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   description TEXT NOT NULL,
@@ -916,7 +856,6 @@ CREATE TABLE expenses (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.16 User Sessions
 CREATE TABLE user_sessions (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -929,7 +868,6 @@ CREATE TABLE user_sessions (
   is_active BOOLEAN DEFAULT TRUE
 );
 
--- 1.17 User Actions
 CREATE TABLE user_actions (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -942,7 +880,6 @@ CREATE TABLE user_actions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.18 User Admin Actions
 CREATE TABLE user_admin_actions (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   target_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -955,7 +892,6 @@ CREATE TABLE user_admin_actions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.19 Audit Log
 CREATE TABLE audit_log (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -968,14 +904,12 @@ CREATE TABLE audit_log (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.20 Tracking Counters
 CREATE TABLE tracking_counters (
   year INT PRIMARY KEY,
   last_number INT DEFAULT 0,
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.21 Membership Subscriptions
 CREATE TABLE membership_subscriptions (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   member_id UUID REFERENCES members(id) ON DELETE CASCADE,
@@ -984,62 +918,66 @@ CREATE TABLE membership_subscriptions (
   end_date DATE NOT NULL,
   amount NUMERIC(10,2),
   payment_id BIGINT REFERENCES payments(id),
-  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'expired', 'cancelled', 'pending')),
+  status TEXT DEFAULT 'active' CHECK (status IN ('active','expired','cancelled','pending')),
   renewal_reminder_sent BOOLEAN DEFAULT FALSE,
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ============================================
--- 2. INDEXES
--- ============================================
+SELECT 'TABLES DONE' AS status;`;
 
-CREATE INDEX idx_apps_national_id ON applications(national_id);
-CREATE INDEX idx_apps_phone ON applications(phone);
-CREATE INDEX idx_apps_status ON applications(status);
-CREATE INDEX idx_apps_tracking ON applications(tracking_no);
-CREATE INDEX idx_apps_created ON applications(created_at DESC);
-CREATE INDEX idx_apps_governorate ON applications(governorate);
-CREATE INDEX idx_apps_governorate_id ON applications(governorate_id);
-CREATE INDEX idx_attachments_app ON attachments(application_id);
-CREATE INDEX idx_attachments_doctype ON attachments(doc_type);
-CREATE INDEX idx_history_app ON status_history(application_id);
-CREATE INDEX idx_history_created ON status_history(created_at DESC);
-CREATE INDEX idx_receipts_member ON member_payment_receipts(member_id);
-CREATE INDEX idx_receipts_application ON member_payment_receipts(application_id);
-CREATE INDEX idx_receipts_national ON member_payment_receipts(national_id);
-CREATE INDEX idx_receipts_status ON member_payment_receipts(status);
-CREATE INDEX idx_hc_member ON health_care_members(member_id);
-CREATE INDEX idx_hc_national ON health_care_members(national_id);
-CREATE INDEX idx_hc_end_date ON health_care_members(end_date);
-CREATE INDEX idx_payments_app ON payments(application_id);
-CREATE INDEX idx_payments_member ON payments(member_id);
-CREATE INDEX idx_expenses_date ON expenses(expense_date DESC);
-CREATE INDEX idx_expenses_category ON expenses(category_id);
-CREATE INDEX idx_expenses_member ON expenses(member_id);
-CREATE INDEX idx_expenses_gov ON expenses(governorate_id);
-CREATE INDEX idx_members_national ON members(national_id);
-CREATE INDEX idx_members_no ON members(membership_no);
-CREATE INDEX idx_members_branch ON members(branch_id);
-CREATE INDEX idx_members_governorate ON members(governorate);
-CREATE INDEX idx_members_gov_id ON members(governorate_id);
-CREATE INDEX idx_members_end_date ON members(membership_end);
-CREATE INDEX idx_sessions_user ON user_sessions(user_id);
-CREATE INDEX idx_sessions_login ON user_sessions(login_at DESC);
-CREATE INDEX idx_actions_user ON user_actions(user_id);
-CREATE INDEX idx_actions_created ON user_actions(created_at DESC);
-CREATE INDEX idx_admin_actions_target ON user_admin_actions(target_user_id);
-CREATE INDEX idx_admin_actions_created ON user_admin_actions(created_at DESC);
-CREATE INDEX idx_audit_created ON audit_log(created_at DESC);
-CREATE INDEX idx_subs_member ON membership_subscriptions(member_id);
-CREATE INDEX idx_subs_end_date ON membership_subscriptions(end_date);
-CREATE INDEX idx_users_role ON users(role);
-CREATE INDEX idx_users_governorate ON users(governorate_id);
+/* ============================================
+   SQL 3: INDEXES
+   ============================================ */
+const SQL_INDEXES = `-- INDEXES
+CREATE INDEX IF NOT EXISTS idx_apps_national_id ON applications(national_id);
+CREATE INDEX IF NOT EXISTS idx_apps_phone ON applications(phone);
+CREATE INDEX IF NOT EXISTS idx_apps_status ON applications(status);
+CREATE INDEX IF NOT EXISTS idx_apps_tracking ON applications(tracking_no);
+CREATE INDEX IF NOT EXISTS idx_apps_created ON applications(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_apps_governorate ON applications(governorate);
+CREATE INDEX IF NOT EXISTS idx_apps_governorate_id ON applications(governorate_id);
+CREATE INDEX IF NOT EXISTS idx_attachments_app ON attachments(application_id);
+CREATE INDEX IF NOT EXISTS idx_attachments_doctype ON attachments(doc_type);
+CREATE INDEX IF NOT EXISTS idx_history_app ON status_history(application_id);
+CREATE INDEX IF NOT EXISTS idx_history_created ON status_history(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_receipts_member ON member_payment_receipts(member_id);
+CREATE INDEX IF NOT EXISTS idx_receipts_application ON member_payment_receipts(application_id);
+CREATE INDEX IF NOT EXISTS idx_receipts_national ON member_payment_receipts(national_id);
+CREATE INDEX IF NOT EXISTS idx_receipts_status ON member_payment_receipts(status);
+CREATE INDEX IF NOT EXISTS idx_hc_member ON health_care_members(member_id);
+CREATE INDEX IF NOT EXISTS idx_hc_national ON health_care_members(national_id);
+CREATE INDEX IF NOT EXISTS idx_hc_end_date ON health_care_members(end_date);
+CREATE INDEX IF NOT EXISTS idx_payments_app ON payments(application_id);
+CREATE INDEX IF NOT EXISTS idx_payments_member ON payments(member_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(expense_date DESC);
+CREATE INDEX IF NOT EXISTS idx_expenses_category ON expenses(category_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_member ON expenses(member_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_gov ON expenses(governorate_id);
+CREATE INDEX IF NOT EXISTS idx_members_national ON members(national_id);
+CREATE INDEX IF NOT EXISTS idx_members_no ON members(membership_no);
+CREATE INDEX IF NOT EXISTS idx_members_branch ON members(branch_id);
+CREATE INDEX IF NOT EXISTS idx_members_governorate ON members(governorate);
+CREATE INDEX IF NOT EXISTS idx_members_gov_id ON members(governorate_id);
+CREATE INDEX IF NOT EXISTS idx_members_end_date ON members(membership_end);
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON user_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_login ON user_sessions(login_at DESC);
+CREATE INDEX IF NOT EXISTS idx_actions_user ON user_actions(user_id);
+CREATE INDEX IF NOT EXISTS idx_actions_created ON user_actions(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_admin_actions_target ON user_admin_actions(target_user_id);
+CREATE INDEX IF NOT EXISTS idx_admin_actions_created ON user_admin_actions(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_subs_member ON membership_subscriptions(member_id);
+CREATE INDEX IF NOT EXISTS idx_subs_end_date ON membership_subscriptions(end_date);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_users_governorate ON users(governorate_id);
 
--- ============================================
--- 3. FUNCTIONS
--- ============================================
+SELECT 'INDEXES DONE' AS status;`;
 
+/* ============================================
+   SQL 4: FUNCTIONS
+   ============================================ */
+const SQL_FUNCTIONS = `-- FUNCTIONS
 CREATE OR REPLACE FUNCTION generate_tracking_no()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -1050,8 +988,7 @@ BEGIN
   INSERT INTO tracking_counters (year, last_number)
   VALUES (current_year, 1)
   ON CONFLICT (year) DO UPDATE
-  SET last_number = tracking_counters.last_number + 1,
-      updated_at = NOW()
+  SET last_number = tracking_counters.last_number + 1, updated_at = NOW()
   RETURNING last_number INTO next_num;
   NEW.tracking_no := 'ITS-' || current_year || '-' || LPAD(next_num::TEXT, 5, '0');
   RETURN NEW;
@@ -1079,14 +1016,8 @@ BEGIN
     v_user_email := COALESCE(auth.jwt()->>'email', 'system');
     v_user_name := COALESCE(auth.jwt()->>'full_name', 'System');
     v_notes := COALESCE(NEW.reviewer_notes, 'تحديث تلقائي');
-
-    INSERT INTO status_history (
-      application_id, old_status, new_status, notes,
-      changed_by, changed_by_email, changed_by_name, is_auto
-    ) VALUES (
-      NEW.id, OLD.status, NEW.status, v_notes,
-      v_user_id, v_user_email, v_user_name, v_user_id IS NULL
-    );
+    INSERT INTO status_history (application_id, old_status, new_status, notes, changed_by, changed_by_email, changed_by_name, is_auto)
+    VALUES (NEW.id, OLD.status, NEW.status, v_notes, v_user_id, v_user_email, v_user_name, v_user_id IS NULL);
   END IF;
   RETURN NEW;
 END;
@@ -1109,31 +1040,20 @@ $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 CREATE OR REPLACE FUNCTION is_admin()
 RETURNS BOOLEAN AS $$
 BEGIN
-  RETURN EXISTS (
-    SELECT 1 FROM users 
-    WHERE id = auth.uid() 
-      AND role IN ('head', 'vice_president', 'deputy')
-      AND is_active = TRUE
-  );
+  RETURN EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role IN ('head','vice_president','deputy') AND is_active = TRUE);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 CREATE OR REPLACE FUNCTION is_head_or_vp()
 RETURNS BOOLEAN AS $$
 BEGIN
-  RETURN EXISTS (
-    SELECT 1 FROM users 
-    WHERE id = auth.uid() 
-      AND role IN ('head', 'vice_president')
-      AND is_active = TRUE
-  );
+  RETURN EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role IN ('head','vice_president') AND is_active = TRUE);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 CREATE OR REPLACE FUNCTION get_user_role()
 RETURNS TEXT AS $$
-DECLARE
-  v_role TEXT;
+DECLARE v_role TEXT;
 BEGIN
   SELECT role INTO v_role FROM users WHERE id = auth.uid();
   RETURN COALESCE(v_role, 'anon');
@@ -1142,8 +1062,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 CREATE OR REPLACE FUNCTION get_user_governorate()
 RETURNS BIGINT AS $$
-DECLARE
-  v_gov BIGINT;
+DECLARE v_gov BIGINT;
 BEGIN
   SELECT governorate_id INTO v_gov FROM users WHERE id = auth.uid();
   RETURN v_gov;
@@ -1152,41 +1071,48 @@ $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 CREATE OR REPLACE FUNCTION exec_sql(sql text)
 RETURNS void AS $$
-BEGIN
-  EXECUTE sql;
-END;
+BEGIN EXECUTE sql; END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ============================================
--- 4. TRIGGERS
--- ============================================
+SELECT 'FUNCTIONS DONE' AS status;`;
 
+/* ============================================
+   SQL 5: TRIGGERS
+   ============================================ */
+const SQL_TRIGGERS = `-- TRIGGERS
+DROP TRIGGER IF EXISTS trg_generate_tracking ON applications;
 CREATE TRIGGER trg_generate_tracking
 BEFORE INSERT ON applications
 FOR EACH ROW
 WHEN (NEW.tracking_no IS NULL OR NEW.tracking_no = '')
 EXECUTE FUNCTION generate_tracking_no();
 
+DROP TRIGGER IF EXISTS trg_update_apps ON applications;
 CREATE TRIGGER trg_update_apps
 BEFORE UPDATE ON applications
 FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS trg_update_members ON members;
 CREATE TRIGGER trg_update_members
 BEFORE UPDATE ON members
 FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS trg_update_users ON users;
 CREATE TRIGGER trg_update_users
 BEFORE UPDATE ON users
 FOR EACH ROW EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS trg_log_status ON applications;
 CREATE TRIGGER trg_log_status
 AFTER UPDATE ON applications
 FOR EACH ROW EXECUTE FUNCTION log_status_change();
 
--- ============================================
--- 5. RLS ENABLE
--- ============================================
+SELECT 'TRIGGERS DONE' AS status;`;
 
+/* ============================================
+   SQL 6: RLS + POLICIES
+   ============================================ */
+const SQL_RLS = `-- RLS + POLICIES
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
@@ -1209,13 +1135,8 @@ ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tracking_counters ENABLE ROW LEVEL SECURITY;
 ALTER TABLE membership_subscriptions ENABLE ROW LEVEL SECURITY;
 
--- ============================================
--- 6. POLICIES
--- ============================================
-
--- USERS
 CREATE POLICY "users_read_own" ON users FOR SELECT TO authenticated
-USING (auth.uid() = id OR is_admin() OR get_user_role() IN ('committee', 'governorate_head', 'governorate_board'));
+USING (auth.uid() = id OR is_admin() OR get_user_role() IN ('committee','governorate_head','governorate_board'));
 
 CREATE POLICY "users_head_all" ON users FOR ALL TO authenticated
 USING (is_head()) WITH CHECK (is_head());
@@ -1223,107 +1144,63 @@ USING (is_head()) WITH CHECK (is_head());
 CREATE POLICY "users_insert_self" ON users FOR INSERT TO authenticated
 WITH CHECK (auth.uid() = id);
 
--- SETTINGS
 CREATE POLICY "settings_read" ON settings FOR SELECT TO anon, authenticated USING (TRUE);
 CREATE POLICY "settings_write_head" ON settings FOR ALL TO authenticated
 USING (is_head()) WITH CHECK (is_head());
 
--- PREFS
 CREATE POLICY "prefs_own" ON user_preferences FOR ALL TO authenticated
 USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
--- GOVERNORATES
 CREATE POLICY "gov_read" ON governorates FOR SELECT TO anon, authenticated USING (TRUE);
 CREATE POLICY "gov_write_head" ON governorates FOR ALL TO authenticated
 USING (is_head()) WITH CHECK (is_head());
 
--- BRANCHES
 CREATE POLICY "branches_read" ON branches FOR SELECT TO anon, authenticated USING (TRUE);
 CREATE POLICY "branches_write_head" ON branches FOR ALL TO authenticated
 USING (is_head()) WITH CHECK (is_head());
 
--- TYPES
 CREATE POLICY "types_read" ON membership_types FOR SELECT TO anon, authenticated USING (TRUE);
 CREATE POLICY "types_write_head" ON membership_types FOR ALL TO authenticated
 USING (is_head()) WITH CHECK (is_head());
 
--- MEMBERS
 CREATE POLICY "members_read" ON members FOR SELECT TO authenticated
-USING (
-  is_admin() 
-  OR get_user_role() = 'committee'
-  OR (get_user_role() IN ('governorate_head', 'governorate_board') 
-      AND (governorate_id IS NULL OR governorate_id = get_user_governorate()))
-);
+USING (is_admin() OR get_user_role() = 'committee' OR (get_user_role() IN ('governorate_head','governorate_board') AND (governorate_id IS NULL OR governorate_id = get_user_governorate())));
 
 CREATE POLICY "members_write" ON members FOR ALL TO authenticated
-USING (
-  is_admin() 
-  OR get_user_role() = 'committee'
-  OR (get_user_role() = 'governorate_head')
-)
-WITH CHECK (
-  is_admin() 
-  OR get_user_role() = 'committee'
-  OR (get_user_role() = 'governorate_head')
-);
+USING (is_admin() OR get_user_role() = 'committee' OR get_user_role() = 'governorate_head')
+WITH CHECK (is_admin() OR get_user_role() = 'committee' OR get_user_role() = 'governorate_head');
 
--- APPLICATIONS
 CREATE POLICY "apps_insert_anon" ON applications FOR INSERT TO anon, authenticated WITH CHECK (TRUE);
 
 CREATE POLICY "apps_read_auth" ON applications FOR SELECT TO authenticated
-USING (
-  is_admin() 
-  OR get_user_role() = 'committee'
-  OR (get_user_role() IN ('governorate_head', 'governorate_board') 
-      AND (governorate_id IS NULL OR governorate_id = get_user_governorate()))
-);
+USING (is_admin() OR get_user_role() = 'committee' OR (get_user_role() IN ('governorate_head','governorate_board') AND (governorate_id IS NULL OR governorate_id = get_user_governorate())));
 
-CREATE POLICY "apps_read_anon_track" ON applications FOR SELECT TO anon
-USING (TRUE);
+CREATE POLICY "apps_read_anon" ON applications FOR SELECT TO anon USING (TRUE);
 
 CREATE POLICY "apps_update" ON applications FOR UPDATE TO authenticated
-USING (
-  is_admin() 
-  OR get_user_role() = 'committee'
-  OR (get_user_role() = 'governorate_head' AND (governorate_id IS NULL OR governorate_id = get_user_governorate()))
-)
-WITH CHECK (
-  is_admin() 
-  OR get_user_role() = 'committee'
-  OR (get_user_role() = 'governorate_head' AND (governorate_id IS NULL OR governorate_id = get_user_governorate()))
-);
+USING (is_admin() OR get_user_role() = 'committee' OR (get_user_role() = 'governorate_head' AND (governorate_id IS NULL OR governorate_id = get_user_governorate())))
+WITH CHECK (is_admin() OR get_user_role() = 'committee' OR (get_user_role() = 'governorate_head' AND (governorate_id IS NULL OR governorate_id = get_user_governorate())));
 
 CREATE POLICY "apps_delete_head" ON applications FOR DELETE TO authenticated USING (is_head());
 
--- ATTACHMENTS
 CREATE POLICY "att_read" ON attachments FOR SELECT TO anon, authenticated USING (TRUE);
 CREATE POLICY "att_insert" ON attachments FOR INSERT TO anon, authenticated WITH CHECK (TRUE);
 CREATE POLICY "att_update_staff" ON attachments FOR UPDATE TO authenticated
 USING (is_staff()) WITH CHECK (is_staff());
 
--- HISTORY
 CREATE POLICY "history_read" ON status_history FOR SELECT TO anon, authenticated USING (TRUE);
-CREATE POLICY "history_insert_auth" ON status_history FOR INSERT TO authenticated WITH CHECK (TRUE);
+CREATE POLICY "history_insert" ON status_history FOR INSERT TO authenticated WITH CHECK (TRUE);
 
--- RECEIPTS
 CREATE POLICY "receipts_read" ON member_payment_receipts FOR SELECT TO authenticated
-USING (
-  is_admin() 
-  OR get_user_role() = 'committee'
-);
+USING (is_admin() OR get_user_role() = 'committee');
 
-CREATE POLICY "receipts_insert" ON member_payment_receipts FOR INSERT TO authenticated
-WITH CHECK (TRUE);
-
-CREATE POLICY "receipts_insert_anon" ON member_payment_receipts FOR INSERT TO anon
-WITH CHECK (TRUE);
+CREATE POLICY "receipts_insert_auth" ON member_payment_receipts FOR INSERT TO authenticated WITH CHECK (TRUE);
+CREATE POLICY "receipts_insert_anon" ON member_payment_receipts FOR INSERT TO anon WITH CHECK (TRUE);
 
 CREATE POLICY "receipts_update" ON member_payment_receipts FOR UPDATE TO authenticated
 USING (is_admin() OR get_user_role() = 'committee')
 WITH CHECK (is_admin() OR get_user_role() = 'committee');
 
--- HEALTH CARE
 CREATE POLICY "hc_read" ON health_care_members FOR SELECT TO authenticated
 USING (is_admin() OR get_user_role() = 'committee');
 
@@ -1331,156 +1208,104 @@ CREATE POLICY "hc_write" ON health_care_members FOR ALL TO authenticated
 USING (is_admin() OR get_user_role() = 'committee')
 WITH CHECK (is_admin() OR get_user_role() = 'committee');
 
--- PAYMENTS
 CREATE POLICY "payments_read" ON payments FOR SELECT TO authenticated
 USING (is_admin() OR get_user_role() = 'committee');
 
 CREATE POLICY "payments_read_anon" ON payments FOR SELECT TO anon USING (TRUE);
-
-CREATE POLICY "payments_insert" ON payments FOR INSERT TO authenticated
-WITH CHECK (is_staff());
-
+CREATE POLICY "payments_insert" ON payments FOR INSERT TO authenticated WITH CHECK (is_staff());
 CREATE POLICY "payments_update" ON payments FOR UPDATE TO authenticated
 USING (is_admin() OR get_user_role() = 'committee')
 WITH CHECK (is_admin() OR get_user_role() = 'committee');
 
--- EXPENSE CATEGORIES
 CREATE POLICY "exp_cat_read" ON expense_categories FOR SELECT TO authenticated USING (TRUE);
 CREATE POLICY "exp_cat_write" ON expense_categories FOR ALL TO authenticated
 USING (is_head()) WITH CHECK (is_head());
 
--- EXPENSES
 CREATE POLICY "expenses_read" ON expenses FOR SELECT TO authenticated
-USING (
-  is_admin() OR get_user_role() = 'committee'
-  OR (get_user_role() IN ('governorate_head', 'governorate_board') 
-      AND (governorate_id IS NULL OR governorate_id = get_user_governorate()))
-);
+USING (is_admin() OR get_user_role() = 'committee' OR (get_user_role() IN ('governorate_head','governorate_board') AND (governorate_id IS NULL OR governorate_id = get_user_governorate())));
 
 CREATE POLICY "expenses_write" ON expenses FOR ALL TO authenticated
-USING (
-  is_admin() OR get_user_role() = 'committee'
-  OR (get_user_role() = 'governorate_head')
-)
-WITH CHECK (
-  is_admin() OR get_user_role() = 'committee'
-  OR (get_user_role() = 'governorate_head')
-);
+USING (is_admin() OR get_user_role() = 'committee' OR get_user_role() = 'governorate_head')
+WITH CHECK (is_admin() OR get_user_role() = 'committee' OR get_user_role() = 'governorate_head');
 
--- SESSIONS
 CREATE POLICY "sessions_read" ON user_sessions FOR SELECT TO authenticated
 USING (auth.uid() = user_id OR is_head());
-
-CREATE POLICY "sessions_insert_self" ON user_sessions FOR INSERT TO authenticated
-WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "sessions_update_self" ON user_sessions FOR UPDATE TO authenticated
+CREATE POLICY "sessions_insert" ON user_sessions FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "sessions_update" ON user_sessions FOR UPDATE TO authenticated
 USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
--- ACTIONS
 CREATE POLICY "actions_read" ON user_actions FOR SELECT TO authenticated USING (is_head());
 CREATE POLICY "actions_insert" ON user_actions FOR INSERT TO authenticated WITH CHECK (TRUE);
 
--- ADMIN ACTIONS
 CREATE POLICY "admin_actions_read" ON user_admin_actions FOR SELECT TO authenticated USING (is_head());
 CREATE POLICY "admin_actions_insert" ON user_admin_actions FOR INSERT TO authenticated WITH CHECK (is_head());
 
--- AUDIT
 CREATE POLICY "audit_read" ON audit_log FOR SELECT TO authenticated USING (is_head());
 CREATE POLICY "audit_insert" ON audit_log FOR INSERT TO authenticated WITH CHECK (TRUE);
 
--- COUNTERS
 CREATE POLICY "counters_read" ON tracking_counters FOR SELECT TO authenticated USING (TRUE);
 
--- SUBSCRIPTIONS
 CREATE POLICY "subs_read" ON membership_subscriptions FOR SELECT TO authenticated
 USING (is_admin() OR get_user_role() = 'committee');
-
 CREATE POLICY "subs_write" ON membership_subscriptions FOR ALL TO authenticated
 USING (is_admin()) WITH CHECK (is_admin());
 
--- ============================================
--- 7. STORAGE BUCKETS
--- ============================================
+SELECT 'RLS DONE' AS status;`;
 
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('attachments', 'attachments', FALSE)
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('branding', 'branding', TRUE)
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('payment_receipts', 'payment_receipts', FALSE)
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('cards', 'cards', FALSE)
-ON CONFLICT (id) DO NOTHING;
+/* ============================================
+   SQL 7: STORAGE
+   ============================================ */
+const SQL_STORAGE = `-- STORAGE BUCKETS
+INSERT INTO storage.buckets (id, name, public) VALUES ('attachments', 'attachments', FALSE) ON CONFLICT (id) DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('branding', 'branding', TRUE) ON CONFLICT (id) DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('payment_receipts', 'payment_receipts', FALSE) ON CONFLICT (id) DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('cards', 'cards', FALSE) ON CONFLICT (id) DO NOTHING;
 
 -- Storage Policies
-CREATE POLICY "att_upload" ON storage.objects
-FOR INSERT TO anon, authenticated
-WITH CHECK (bucket_id = 'attachments');
+DROP POLICY IF EXISTS "att_upload" ON storage.objects;
+DROP POLICY IF EXISTS "att_read" ON storage.objects;
+DROP POLICY IF EXISTS "att_update" ON storage.objects;
+DROP POLICY IF EXISTS "att_delete" ON storage.objects;
+DROP POLICY IF EXISTS "branding_read" ON storage.objects;
+DROP POLICY IF EXISTS "branding_write" ON storage.objects;
+DROP POLICY IF EXISTS "branding_update" ON storage.objects;
+DROP POLICY IF EXISTS "branding_delete" ON storage.objects;
+DROP POLICY IF EXISTS "receipts_upload" ON storage.objects;
+DROP POLICY IF EXISTS "receipts_read" ON storage.objects;
+DROP POLICY IF EXISTS "cards_upload" ON storage.objects;
+DROP POLICY IF EXISTS "cards_read" ON storage.objects;
 
-CREATE POLICY "att_read" ON storage.objects
-FOR SELECT TO anon, authenticated
-USING (bucket_id = 'attachments');
+CREATE POLICY "att_upload" ON storage.objects FOR INSERT TO anon, authenticated WITH CHECK (bucket_id = 'attachments');
+CREATE POLICY "att_read" ON storage.objects FOR SELECT TO anon, authenticated USING (bucket_id = 'attachments');
+CREATE POLICY "att_update" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'attachments' AND is_staff());
+CREATE POLICY "att_delete" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'attachments' AND is_head());
 
-CREATE POLICY "att_update" ON storage.objects
-FOR UPDATE TO authenticated
-USING (bucket_id = 'attachments' AND is_staff());
+CREATE POLICY "branding_read" ON storage.objects FOR SELECT TO public USING (bucket_id = 'branding');
+CREATE POLICY "branding_write" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'branding' AND is_head());
+CREATE POLICY "branding_update" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'branding' AND is_head());
+CREATE POLICY "branding_delete" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'branding' AND is_head());
 
-CREATE POLICY "att_delete" ON storage.objects
-FOR DELETE TO authenticated
-USING (bucket_id = 'attachments' AND is_head());
+CREATE POLICY "receipts_upload" ON storage.objects FOR INSERT TO anon, authenticated WITH CHECK (bucket_id = 'payment_receipts');
+CREATE POLICY "receipts_read" ON storage.objects FOR SELECT TO anon, authenticated USING (bucket_id = 'payment_receipts');
 
-CREATE POLICY "branding_read" ON storage.objects
-FOR SELECT TO public USING (bucket_id = 'branding');
+CREATE POLICY "cards_upload" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'cards' AND is_staff());
+CREATE POLICY "cards_read" ON storage.objects FOR SELECT TO anon, authenticated USING (bucket_id = 'cards');
 
-CREATE POLICY "branding_write" ON storage.objects
-FOR INSERT TO authenticated
-WITH CHECK (bucket_id = 'branding' AND is_head());
-
-CREATE POLICY "branding_update" ON storage.objects
-FOR UPDATE TO authenticated
-USING (bucket_id = 'branding' AND is_head());
-
-CREATE POLICY "branding_delete" ON storage.objects
-FOR DELETE TO authenticated
-USING (bucket_id = 'branding' AND is_head());
-
-CREATE POLICY "receipts_upload" ON storage.objects
-FOR INSERT TO anon, authenticated
-WITH CHECK (bucket_id = 'payment_receipts');
-
-CREATE POLICY "receipts_read" ON storage.objects
-FOR SELECT TO anon, authenticated
-USING (bucket_id = 'payment_receipts');
-
-CREATE POLICY "cards_upload" ON storage.objects
-FOR INSERT TO authenticated
-WITH CHECK (bucket_id = 'cards' AND is_staff());
-
-CREATE POLICY "cards_read" ON storage.objects
-FOR SELECT TO anon, authenticated
-USING (bucket_id = 'cards');
-
-SELECT 'BUILD DONE — Database is EMPTY' AS status;`;
+SELECT 'STORAGE DONE' AS status;`;
 
 /* ============================================
    COPY + OPEN
    ============================================ */
 function copyAndOpen(type, btn) {
-  const sqlMap = { drop: SQL_DROP, build: SQL_BUILD };
-  const sql = sqlMap[type];
+  const map = {
+    drop: SQL_DROP, tables: SQL_TABLES, indexes: SQL_INDEXES,
+    functions: SQL_FUNCTIONS, triggers: SQL_TRIGGERS,
+    rls: SQL_RLS, storage: SQL_STORAGE
+  };
+  const sql = map[type];
   if (!sql) return;
-
   copyToClipboard(sql, btn);
-  setTimeout(() => {
-    window.open(SQL_EDITOR_URL, '_blank');
-  }, 400);
+  setTimeout(() => window.open(SQL_EDITOR_URL, '_blank'), 400);
 }
 
 async function copyToClipboard(text, btn) {
@@ -1495,41 +1320,29 @@ async function copyToClipboard(text, btn) {
   } catch (e) {
     const ta = document.createElement('textarea');
     ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
     document.execCommand('copy');
     document.body.removeChild(ta);
     showToast('✓ تم النسخ', 'success');
   }
 }
 
-/* ============================================
-   MARK STEP
-   ============================================ */
 function markStep(n) {
   const step = document.getElementById('step' + n);
   if (!step) return;
   step.classList.add('done');
-  step.classList.remove('error');
   step.querySelector('.step-status').textContent = '✓ تم';
-
   const bar = document.querySelector(`.progress-step[data-step="${n}"]`);
   if (bar) bar.classList.add('done');
-
   showToast(`✓ تم الخطوة ${n}`, 'success');
-
   try {
-    const completed = JSON.parse(localStorage.getItem('setup_v5') || '[]');
-    if (!completed.includes(n)) completed.push(n);
-    localStorage.setItem('setup_v5', JSON.stringify(completed));
+    const done = JSON.parse(localStorage.getItem('setup_v6') || '[]');
+    if (!done.includes(n)) done.push(n);
+    localStorage.setItem('setup_v6', JSON.stringify(done));
   } catch (e) {}
 }
 
-/* ============================================
-   CREATE HEAD
-   ============================================ */
 async function createHead() {
   const fullName = document.getElementById('headName').value.trim();
   const email = document.getElementById('headEmail').value.trim();
@@ -1540,7 +1353,6 @@ async function createHead() {
     showToast('املأ كل الحقول', 'error');
     return;
   }
-
   if (password.length < 6) {
     showToast('كلمة المرور 6 أحرف على الأقل', 'error');
     return;
@@ -1549,7 +1361,6 @@ async function createHead() {
   const btn = document.getElementById('createHeadBtn');
   btn.disabled = true;
   btn.innerHTML = '<span>جاري الإنشاء...</span>';
-
   logBox.innerHTML = '';
   log('بدء إنشاء النقيب العام...', 'info');
 
@@ -1558,78 +1369,49 @@ async function createHead() {
       auth: { persistSession: false, autoRefreshToken: false }
     });
 
-    log('إنشاء المستخدم في Auth...', 'info');
-
     let userId = null;
-
     const { data: newUser, error: createErr } = await adminClient.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
+      email, password, email_confirm: true,
       user_metadata: { full_name: fullName }
     });
 
     if (createErr) {
       if (createErr.message?.includes('already') || createErr.message?.includes('exists')) {
-        log('المستخدم موجود — سيتم تحديثه', 'warn');
-
-        const { data: usersList } = await adminClient.auth.admin.listUsers();
-        const existing = usersList?.users?.find(u => u.email === email);
-
+        log('المستخدم موجود — تحديث', 'warn');
+        const { data: list } = await adminClient.auth.admin.listUsers();
+        const existing = list?.users?.find(u => u.email === email);
         if (existing) {
           userId = existing.id;
           await adminClient.auth.admin.updateUserById(userId, {
-            password,
-            email_confirm: true,
+            password, email_confirm: true,
             user_metadata: { full_name: fullName }
           });
         }
-      } else {
-        throw createErr;
-      }
-    } else {
-      userId = newUser.user.id;
-    }
+      } else throw createErr;
+    } else userId = newUser.user.id;
 
     if (!userId) throw new Error('فشل إنشاء المستخدم');
+    log('✓ تم إنشاء المستخدم', 'ok');
 
-    log('✓ تم إنشاء المستخدم: ' + userId.substring(0, 8) + '...', 'ok');
-
-    log('إضافة النقيب في جدول users...', 'info');
-
-    const { error: userErr } = await adminClient
-      .from('users')
-      .upsert({
-        id: userId,
-        email,
-        full_name: fullName,
-        role: 'head',
-        is_active: true
-      }, { onConflict: 'id' });
-
+    const { error: userErr } = await adminClient.from('users').upsert({
+      id: userId, email, full_name: fullName, role: 'head', is_active: true
+    }, { onConflict: 'id' });
     if (userErr) throw userErr;
+    log('✓ تم إضافة النقيب', 'ok');
 
-    log('✓ تم إضافة النقيب كـ head', 'ok');
+    await adminClient.from('user_preferences').upsert({
+      user_id: userId, theme: 'neon-dark'
+    }, { onConflict: 'user_id' });
 
-    await adminClient
-      .from('user_preferences')
-      .upsert({
-        user_id: userId,
-        theme: 'neon-dark'
-      }, { onConflict: 'user_id' });
-
-    log('✓ تم إنشاء التفضيلات', 'ok');
-    log('🎉 تم إنشاء النقيب العام بنجاح!', 'ok');
-
+    log('🎉 تم بنجاح!', 'ok');
     showToast('✓ تم إنشاء النقيب العام', 'success');
 
     document.getElementById('showEmail').textContent = email;
     document.getElementById('showPassword').textContent = password;
     document.getElementById('successBox').classList.add('show');
-    markStep(3);
+    markStep(8);
 
   } catch (err) {
-    console.error(err);
     log('❌ ' + err.message, 'err');
     showToast('فشل: ' + err.message, 'error');
   } finally {
@@ -1638,9 +1420,6 @@ async function createHead() {
   }
 }
 
-/* ============================================
-   VERIFY
-   ============================================ */
 async function verifySetup() {
   const result = document.getElementById('verifyResult');
   result.className = 'result show';
@@ -1648,36 +1427,19 @@ async function verifySetup() {
 
   try {
     const client = window.supabase.createClient(PROJECT_URL, PUBLISHABLE_KEY);
-
-    const tables = [
-      'users', 'settings', 'governorates', 'branches', 'membership_types',
-      'members', 'applications', 'attachments', 'status_history',
-      'member_payment_receipts', 'health_care_members', 'payments',
-      'expense_categories', 'expenses', 'user_sessions', 'user_actions',
-      'user_admin_actions', 'audit_log', 'tracking_counters', 'membership_subscriptions'
-    ];
-
+    const tables = ['users','settings','governorates','branches','membership_types','members','applications','attachments','status_history','member_payment_receipts','health_care_members','payments','expense_categories','expenses','user_sessions','user_actions','user_admin_actions','audit_log','tracking_counters','membership_subscriptions'];
     const checks = [];
     for (const t of tables) {
       const { error } = await client.from(t).select('id').limit(1);
       checks.push({ table: t, ok: !error });
     }
-
     const failed = checks.filter(c => !c.ok);
-
     if (failed.length === 0) {
       result.className = 'result show success';
-      result.innerHTML = `
-        <div class="result-title">✓ كل حاجة تمام!</div>
-        <p>${tables.length} جدول موجود وشغال. قاعدة البيانات فاضية وجاهزة.</p>
-      `;
-      markStep(4);
+      result.innerHTML = `<div class="result-title">✓ كل حاجة تمام!</div><p>${tables.length} جدول موجود. قاعدة البيانات فاضية وجاهزة.</p>`;
     } else {
       result.className = 'result show error';
-      result.innerHTML = `
-        <div class="result-title">⚠️ فيه جداول ناقصة</div>
-        <p>${failed.map(c => c.table).join(', ')}</p>
-      `;
+      result.innerHTML = `<div class="result-title">⚠️ جداول ناقصة</div><p>${failed.map(c => c.table).join(', ')}</p>`;
     }
   } catch (err) {
     result.className = 'result show error';
@@ -1685,47 +1447,37 @@ async function verifySetup() {
   }
 }
 
-/* ============================================
-   RESET
-   ============================================ */
 function resetSteps() {
   document.querySelectorAll('.step').forEach(s => {
-    s.classList.remove('done', 'error');
+    s.classList.remove('done');
     const status = s.querySelector('.step-status');
     if (status) status.textContent = 'جاهز';
   });
   document.querySelectorAll('.progress-step').forEach(s => s.classList.remove('done'));
   document.getElementById('successBox').classList.remove('show');
   document.getElementById('verifyResult').classList.remove('show');
-  localStorage.removeItem('setup_v5');
+  localStorage.removeItem('setup_v6');
   showToast('تم إعادة التعيين', 'info');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-/* ============================================
-   RESTORE
-   ============================================ */
 function restoreState() {
   try {
-    const completed = JSON.parse(localStorage.getItem('setup_v5') || '[]');
-    completed.forEach(n => {
+    const done = JSON.parse(localStorage.getItem('setup_v6') || '[]');
+    done.forEach(n => {
       const step = document.getElementById('step' + n);
       const bar = document.querySelector(`.progress-step[data-step="${n}"]`);
       if (step) {
         step.classList.add('done');
-        const status = step.querySelector('.step-status');
-        if (status) status.textContent = '✓ تم';
+        const st = step.querySelector('.step-status');
+        if (st) st.textContent = '✓ تم';
       }
       if (bar) bar.classList.add('done');
     });
   } catch (e) {}
 }
-
 restoreState();
 
-/* ============================================
-   TOAST
-   ============================================ */
 function showToast(msg, type = 'info') {
   const toast = document.getElementById('toast');
   toast.textContent = msg;
