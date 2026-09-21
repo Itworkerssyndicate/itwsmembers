@@ -7,7 +7,6 @@
 <meta name="description" content="تسجيل دخول الموظفين — نقابة تكنولوجيا المعلومات والبرمجيات" />
 <title>تسجيل الدخول — نقابة تكنولوجيا المعلومات والبرمجيات</title>
 
-<!-- FAVICON -->
 <link rel="icon" id="faviconLink" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
 
@@ -227,6 +226,8 @@
     animation: shine 3s linear infinite;
   }
 
+  @keyframes shine { to { background-position: 200% center; } }
+
   .login-desc {
     text-align: center;
     color: var(--text-muted);
@@ -324,12 +325,7 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: linear-gradient(
-      to right,
-      transparent,
-      var(--border),
-      transparent
-    );
+    background: linear-gradient(to right, transparent, var(--border), transparent);
   }
 
   /* Footer note */
@@ -358,7 +354,7 @@
     color: var(--text-dim);
   }
 
-  /* Head card below */
+  /* Head note */
   .login-head-note {
     margin-top: 22px;
     padding: 12px 18px;
@@ -533,7 +529,7 @@
   </div>
 
   <div class="login-copy">
-    © 2026 نقابة تكنولوجيا المعلومات والبرمجيات — جميع الحقوق محفوظة
+    © 2026 <span data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</span> — جميع الحقوق محفوظة
   </div>
 </div>
 
@@ -549,14 +545,14 @@
   /* ============================================
      BACKGROUND PARTICLES
      ============================================ */
-  const canvas = document.getElementById('loginCanvas');
-  if (canvas) {
+  (function () {
+    const canvas = document.getElementById('loginCanvas');
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let W = 0, H = 0, dots = [];
 
     function accentRgb() {
-      const raw = getComputedStyle(document.documentElement)
-        .getPropertyValue('--accent-rgb').trim();
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim();
       if (raw) {
         const parts = raw.split(',').map(s => parseInt(s.trim()));
         return { r: parts[0] || 0, g: parts[1] || 240, b: parts[2] || 255 };
@@ -630,7 +626,7 @@
 
     resize();
     loop();
-  }
+  })();
 
   /* ============================================
      PASSWORD TOGGLE
@@ -648,13 +644,11 @@
 
       if (eyeIcon) {
         if (visible) {
-          // Eye-off icon
           eyeIcon.innerHTML = `
             <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
             <line x1="1" y1="1" x2="23" y2="23"/>
           `;
         } else {
-          // Eye icon
           eyeIcon.innerHTML = `
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
             <circle cx="12" cy="12" r="3" />
@@ -718,98 +712,6 @@
   }
 
   /* ============================================
-     LOGIN HANDLER
-     ============================================ */
-  const form = document.getElementById('loginForm');
-  const loginBtn = document.getElementById('loginBtn');
-
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      clearAlert();
-
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const remember = document.getElementById('rememberMe').checked;
-
-      if (!email || !password) {
-        showAlert('error', 'من فضلك أدخل البريد وكلمة المرور');
-        return;
-      }
-
-      // Disable button + loading
-      const originalHtml = loginBtn.innerHTML;
-      loginBtn.disabled = true;
-      loginBtn.innerHTML = `
-        <span class="spinner"></span>
-        <span>جاري التحقق...</span>
-      `;
-
-      try {
-        // Wait for Supabase
-        const client = await waitForSupabase();
-        if (!client) {
-          throw new Error('فشل تحميل النظام، حاول تحديث الصفحة');
-        }
-
-        // Sign in
-        const { data, error } = await client.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        if (error) {
-          throw new Error(translateAuthError(error.message));
-        }
-
-        if (!data?.user) {
-          throw new Error('لم يتم العثور على المستخدم');
-        }
-
-        // Remember me
-        try {
-          if (remember) {
-            localStorage.setItem('its_remember_email', email);
-          } else {
-            localStorage.removeItem('its_remember_email');
-          }
-        } catch (err) {}
-
-        // Get user role
-        let role = 'committee';
-        try {
-          const { data: userData } = await client
-            .from('users')
-            .select('role')
-            .eq('id', data.user.id)
-            .maybeSingle();
-
-          if (userData?.role) role = userData.role;
-        } catch (err) {
-          // ignore — default committee
-        }
-
-        showAlert('success', 'تم تسجيل الدخول، جاري التحويل...');
-
-        // Redirect based on role
-        setTimeout(() => {
-          if (role === 'head') {
-            window.location.href = 'admin.html';
-          } else {
-            window.location.href = 'dashboard.html';
-          }
-        }, 700);
-
-      } catch (err) {
-        console.error('[Login] Error:', err);
-        showAlert('error', err.message || 'فشل تسجيل الدخول');
-        loginBtn.disabled = false;
-        loginBtn.innerHTML = originalHtml;
-      }
-    });
-  }
-
-  /* ============================================
      WAIT FOR SUPABASE
      ============================================ */
   function waitForSupabase() {
@@ -821,7 +723,6 @@
 
       if (typeof window.onSupabaseReady === 'function') {
         window.onSupabaseReady((c) => resolve(c));
-        // Timeout fallback
         setTimeout(() => resolve(window.supabaseClient || null), 5000);
       } else {
         const start = Date.now();
@@ -858,6 +759,108 @@
       return 'فشل الاتصال، تحقق من الإنترنت';
     }
     return msg;
+  }
+
+  /* ============================================
+     LOGIN HANDLER
+     ============================================ */
+  const form = document.getElementById('loginForm');
+  const loginBtn = document.getElementById('loginBtn');
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearAlert();
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const remember = document.getElementById('rememberMe').checked;
+
+      if (!email || !password) {
+        showAlert('error', 'من فضلك أدخل البريد وكلمة المرور');
+        return;
+      }
+
+      const originalHtml = loginBtn.innerHTML;
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = `
+        <span class="spinner"></span>
+        <span>جاري التحقق...</span>
+      `;
+
+      try {
+        const client = await waitForSupabase();
+        if (!client) {
+          throw new Error('فشل تحميل النظام، حاول تحديث الصفحة');
+        }
+
+        const { data, error } = await client.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (error) {
+          throw new Error(translateAuthError(error.message));
+        }
+
+        if (!data?.user) {
+          throw new Error('لم يتم العثور على المستخدم');
+        }
+
+        // Remember me
+        try {
+          if (remember) {
+            localStorage.setItem('its_remember_email', email);
+          } else {
+            localStorage.removeItem('its_remember_email');
+          }
+        } catch (err) {}
+
+        // Get user role
+        let role = 'committee';
+        let roleLabel = 'لجنة العضوية';
+
+        try {
+          const { data: userData } = await client
+            .from('users')
+            .select('role, full_name')
+            .eq('id', data.user.id)
+            .maybeSingle();
+
+          if (userData?.role) {
+            role = userData.role;
+            if (role === 'head') roleLabel = 'النقيب العام';
+            else if (role === 'vice_president') roleLabel = 'نائب رئيس النقابة';
+          }
+        } catch (err) {}
+
+        // Log action
+        if (window.logUserAction) {
+          try {
+            await window.logUserAction('login', 'auth', data.user.id, `role: ${role}`);
+          } catch (e) {}
+        }
+
+        showAlert('success', `مرحبًا ${roleLabel} — جاري التحويل...`);
+
+        // Redirect based on role
+        setTimeout(() => {
+          if (role === 'head') {
+            window.location.href = 'admin.html';
+          } else if (role === 'vice_president') {
+            window.location.href = 'dashboard.html';
+          } else {
+            window.location.href = 'dashboard.html';
+          }
+        }, 700);
+
+      } catch (err) {
+        console.error('[Login] Error:', err);
+        showAlert('error', err.message || 'فشل تسجيل الدخول');
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = originalHtml;
+      }
+    });
   }
 
   /* ============================================
