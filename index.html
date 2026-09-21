@@ -43,15 +43,8 @@
     pointer-events: none;
   }
 
-  #matrixCanvas {
-    z-index: 1;
-    opacity: 0.55;
-  }
-
-  #neuralCanvas {
-    z-index: 2;
-    opacity: 0.85;
-  }
+  #matrixCanvas { z-index: 1; opacity: 0.55; }
+  #neuralCanvas { z-index: 2; opacity: 0.85; }
 
   .grid-overlay {
     z-index: 3;
@@ -96,9 +89,7 @@
     100% { transform: translateY(500%); }
   }
 
-  /* ============================================
-     CIRCUIT BOARD SVG
-     ============================================ */
+  /* Circuit Board */
   .circuit-bg {
     z-index: 2;
     opacity: 0.15;
@@ -145,9 +136,7 @@
     50%      { opacity: 1; }
   }
 
-  /* ============================================
-     DATA STREAMS
-     ============================================ */
+  /* Data Streams */
   .data-stream {
     position: fixed;
     z-index: 2;
@@ -171,9 +160,7 @@
     to   { transform: translateX(100vw); }
   }
 
-  /* ============================================
-     CORNERS
-     ============================================ */
+  /* Corners */
   .corner {
     position: fixed;
     width: 70px;
@@ -258,9 +245,7 @@
     border-bottom-color: var(--accent-2, #b026ff);
   }
 
-  @keyframes rotateRing {
-    to { transform: rotate(360deg); }
-  }
+  @keyframes rotateRing { to { transform: rotate(360deg); } }
 
   .logo-core {
     position: absolute;
@@ -662,19 +647,13 @@
 </head>
 <body>
 
-<!-- ============================================
-     MATRIX DIGITAL RAIN
-     ============================================ -->
+<!-- MATRIX RAIN -->
 <canvas id="matrixCanvas" class="bg-layer"></canvas>
 
-<!-- ============================================
-     NEURAL NETWORK
-     ============================================ -->
+<!-- NEURAL NETWORK -->
 <canvas id="neuralCanvas" class="bg-layer"></canvas>
 
-<!-- ============================================
-     CIRCUIT BOARD SVG
-     ============================================ -->
+<!-- CIRCUIT BOARD -->
 <div class="bg-layer circuit-bg">
   <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
     <path class="circuit-line" d="M 100 100 L 300 100 L 350 150 L 500 150" />
@@ -698,41 +677,25 @@
   </svg>
 </div>
 
-<!-- ============================================
-     GRID OVERLAY
-     ============================================ -->
+<!-- GRID + VIGNETTE + SCANLINE -->
 <div class="bg-layer grid-overlay"></div>
-
-<!-- ============================================
-     VIGNETTE
-     ============================================ -->
 <div class="bg-layer vignette"></div>
-
-<!-- ============================================
-     SCANLINE
-     ============================================ -->
 <div class="bg-layer scanline"></div>
 
-<!-- ============================================
-     DATA STREAMS
-     ============================================ -->
-<div class="data-stream s1">01001001 01010100 00100000 01010011 01011001 01001110 01000100 01001001 01000011 01000001 01010100 01000101 &nbsp;&nbsp; 0x4F 0x5A 0x31 0x41</div>
+<!-- DATA STREAMS -->
+<div class="data-stream s1">01001001 01010100 00100000 01010011 01011001 01001110 01000100 01001001 01000011 01000001 01010100 01000101</div>
 <div class="data-stream s2">SYSTEM.BOOT.SEQUENCE.INITIALIZING ... LOADING.MODULES ... CHECKING.INTEGRITY ... 100% ... OK</div>
-<div class="data-stream s3">01001110 01000101 01010101 01010010 01000001 01001100 &nbsp;&nbsp; AI.CHECK.ENGINE.ACTIVE &nbsp;&nbsp; DATABASE.SYNC</div>
+<div class="data-stream s3">01001110 01000101 01010101 01010010 01000001 01001100 ... AI.CHECK.ENGINE.ACTIVE ... DATABASE.SYNC</div>
 <div class="data-stream s4">const syndicate = { name: "IT", country: "EG", established: 2026, status: "ACTIVE" };</div>
-<div class="data-stream s5">01001000 01000101 01001100 01001100 01001111 &nbsp;&nbsp; ACCESS.GRANTED &nbsp;&nbsp; AUTHENTICATION.OK</div>
+<div class="data-stream s5">01001000 01000101 01001100 01001100 01001111 ... ACCESS.GRANTED ... AUTHENTICATION.OK</div>
 
-<!-- ============================================
-     CORNERS
-     ============================================ -->
+<!-- CORNERS -->
 <div class="corner tl"></div>
 <div class="corner tr"></div>
 <div class="corner bl"></div>
 <div class="corner br"></div>
 
-<!-- ============================================
-     MAIN CONTENT
-     ============================================ -->
+<!-- MAIN CONTENT -->
 <div class="splash-wrap">
 
   <!-- LOGO -->
@@ -754,7 +717,7 @@
   <div class="syndicate-name" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
   <div class="syndicate-name-en">IT WORKERS SYNDICATE</div>
 
-  <!-- HEAD OF SYNDICATE -->
+  <!-- HEAD CARD -->
   <div class="head-card">
     <span class="head-icon">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -792,9 +755,7 @@
 
 </div>
 
-<!-- ============================================
-     SKIP BUTTON
-     ============================================ -->
+<!-- SKIP BUTTON -->
 <button class="skip-btn" onclick="skipSplash()" aria-label="تخطي">
   <span>تخطي</span>
   <span class="arrow">
@@ -805,14 +766,9 @@
   </span>
 </button>
 
-<!-- ============================================
-     VERSION
-     ============================================ -->
-<div class="version">v1.0.0 • 2026</div>
+<!-- VERSION -->
+<div class="version">v3.0.0 • 2026</div>
 
-<!-- ============================================
-     JAVASCRIPT
-     ============================================ -->
 <script>
 (function () {
   'use strict';
@@ -836,7 +792,7 @@
   sessionStorage.setItem(SPLASH_KEY, '1');
 
   /* ============================================
-     DYNAMIC LOGO + FAVICON + TITLE
+     DYNAMIC LOGO + SETTINGS
      ============================================ */
   function applyLogo(logoUrl) {
     if (!logoUrl) return;
@@ -888,6 +844,7 @@
     } catch (e) {}
   }
 
+  // Cache first
   let cachedSettings = null;
   try {
     const raw = localStorage.getItem(SETTINGS_CACHE_KEY);
@@ -901,6 +858,7 @@
     if (cachedLogo) applyLogo(cachedLogo);
   }
 
+  // Fetch fresh from Supabase
   async function fetchSettingsFromSupabase() {
     try {
       const SUPABASE_URL = 'https://zenhokbsuxgiyptmdphs.supabase.co';
@@ -1169,7 +1127,6 @@
     animId = requestAnimationFrame(loop);
     updateProgress();
     setTimeout(goNext, SPLASH_DURATION);
-
     fetchSettingsFromSupabase();
   }
 
