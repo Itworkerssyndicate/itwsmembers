@@ -1,575 +1,430 @@
 /* =====================================================
-   IT SYNDICATE — Realtime Manager
+   IT SYNDICATE — REALTIME MANAGER
+   Version: 3.0.0
+   =====================================================
+   يحتوي على:
+   - watch (مراقبة جدول كامل)
+   - watchRow (مراقبة صف واحد)
+   - watchMany (مراقبة عدة جداول)
+   - watchManyAndReload (مراقبة + reload callback)
+   - broadcast (إرسال رسائل للتابات التانية)
+   - debounce للحماية من السبام
+   - cleanup تلقائي
    ===================================================== */
 
 (function () {
   'use strict';
 
   /* ============================================
-     STATE
-     ============================================ */
-  const channels = new Map();
-  const listeners = new Map();
-  const tableCounts = new Map();
-  const channelStatus = new Map();
-
-  let client = null;
-  let initialized = false;
-  let connectionStatus = 'disconnected';
-  let reconnectAttempts = 0;
-  let reconnectTimer = null;
-
-  const MAX_RECONNECT_ATTEMPTS = 10;
-  const RECONNECT_DELAY_BASE = 2000;
-
-  /* ============================================
      CONSTANTS
      ============================================ */
-  const WATCHED_TABLES = [
-    'membership_types',
-    'applications',
-    'attachments',
-    'status_history',
-    'payments',
-    'settings',
-    'members',
-    'user_preferences',
-    'branches',
-    'users',
-    'membership_subscriptions',
-    'user_sessions',
-    'user_actions',
-    'audit_log'
-  ];
-
-  const BROADCAST_CHANNEL = 'its:broadcast';
-  const PRESENCE_CHANNEL = 'its:presence';
+  const BROADCAST_CHANNEL = 'its_global_broadcast';
+  const DEFAULT_DEBOUNCE = 400;
 
   /* ============================================
-     STATUS
+     STATE
      ============================================ */
-  function setStatus(newStatus) {
-    if (connectionStatus === newStatus) return;
-    const oldStatus = connectionStatus;
-    connectionStatus = newStatus;
-
-    window.dispatchEvent(new CustomEvent('realtime-status', {
-      detail: { status: newStatus, previous: oldStatus }
-    }));
-
-    if (newStatus === 'connected') {
-      reconnectAttempts = 0;
-      console.log('[Realtime] Connected');
-    } else if (newStatus === 'error') {
-      console.warn('[Realtime] Error occurred');
-      scheduleReconnect();
-    } else if (newStatus === 'disconnected') {
-      console.warn('[Realtime] Disconnected');
-    }
-  }
-
-  function getStatus() {
-    return connectionStatus;
-  }
-
-  function scheduleReconnect() {
-    if (reconnectTimer) return;
-    if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-      console.warn('[Realtime] Max reconnect attempts reached');
-      return;
-    }
-
-    reconnectAttempts++;
-    const delay = Math.min(RECONNECT_DELAY_BASE * Math.pow(1.5, reconnectAttempts - 1), 30000);
-
-    console.log(`[Realtime] Reconnecting in ${Math.round(delay / 1000)}s (attempt ${reconnectAttempts})`);
-
-    reconnectTimer = setTimeout(async () => {
-      reconnectTimer = null;
-      await reconnectAll();
-    }, delay);
-  }
+  let client = null;
+  let isReady = false;
+  const channels = new Map(); // channelName -> channel
+  const watchers = new Map(); // watcherId -> { channel, cleanup }
+  let broadcastChannel = null;
+  let watcherCounter = 0;
 
   /* ============================================
-     LISTENERS
+     HELPERS
      ============================================ */
-  function listenerKey(table, event) {
-    return `${table}:${event}`;
+  function log(...args) {
+    if (window.ITS_DEBUG) console.log('[Realtime]', ...args);
   }
 
-  function addListener(table, event, callback) {
-    if (typeof callback !== 'function') return () => {};
+  function warn(...args) {
+    console.warn('[Realtime]', ...args);
+  }
 
-    const key = listenerKey(table, event);
-    if (!listeners.has(key)) listeners.set(key, []);
-    listeners.get(key).push(callback);
+  function genId(prefix) {
+    watcherCounter++;
+    return `${prefix}-${Date.now()}-${watcherCounter}`;
+  }
 
-    tableCounts.set(table, (tableCounts.get(table) || 0) + 1);
-
-    return function unsubscribe() {
-      const arr = listeners.get(key);
-      if (arr) {
-        const idx = arr.indexOf(callback);
-        if (idx > -1) arr.splice(idx, 1);
-        if (arr.length === 0) listeners.delete(key);
-      }
-      const c = tableCounts.get(table) || 1;
-      tableCounts.set(table, Math.max(0, c - 1));
+  function debounce(fn, delay) {
+    let timer = null;
+    return function (...args) {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn.apply(this, args), delay);
     };
   }
 
-  function emit(table, event, payload) {
-    const specific = listeners.get(listenerKey(table, event)) || [];
-    const general = listeners.get(listenerKey(table, '*')) || [];
-    const allTable = listeners.get(listenerKey('*', event)) || [];
-    const allAll = listeners.get(listenerKey('*', '*')) || [];
-
-    const all = [...specific, ...general, ...allTable, ...allAll];
-    const seen = new Set();
-
-    all.forEach(cb => {
-      if (seen.has(cb)) return;
-      seen.add(cb);
-      try {
-        cb({
-          table,
-          event,
-          payload,
-          timestamp: new Date().toISOString()
-        });
-      } catch (e) {
-        console.error('[Realtime] Listener error:', e);
-      }
-    });
-  }
-
   /* ============================================
-     SUBSCRIBE
+     GET OR CREATE CHANNEL
      ============================================ */
-  function subscribeToTable(table) {
-    if (!client) return null;
-    if (channels.has(table)) {
-      const existing = channels.get(table);
-      // لو القناة مشتركة، رجعها
-      if (channelStatus.get(table) === 'subscribed') return existing;
+  function getChannel(name) {
+    if (channels.has(name)) {
+      return channels.get(name);
     }
 
-    const channelName = `its:realtime:${table}`;
+    if (!client) {
+      warn('Client not ready');
+      return null;
+    }
 
-    const channel = client
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table },
-        (payload) => {
-          const eventType = (payload.eventType || '').toLowerCase();
-          emit(table, eventType, payload);
-        }
-      )
-      .subscribe((status, err) => {
-        channelStatus.set(table, status.toLowerCase());
+    const channel = client.channel(name);
+    channels.set(name, channel);
 
-        if (status === 'SUBSCRIBED') {
-          // لو كل الجداول مشتركة، اعتبر الاتصال سليم
-          const allSubscribed = WATCHED_TABLES.every(t => {
-            const s = channelStatus.get(t);
-            return s === 'subscribed' || !channels.has(t);
-          });
-          if (allSubscribed || channels.size > 0) {
-            setStatus('connected');
-          }
-        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.warn(`[Realtime] ${table}: ${status}`, err);
-          channelStatus.set(table, 'error');
-          setStatus('error');
-        } else if (status === 'CLOSED') {
-          channelStatus.set(table, 'closed');
-        }
-      });
+    channel.subscribe((status, err) => {
+      log(`Channel "${name}" status:`, status);
+      if (err) warn(`Channel "${name}" error:`, err);
+    });
 
-    channels.set(table, channel);
     return channel;
   }
 
-  async function unsubscribeFromTable(table) {
-    const channel = channels.get(table);
-    if (!channel || !client) return;
-
-    try {
-      await client.removeChannel(channel);
-    } catch (e) {
-      console.warn('[Realtime] Remove channel failed:', e);
+  function removeChannel(name) {
+    if (channels.has(name)) {
+      try {
+        const ch = channels.get(name);
+        client.removeChannel(ch);
+      } catch (e) {}
+      channels.delete(name);
     }
-    channels.delete(table);
-    channelStatus.delete(table);
-  }
-
-  async function reconnectAll() {
-    const tables = Array.from(channels.keys());
-    for (const t of tables) {
-      await unsubscribeFromTable(t);
-    }
-    tables.forEach(t => subscribeToTable(t));
   }
 
   /* ============================================
-     PUBLIC: watch
+     WATCH (Table)
      ============================================ */
-  function watch(table, options, callback) {
-    if (typeof options === 'function') {
-      callback = options;
-      options = { event: '*' };
+  /**
+   * Watch a full table for any change
+   * @param {string} table - Table name
+   * @param {Function} callback - Called on any change
+   * @param {Object} options - { event: '*', schema: 'public', debounceMs, immediate }
+   * @returns {Function} - Unsubscribe function
+   */
+  function watch(table, callback, options) {
+    if (!client) {
+      warn('watch: client not ready');
+      return () => {};
     }
-    options = options || {};
-    const event = options.event || '*';
 
-    if (client && !channels.has(table) && table !== '*') {
-      subscribeToTable(table);
-    }
+    const opts = options || {};
+    const event = opts.event || '*';
+    const schema = opts.schema || 'public';
+    const debounceMs = opts.debounceMs ?? DEFAULT_DEBOUNCE;
+    const channelName = opts.channelName || `watch-${table}`;
 
-    return addListener(table, event, callback);
-  }
+    const channel = getChannel(channelName);
+    if (!channel) return () => {};
 
-  function watchMany(tables, callback) {
-    const unsubs = [];
-    tables.forEach(t => {
-      unsubs.push(watch(t, '*', callback));
-    });
-    return function () {
-      unsubs.forEach(fn => { try { fn(); } catch (e) {} });
+    const id = genId('watch');
+    const wrappedCallback = debounceMs > 0
+      ? debounce((payload) => callback(payload), debounceMs)
+      : callback;
+
+    const handler = (payload) => {
+      log(`Change on ${table}:`, payload.eventType);
+      wrappedCallback(payload);
     };
-  }
 
-  function watchRow(table, rowId, callback) {
-    return watch(table, '*', (info) => {
-      const record = info.payload.new || info.payload.old || {};
-      if (String(record.id) === String(rowId)) {
-        callback(info);
+    channel.on(
+      'postgres_changes',
+      { event, schema, table },
+      handler
+    );
+
+    const cleanup = () => {
+      try {
+        channel.unsubscribe();
+      } catch (e) {}
+      watchers.delete(id);
+      // Remove channel if no other watchers
+      if (watchers.size === 0) {
+        removeChannel(channelName);
       }
-    });
-  }
+    };
 
-  async function unwatch(table) {
-    return unsubscribeFromTable(table);
-  }
+    watchers.set(id, { channel, cleanup });
 
-  async function unwatchAll() {
-    const tables = Array.from(channels.keys());
-    for (const t of tables) {
-      await unsubscribeFromTable(t);
-    }
-    listeners.clear();
-    tableCounts.clear();
-    channelStatus.clear();
+    log(`Watching table "${table}" (id: ${id})`);
+    return cleanup;
   }
 
   /* ============================================
-     WATCH & RELOAD HELPERS
+     WATCH ROW (Specific row)
      ============================================ */
-  function watchAndReload(table, loaderFn, options) {
-    options = options || {};
-    if (options.immediate !== false && typeof loaderFn === 'function') {
-      loaderFn();
+  /**
+   * Watch a specific row in a table
+   * @param {string} table - Table name
+   * @param {string|number} rowId - Row ID (usually UUID)
+   * @param {Function} callback
+   * @param {Object} options - { idColumn: 'id', schema, debounceMs }
+   * @returns {Function} - Unsubscribe
+   */
+  function watchRow(table, rowId, callback, options) {
+    if (!client) {
+      warn('watchRow: client not ready');
+      return () => {};
     }
-    return watch(table, '*', window.debounce(() => {
-      if (typeof loaderFn === 'function') loaderFn();
-    }, options.debounceMs || 250));
+
+    const opts = options || {};
+    const idColumn = opts.idColumn || 'id';
+    const schema = opts.schema || 'public';
+    const debounceMs = opts.debounceMs ?? DEFAULT_DEBOUNCE;
+    const channelName = opts.channelName || `watchrow-${table}-${rowId}`;
+
+    const channel = getChannel(channelName);
+    if (!channel) return () => {};
+
+    const id = genId('watchrow');
+    const wrappedCallback = debounceMs > 0
+      ? debounce((payload) => callback(payload), debounceMs)
+      : callback;
+
+    const handler = (payload) => {
+      // Only trigger if the changed row matches
+      const newData = payload.new || {};
+      const oldData = payload.old || {};
+      const matchId = newData[idColumn] || oldData[idColumn];
+
+      if (String(matchId) === String(rowId)) {
+        log(`Row change on ${table}:${rowId}:`, payload.eventType);
+        wrappedCallback(payload);
+      }
+    };
+
+    channel.on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema,
+        table,
+        filter: `${idColumn}=eq.${rowId}`
+      },
+      handler
+    );
+
+    const cleanup = () => {
+      try {
+        channel.unsubscribe();
+      } catch (e) {}
+      watchers.delete(id);
+      if (watchers.size === 0) {
+        removeChannel(channelName);
+      }
+    };
+
+    watchers.set(id, { channel, cleanup });
+
+    log(`Watching row "${table}:${rowId}" (id: ${id})`);
+    return cleanup;
   }
 
-  function watchManyAndReload(tables, loaderFn, options) {
-    options = options || {};
-    if (options.immediate !== false && typeof loaderFn === 'function') {
-      loaderFn();
+  /* ============================================
+     WATCH MANY (Multiple tables)
+     ============================================ */
+  /**
+   * Watch multiple tables with a single callback
+   * @param {string[]} tables
+   * @param {Function} callback
+   * @param {Object} options
+   * @returns {Function} - Unsubscribe all
+   */
+  function watchMany(tables, callback, options) {
+    if (!Array.isArray(tables) || tables.length === 0) {
+      return () => {};
     }
-    const debounced = window.debounce(() => {
-      if (typeof loaderFn === 'function') loaderFn();
-    }, options.debounceMs || 250);
 
-    const unsubs = tables.map(t => watch(t, '*', debounced));
-    return function () {
-      unsubs.forEach(fn => { try { fn(); } catch (e) {} });
+    const cleanups = tables.map(table => watch(table, callback, options));
+
+    return () => {
+      cleanups.forEach(fn => {
+        try {
+          fn();
+        } catch (e) {}
+      });
     };
   }
 
   /* ============================================
-     BROADCAST CHANNEL
+     WATCH MANY AND RELOAD
      ============================================ */
-  let broadcastChannel = null;
-  let broadcastReady = false;
+  /**
+   * Convenience: watch multiple tables and call reload on any change
+   * @param {string[]} tables
+   * @param {Function} reloadFn - async function to call
+   * @param {Object} options - { debounceMs, immediate }
+   * @returns {Function} - Unsubscribe
+   */
+  function watchManyAndReload(tables, reloadFn, options) {
+    if (!Array.isArray(tables) || typeof reloadFn !== 'function') {
+      return () => {};
+    }
 
-  function initBroadcast() {
-    if (!client || broadcastChannel) return broadcastChannel;
+    const opts = options || {};
+    const debounceMs = opts.debounceMs ?? 600;
+
+    // Use a single debounced reload for all tables
+    const debouncedReload = debounce(async () => {
+      try {
+        await reloadFn();
+      } catch (e) {
+        warn('Reload callback failed:', e.message);
+      }
+    }, debounceMs);
+
+    const handleChange = (payload) => {
+      log('Change detected, scheduling reload...', payload?.table);
+      debouncedReload();
+    };
+
+    // Watch each table
+    const cleanups = tables.map(table =>
+      watch(table, handleChange, { ...opts, debounceMs: 0 })
+    );
+
+    // Optional immediate call
+    if (opts.immediate) {
+      setTimeout(() => {
+        debouncedReload();
+      }, 100);
+    }
+
+    return () => {
+      cleanups.forEach(fn => {
+        try {
+          fn();
+        } catch (e) {}
+      });
+    };
+  }
+
+  /* ============================================
+     BROADCAST (Cross-tab messaging)
+     ============================================ */
+  function ensureBroadcastChannel() {
+    if (broadcastChannel) return broadcastChannel;
+    if (!client) return null;
 
     broadcastChannel = client.channel(BROADCAST_CHANNEL, {
       config: {
-        broadcast: { self: false, ack: false }
+        broadcast: { self: false }
       }
     });
 
     broadcastChannel
-      .on('broadcast', { event: 'notification' }, (payload) => {
+      .on('broadcast', { event: 'message' }, (payload) => {
+        log('Broadcast received:', payload);
         window.dispatchEvent(new CustomEvent('broadcast-notification', {
-          detail: payload.payload || payload
-        }));
-      })
-      .on('broadcast', { event: 'settings-updated' }, (payload) => {
-        window.dispatchEvent(new CustomEvent('broadcast-settings', {
-          detail: payload.payload || payload
-        }));
-      })
-      .on('broadcast', { event: 'logo-updated' }, (payload) => {
-        window.dispatchEvent(new CustomEvent('broadcast-logo', {
-          detail: payload.payload || payload
-        }));
-      })
-      .on('broadcast', { event: 'data-changed' }, (payload) => {
-        window.dispatchEvent(new CustomEvent('broadcast-data', {
-          detail: payload.payload || payload
+          detail: payload.payload
         }));
       })
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          broadcastReady = true;
-        }
+        log('Broadcast channel status:', status);
       });
 
     return broadcastChannel;
   }
 
-  function sendBroadcast(event, data) {
-    if (!broadcastChannel) initBroadcast();
-    if (!broadcastChannel) return;
+  /**
+   * Send a broadcast message to all tabs
+   * @param {string} type - Message type
+   * @param {Object} data - Payload
+   */
+  function sendBroadcast(type, data) {
+    const channel = ensureBroadcastChannel();
+    if (!channel) return;
+
     try {
-      broadcastChannel.send({
+      channel.send({
         type: 'broadcast',
-        event: event || 'notification',
-        payload: data || {}
+        event: 'message',
+        payload: {
+          type,
+          ...data,
+          timestamp: new Date().toISOString()
+        }
       });
+      log('Broadcast sent:', type);
     } catch (e) {
-      console.warn('[Realtime] Broadcast failed:', e);
+      warn('Broadcast failed:', e.message);
     }
   }
 
   /* ============================================
-     PRESENCE
+     CLEANUP
      ============================================ */
-  let presenceChannel = null;
-  const presenceState = new Map();
-  let currentPresenceInfo = null;
-
-  function initPresence(userInfo) {
-    if (!client) return null;
-
-    if (presenceChannel) {
-      if (userInfo) trackPresence(userInfo);
-      return presenceChannel;
-    }
-
-    const key = userInfo?.id || 'anon-' + Math.random().toString(36).slice(2, 9);
-
-    presenceChannel = client.channel(PRESENCE_CHANNEL, {
-      config: {
-        presence: { key }
-      }
-    });
-
-    presenceChannel
-      .on('presence', { event: 'sync' }, () => {
-        const state = presenceChannel.presenceState();
-        presenceState.clear();
-        Object.entries(state).forEach(([k, arr]) => {
-          presenceState.set(k, arr);
-        });
-        window.dispatchEvent(new CustomEvent('presence-sync', {
-          detail: { state: Object.fromEntries(presenceState) }
-        }));
-      })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        window.dispatchEvent(new CustomEvent('presence-join', {
-          detail: { key, presences: newPresences }
-        }));
-      })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        window.dispatchEvent(new CustomEvent('presence-leave', {
-          detail: { key, presences: leftPresences }
-        }));
-      })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED' && userInfo) {
-          currentPresenceInfo = userInfo;
-          try {
-            await presenceChannel.track(userInfo);
-          } catch (e) {}
-        }
-      });
-
-    return presenceChannel;
-  }
-
-  async function trackPresence(userInfo) {
-    if (!userInfo) return;
-
-    if (!presenceChannel) {
-      initPresence(userInfo);
-      currentPresenceInfo = userInfo;
-      return;
-    }
-
-    try {
-      await presenceChannel.track(userInfo);
-      currentPresenceInfo = userInfo;
-    } catch (e) {}
-  }
-
-  function getOnlineUsers() {
-    const all = [];
-    presenceState.forEach((arr) => {
-      arr.forEach(p => all.push(p));
-    });
-    return all;
-  }
-
-  function getPresenceState() {
-    return Object.fromEntries(presenceState);
-  }
-
-  /* ============================================
-     AUTO PRESENCE (لو المستخدم مسجل دخول)
-     ============================================ */
-  async function autoPresence() {
-    if (!client) return;
-    try {
-      const { data } = await client.auth.getSession();
-      const user = data?.session?.user;
-      if (!user) return;
-
-      // جيب اسم المستخدم ودوره
-      let fullName = user.email;
-      let role = 'committee';
-
+  function cleanup() {
+    watchers.forEach(({ cleanup: fn }) => {
       try {
-        const { data: userData } = await client
-          .from('users')
-          .select('full_name, role')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (userData) {
-          fullName = userData.full_name || fullName;
-          role = userData.role || role;
-        }
+        fn();
       } catch (e) {}
-
-      const info = {
-        id: user.id,
-        email: user.email,
-        full_name: fullName,
-        role,
-        online_at: new Date().toISOString()
-      };
-
-      initPresence(info);
-    } catch (e) {}
-  }
-
-  /* ============================================
-     BATCH OPERATIONS
-     ============================================ */
-  async function batchSubscribe(tables) {
-    if (!client) return;
-    tables.forEach(t => subscribeToTable(t));
-  }
-
-  /* ============================================
-     INIT
-     ============================================ */
-  async function init() {
-    if (initialized) return;
-    if (typeof window.onSupabaseReady !== 'function') {
-      setTimeout(init, 100);
-      return;
+    });
+    watchers.clear();
+    channels.clear();
+    if (broadcastChannel) {
+      try {
+        client.removeChannel(broadcastChannel);
+      } catch (e) {}
+      broadcastChannel = null;
     }
+  }
 
-    window.onSupabaseReady((c) => {
-      client = c;
-      initialized = true;
-
-      setStatus('connecting');
-
-      // Subscribe to all watched tables
-      WATCHED_TABLES.forEach(t => subscribeToTable(t));
-
-      // Init broadcast
-      initBroadcast();
-
-      // Init presence if logged in
-      setTimeout(autoPresence, 1000);
-
-      window.dispatchEvent(new CustomEvent('realtime-initialized'));
-    });
-
-    // Network status
-    window.addEventListener('online', () => {
-      console.log('[Realtime] Back online');
-      reconnectAll();
-    });
-
-    window.addEventListener('offline', () => {
-      console.log('[Realtime] Offline');
-      setStatus('disconnected');
-    });
+  function count() {
+    return watchers.size;
   }
 
   /* ============================================
      PUBLIC API
      ============================================ */
   window.Realtime = {
-    // Subscribe
+    // Watchers
     watch,
-    watchMany,
     watchRow,
-    unwatch,
-    unwatchAll,
-
-    // Helpers
-    watchAndReload,
+    watchMany,
     watchManyAndReload,
 
-    // Listener management
-    addListener,
-    emit,
-
     // Broadcast
-    initBroadcast,
     sendBroadcast,
+    broadcast: sendBroadcast,
 
-    // Presence
-    initPresence,
-    trackPresence,
-    getOnlineUsers,
-    getPresenceState,
-
-    // Status
-    getStatus,
-    getChannels: () => Array.from(channels.keys()),
-    getListeners: () => Object.fromEntries(listeners),
-    getChannelStatus: () => Object.fromEntries(channelStatus),
-
-    // Batch
-    batchSubscribe,
-    reconnectAll,
-
-    // Constants
-    WATCHED_TABLES
+    // Utilities
+    cleanup,
+    count: () => count(),
+    isReady: () => isReady,
+    status: () => ({
+      isReady,
+      watchers: watchers.size,
+      channels: channels.size,
+      hasBroadcast: !!broadcastChannel
+    })
   };
 
   /* ============================================
-     START
+     INIT
      ============================================ */
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+  function start(c) {
+    client = c;
+    isReady = true;
+
+    // Ensure broadcast channel
+    ensureBroadcastChannel();
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      cleanup();
+    });
+
+    log('Ready');
+    window.dispatchEvent(new CustomEvent('realtime-ready'));
+  }
+
+  // Wait for Supabase
+  if (typeof window.onSupabaseReady === 'function') {
+    window.onSupabaseReady(start);
+  } else if (window.supabaseClient) {
+    start(window.supabaseClient);
   } else {
-    init();
+    window.addEventListener('supabase-ready', (e) => {
+      start(e.detail?.client || window.supabaseClient);
+    }, { once: true });
   }
 
 })();
