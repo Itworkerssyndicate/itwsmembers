@@ -1,5 +1,19 @@
 /* =====================================================
-   IT SYNDICATE — Admin Panel Logic
+   IT SYNDICATE — ADMIN PANEL LOGIC
+   Version: 3.1.0
+   =====================================================
+   يحتوي على:
+   - Auth + Role check (head فقط)
+   - الإعدادات العامة (الشعار + الاسم + النقيب + تواصل + نظام + نصوص)
+   - إعدادات الرئيسية (Hero + Code Card + Features + About Card)
+   - المستخدمون (CRUD كامل)
+   - أنواع العضوية (CRUD)
+   - الشعب (CRUD)
+   - المميزات (Editor تفاعلي)
+   - سجل النشاط + سجل التدقيق
+   - Backup
+   - Realtime
+   - ✅ إصلاح قائمة الثيمات (buildSelect بدل buildThemeSelect)
    ===================================================== */
 
 (function () {
@@ -13,6 +27,20 @@
   const MAX_LOGO_SIZE = 2 * 1024 * 1024;
   const ALLOWED_LOGO_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml', 'image/webp'];
   const AUDIT_TABLE = 'audit_log';
+
+  /* ============================================
+     THEMES FALLBACK LIST
+     ============================================ */
+  const THEMES_LIST = {
+    'neon-dark':    { name: 'نيون داكن',     desc: 'سماوي وبنفسجي — افتراضي' },
+    'neon-light':   { name: 'نيون فاتح',     desc: 'أزرق وبنفسجي — فاتح' },
+    'cyberpunk':    { name: 'سايبربانك',     desc: 'ماجنتا وأصفر' },
+    'emerald':      { name: 'زمردي',         desc: 'أخضر وذهبي' },
+    'royal':        { name: 'ملكي',          desc: 'بنفسجي وسماوي' },
+    'patriot':      { name: 'وطني أحمر',     desc: 'أحمر وأسود — هوية النقابة' },
+    'tech-cairo':   { name: 'تك كايرو',      desc: 'أحمر وذهبي — فخم' },
+    'minimal':      { name: 'مينيمال',       desc: 'أحمر وأسود — فاتح احترافي' }
+  };
 
   /* ============================================
      ICON LIBRARY
@@ -139,8 +167,10 @@
 
       const role = userData?.role || 'committee';
 
-      if (role !== 'head') {
-        alert('هذه الصفحة مخصصة للنقيب العام فقط');
+      // الأدوار المسموح لها بالدخول
+      const allowedRoles = ['head', 'vice_president', 'deputy'];
+      if (!allowedRoles.includes(role)) {
+        alert('هذه الصفحة مخصصة للنقيب العام ونوابه فقط');
         window.location.href = 'dashboard.html';
         return false;
       }
@@ -251,9 +281,7 @@
 
       applySettingsToForm();
       applyLogoPreview();
-      buildThemeSelect();
-
-      // Load features cards
+      buildThemeSelect();  // ✅ الدالة المعدلة
       loadFeaturesFromSettings();
 
     } catch (err) {
@@ -300,12 +328,52 @@
     }
   }
 
+  /* ============================================
+     ✅ BUILD THEME SELECT (FIXED)
+     ============================================ */
   function buildThemeSelect() {
     const select = document.getElementById('defaultThemeSelect');
     if (!select) return;
-    if (window.ThemeManager && typeof window.ThemeManager.buildThemeSelect === 'function') {
-      window.ThemeManager.buildThemeSelect('defaultThemeSelect', settings.default_theme || 'neon-dark');
+
+    const currentValue = settings.default_theme || 'neon-dark';
+
+    // ✅ الخيار 1: استخدم ThemeManager لو عنده الدالة الصح
+    if (window.ThemeManager && typeof window.ThemeManager.buildSelect === 'function') {
+      try {
+        window.ThemeManager.buildSelect('defaultThemeSelect', currentValue);
+        // أضف listener للمعاينة
+        attachThemePreviewListener(select);
+        return;
+      } catch (e) {
+        console.warn('[Admin] ThemeManager.buildSelect failed, using fallback:', e);
+      }
     }
+
+    // ✅ الخيار 2: ابنِها يدويًا (Fallback)
+    select.innerHTML = '';
+
+    Object.entries(THEMES_LIST).forEach(([key, info]) => {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = `${info.name} — ${info.desc}`;
+      if (key === currentValue) opt.selected = true;
+      select.appendChild(opt);
+    });
+
+    attachThemePreviewListener(select);
+  }
+
+  function attachThemePreviewListener(select) {
+    if (!select || select.dataset.listenerAttached === 'true') return;
+
+    select.addEventListener('change', () => {
+      // معاينة مباشرة بدون حفظ
+      if (window.ThemeManager && typeof window.ThemeManager.apply === 'function') {
+        window.ThemeManager.apply(select.value, { persist: false });
+      }
+    });
+
+    select.dataset.listenerAttached = 'true';
   }
 
   /* ============================================
@@ -464,7 +532,7 @@
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = `<span style="width:14px;height:14px;display:inline-flex;margin-left:6px;">${ICONS.upload}</span><span>اختر شعار جديد</span>`;
+        btn.innerHTML = `${ICONS.upload}<span>اختر شعار جديد</span>`;
       }
     }
   }
@@ -546,6 +614,7 @@
       const roleConfig = {
         head: { label: 'النقيب العام', cls: 'head' },
         vice_president: { label: 'نائب الرئيس', cls: 'vice_president' },
+        deputy: { label: 'الوكيل', cls: 'deputy' },
         committee: { label: 'لجنة العضوية', cls: 'committee' }
       }[u.role] || { label: u.role, cls: 'committee' };
 
@@ -553,7 +622,8 @@
         <tr style="border-bottom:1px solid var(--border-soft);">
           <td style="padding:14px 12px;">
             <div style="font-weight:700;font-size:13.5px;color:var(--text);">${escapeHtml(u.full_name || '—')}</div>
-            ${u.phone ? `<div style="font-size:11.5px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;direction:ltr;text-align:right;">${escapeHtml(u.phone)}</div>` : ''}
+            ${u.position ? `<div style="font-size:11.5px;color:var(--accent);margin-top:3px;">${escapeHtml(u.position)}</div>` : ''}
+            ${u.phone ? `<div style="font-size:11.5px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;direction:ltr;text-align:right;margin-top:2px;">${escapeHtml(u.phone)}</div>` : ''}
           </td>
           <td style="padding:14px 12px;font-size:12.5px;color:var(--text-muted);direction:ltr;text-align:right;">
             <span dir="ltr">${escapeHtml(u.email || '—')}</span>
@@ -617,6 +687,20 @@
     document.getElementById('userPassword').parentElement.style.display = isEdit ? 'none' : 'block';
     document.getElementById('userNotes').value = isEdit ? (user.notes || '') : '';
 
+    // Position field
+    const posField = document.getElementById('userPosition');
+    if (posField) posField.value = isEdit ? (user.position || '') : '';
+
+    // Governorate field
+    const govField = document.getElementById('userGovernorateField');
+    const govSelect = document.getElementById('userGovernorate');
+    if (govField && govSelect) {
+      govSelect.value = isEdit ? (user.governorate_id || '') : '';
+      const role = isEdit ? user.role : 'committee';
+      const needsGov = ['governorate_head', 'governorate_board'].includes(role);
+      govField.style.display = needsGov ? 'block' : 'none';
+    }
+
     modal.classList.add('open');
     document.body.style.overflow = 'hidden';
   };
@@ -635,6 +719,8 @@
     const role = document.getElementById('userRole').value;
     const password = document.getElementById('userPassword').value;
     const notes = document.getElementById('userNotes').value.trim();
+    const position = document.getElementById('userPosition')?.value.trim() || '';
+    const governorateId = document.getElementById('userGovernorate')?.value || null;
 
     if (!email || !fullName) {
       showToast('البريد والاسم مطلوبان', 'warning');
@@ -655,13 +741,15 @@
             full_name: fullName,
             phone,
             role,
+            position,
+            governorate_id: governorateId ? parseInt(governorateId) : null,
             notes
           })
           .eq('id', userId);
 
         if (error) throw error;
 
-        await logAudit('update', 'user', userId, null, { full_name: fullName, role });
+        await logAudit('update', 'user', userId, null, { full_name: fullName, role, position });
         await logAction('update_user', 'user', userId, `تم تحديث ${fullName}`);
         showToast('تم التحديث', 'success');
 
@@ -670,7 +758,6 @@
           throw new Error('الباسورد مطلوب (6 أحرف على الأقل)');
         }
 
-        // Sign up with regular client
         const tempClient = window.supabase.createClient(
           window.SUPABASE_URL,
           window.SUPABASE_KEY,
@@ -696,12 +783,14 @@
             full_name: fullName,
             phone,
             role,
+            position,
+            governorate_id: governorateId ? parseInt(governorateId) : null,
             notes
           }], { onConflict: 'id' });
 
         if (insertErr) throw insertErr;
 
-        await logAudit('create', 'user', newUserId, null, { email, role, full_name: fullName });
+        await logAudit('create', 'user', newUserId, null, { email, role, full_name: fullName, position });
         await logAction('create_user', 'user', newUserId, `تم إنشاء ${fullName} بدور ${role}`);
         showToast('تم إنشاء المستخدم — سيصله إيميل تأكيد', 'success');
       }
@@ -1185,7 +1274,6 @@
     if (actionsBody) actionsBody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
 
     try {
-      // Sessions with user info
       const { data: sessData } = await client
         .from('user_sessions')
         .select('*, users:user_id(full_name, role)')
@@ -1195,7 +1283,6 @@
       sessions = sessData || [];
       renderSessionsTable();
 
-      // Actions
       const { data: actData } = await client
         .from('user_actions')
         .select('*')
@@ -1348,7 +1435,7 @@
     try {
       showToast('جاري تحضير النسخة الاحتياطية...', 'info');
 
-      const [settingsRes, typesRes, branchesRes, usersRes, featuresRes] = await Promise.all([
+      const [settingsRes, typesRes, branchesRes, usersRes, appsRes] = await Promise.all([
         client.from('settings').select('*'),
         client.from('membership_types').select('*'),
         client.from('branches').select('*'),
@@ -1359,13 +1446,13 @@
       const backup = {
         exported_at: new Date().toISOString(),
         exported_by: currentUser?.email,
-        version: '2.0.0',
+        version: '3.1.0',
         data: {
           settings: settingsRes.data || [],
           membership_types: typesRes.data || [],
           branches: branchesRes.data || [],
           users: usersRes.data || [],
-          applications: featuresRes.data || []
+          applications: appsRes.data || []
         }
       };
 
@@ -1412,16 +1499,6 @@
     // Remove logo
     const removeBtn = document.getElementById('removeLogoBtn');
     if (removeBtn) removeBtn.addEventListener('click', removeLogo);
-
-    // Theme preview
-    const themeSelect = document.getElementById('defaultThemeSelect');
-    if (themeSelect) {
-      themeSelect.addEventListener('change', () => {
-        if (window.ThemeManager) {
-          window.ThemeManager.applyTheme(themeSelect.value);
-        }
-      });
-    }
 
     // Add user
     const addUserBtn = document.getElementById('addUserBtn');
