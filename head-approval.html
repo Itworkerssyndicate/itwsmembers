@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="theme-color" content="#000000" />
-<meta name="description" content="اعتماد النقيب — نقابة تكنولوجيا المعلومات والبرمجيات" />
+<meta name="description" content="اعتماد النقيب العام — نقابة تكنولوجيا المعلومات والبرمجيات" />
 <title>اعتماد النقيب — نقابة تكنولوجيا المعلومات والبرمجيات</title>
 
 <link rel="icon" id="faviconLink" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
@@ -46,7 +46,7 @@
     font-family: 'Tajawal', sans-serif;
     font-size: clamp(24px, 3.5vw, 32px);
     font-weight: 900;
-    background: linear-gradient(90deg, #f59e0b, var(--accent), #f59e0b);
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
@@ -63,8 +63,8 @@
     align-items: center;
     gap: 12px;
     padding: 10px 18px;
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(var(--accent-rgb), 0.05));
-    border: 1.5px solid rgba(245, 158, 11, 0.4);
+    background: var(--card-bg);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -87,47 +87,38 @@
   .user-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
   .user-role { font-size: 11.5px; color: #f59e0b; letter-spacing: 0.5px; font-weight: 600; }
 
-  /* Quick stats */
-  .quick-stats {
+  /* Stats */
+  .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 14px;
     margin-bottom: 24px;
   }
-  .quick-stat {
+  .stat-card {
     padding: 18px;
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    gap: 14px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
   }
-  .quick-stat-icon {
-    width: 46px; height: 46px;
-    border-radius: var(--radius-md);
-    background: rgba(var(--accent-rgb), 0.08);
-    border: 1px solid rgba(var(--accent-rgb), 0.25);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+  .stat-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
   }
-  .quick-stat-icon svg {
-    width: 22px; height: 22px;
-    stroke: var(--accent); fill: none;
-    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
-  }
-  .quick-stat-info { min-width: 0; }
-  .quick-stat-value {
+  .stat-num {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 800;
     line-height: 1;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
   }
-  .quick-stat-label {
-    font-size: 12px;
+  .stat-label {
+    font-size: 12.5px;
     color: var(--text-muted);
   }
 
@@ -164,7 +155,7 @@
 
   .filters-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
     gap: 12px;
     align-items: end;
   }
@@ -203,44 +194,6 @@
     margin-bottom: 20px;
   }
 
-  /* Bulk banner */
-  .bulk-banner {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(var(--accent-rgb), 0.06));
-    border: 1.5px solid rgba(245, 158, 11, 0.4);
-    border-radius: var(--radius-lg);
-    padding: 20px 24px;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .bulk-banner-icon {
-    width: 48px; height: 48px;
-    border-radius: 50%;
-    background: rgba(245, 158, 11, 0.15);
-    border: 2px solid #f59e0b;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .bulk-banner-icon svg {
-    width: 24px; height: 24px;
-    stroke: #f59e0b; fill: none;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-  }
-  .bulk-banner-info { flex: 1; min-width: 200px; }
-  .bulk-banner-title {
-    font-family: 'Tajawal', sans-serif;
-    font-size: 16px;
-    font-weight: 800;
-    color: #f59e0b;
-    margin-bottom: 4px;
-  }
-  .bulk-banner-sub {
-    font-size: 12.5px;
-    color: var(--text-muted);
-  }
-
   /* Table */
   .table-card {
     background: var(--card-bg);
@@ -270,7 +223,7 @@
   }
   .table-card-title svg {
     width: 18px; height: 18px;
-    stroke: #f59e0b; fill: none;
+    stroke: var(--accent); fill: none;
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
   .table-card-count {
@@ -280,7 +233,7 @@
   }
 
   .table-wrap { overflow-x: auto; max-height: 70vh; }
-  table { width: 100%; min-width: 1100px; }
+  table { width: 100%; min-width: 1300px; }
   table th {
     position: sticky;
     top: 0;
@@ -288,18 +241,6 @@
     background: rgba(10, 12, 20, 0.98);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-  }
-
-  /* Checkbox */
-  .check-cell {
-    width: 40px;
-    text-align: center;
-  }
-  .row-check {
-    width: 18px;
-    height: 18px;
-    accent-color: #f59e0b;
-    cursor: pointer;
   }
 
   /* Member cell */
@@ -311,13 +252,13 @@
   .member-avatar {
     width: 38px; height: 38px;
     border-radius: var(--radius-sm);
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(var(--accent-rgb), 0.15));
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-2-rgb), 0.15));
+    border: 1px solid rgba(var(--accent-rgb), 0.25);
     display: flex; align-items: center; justify-content: center;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
     font-size: 11px;
-    color: #f59e0b;
+    color: var(--accent);
     flex-shrink: 0;
   }
   .member-info { min-width: 0; line-height: 1.25; }
@@ -336,6 +277,15 @@
     color: var(--text-dim);
   }
 
+  /* Tracking cell */
+  .tracking-cell {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
   /* Status badge */
   .status-badge {
     display: inline-flex;
@@ -349,8 +299,7 @@
     white-space: nowrap;
   }
   .status-badge .dot {
-    width: 6px;
-    height: 6px;
+    width: 6px; height: 6px;
     border-radius: 50%;
     background: currentColor;
   }
@@ -360,17 +309,47 @@
     color: var(--success);
   }
   .status-awaiting {
-    background: rgba(245, 158, 11, 0.1);
-    border-color: #f59e0b;
-    color: #f59e0b;
+    background: rgba(var(--warning-rgb), 0.1);
+    border-color: var(--warning);
+    color: var(--warning);
   }
   .status-assigned {
     background: rgba(var(--accent-rgb), 0.1);
     border-color: var(--accent);
     color: var(--accent);
   }
+  .status-card-ready {
+    background: rgba(var(--success-rgb), 0.1);
+    border-color: var(--success);
+    color: var(--success);
+  }
+  .status-delivered {
+    background: rgba(var(--success-rgb), 0.15);
+    border-color: var(--success);
+    color: var(--success);
+  }
 
-  /* Row actions */
+  /* Health care badge */
+  .hc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: rgba(236, 72, 153, 0.1);
+    border: 1px solid #ec4899;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    color: #ec4899;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .hc-badge svg {
+    width: 12px; height: 12px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  /* Actions */
   .row-actions {
     display: flex;
     gap: 6px;
@@ -389,6 +368,15 @@
     stroke: currentColor; fill: none;
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
+  .row-btn.approve-btn {
+    background: rgba(var(--success-rgb), 0.08);
+    border-color: rgba(var(--success-rgb), 0.25);
+    color: var(--success);
+  }
+  .row-btn.approve-btn:hover {
+    background: rgba(var(--success-rgb), 0.2);
+    transform: translateY(-2px);
+  }
   .row-btn.view-btn {
     background: rgba(var(--accent-rgb), 0.08);
     border-color: rgba(var(--accent-rgb), 0.25);
@@ -398,39 +386,20 @@
     background: rgba(var(--accent-rgb), 0.2);
     transform: translateY(-2px);
   }
-  .row-btn.assign-btn {
-    background: rgba(245, 158, 11, 0.08);
-    border-color: rgba(245, 158, 11, 0.25);
-    color: #f59e0b;
+  .row-btn.card-btn {
+    background: rgba(236, 72, 153, 0.08);
+    border-color: rgba(236, 72, 153, 0.25);
+    color: #ec4899;
   }
-  .row-btn.assign-btn:hover {
-    background: rgba(245, 158, 11, 0.2);
+  .row-btn.card-btn:hover {
+    background: rgba(236, 72, 153, 0.2);
     transform: translateY(-2px);
   }
 
-  /* Empty state */
-  .empty-state {
-    padding: 80px 20px;
-    text-align: center;
-    color: var(--text-dim);
-  }
-  .empty-state svg {
-    width: 64px; height: 64px;
-    stroke: var(--success);
-    fill: none;
-    stroke-width: 1.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    margin: 0 auto 16px;
-    display: block;
-    opacity: 0.4;
-  }
-  .empty-state-title {
-    font-family: 'Tajawal', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-muted);
-    margin-bottom: 6px;
+  /* Pagination */
+  #paginationBox {
+    padding: 16px 22px;
+    border-top: 1px solid var(--border-soft);
   }
 
   /* Modal */
@@ -442,13 +411,13 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.06), transparent);
+    background: linear-gradient(135deg, rgba(var(--success-rgb), 0.06), transparent);
   }
   .modal-header-custom h3 {
     font-family: 'Tajawal', sans-serif;
     font-size: 17px;
     font-weight: 800;
-    color: #f59e0b;
+    color: var(--text);
   }
   .modal-footer-custom {
     padding: 16px 24px;
@@ -479,11 +448,31 @@
     stroke-width: 2; stroke-linecap: round;
   }
 
+  /* Notice */
+  .notice {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+  .notice.info {
+    background: rgba(var(--accent-rgb), 0.06);
+    border: 1px solid rgba(var(--accent-rgb), 0.25);
+    color: var(--accent);
+  }
+  .notice.warning {
+    background: rgba(var(--warning-rgb), 0.08);
+    border: 1px solid rgba(var(--warning-rgb), 0.3);
+    color: var(--warning);
+  }
+
   /* Detail grid */
   .detail-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 12px;
+    margin-bottom: 20px;
   }
   .detail-item {
     padding: 12px 14px;
@@ -503,30 +492,94 @@
     word-break: break-word;
   }
 
-  /* Info box */
-  .info-box {
-    padding: 14px 18px;
-    background: rgba(245, 158, 11, 0.06);
-    border: 1.5px solid rgba(245, 158, 11, 0.3);
-    border-radius: 12px;
-    color: #f59e0b;
-    font-size: 13px;
-    line-height: 1.7;
+  /* Upload card area */
+  .upload-card-area {
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px dashed rgba(var(--accent-rgb), 0.4);
+    border-radius: var(--radius-md);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
     margin-bottom: 16px;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
+    position: relative;
   }
-  .info-box svg {
-    width: 18px;
-    height: 18px;
-    stroke: currentColor;
+  .upload-card-area:hover {
+    border-color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.06);
+  }
+  .upload-card-area.has-file {
+    border-style: solid;
+    border-color: var(--success);
+    background: rgba(var(--success-rgb), 0.06);
+  }
+  .upload-card-area input[type="file"] { display: none; }
+
+  .upload-card-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background: rgba(var(--accent-rgb), 0.1);
+    border: 2px solid rgba(var(--accent-rgb), 0.4);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .upload-card-icon svg {
+    width: 28px; height: 28px;
+    stroke: var(--accent); fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .upload-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .upload-card-hint {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .upload-card-filename {
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--success);
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    word-break: break-all;
+  }
+
+  .card-preview {
+    margin-top: 16px;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-soft);
+    text-align: center;
+  }
+  .card-preview img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-dim);
+  }
+  .empty-state svg {
+    width: 48px; height: 48px;
+    stroke: var(--text-dim);
     fill: none;
-    stroke-width: 2;
+    stroke-width: 1.5;
     stroke-linecap: round;
     stroke-linejoin: round;
-    flex-shrink: 0;
-    margin-top: 2px;
+    margin: 0 auto 16px;
+    display: block;
+    opacity: 0.5;
   }
 
   /* Responsive */
@@ -543,22 +596,21 @@
     .actions-row { flex-direction: column; }
     .actions-row .btn { width: 100%; }
     .table-card-header { flex-direction: column; align-items: stretch; }
-    .quick-stats { grid-template-columns: 1fr; }
-    .bulk-banner { flex-direction: column; text-align: center; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
   }
 
   /* Print */
   @media print {
-    .navbar, .actions-row, .filters-card,
+    .navbar, .actions-row, .filters-card, #paginationBox,
     .row-actions, .footer, .bg-grid, .bg-glow, .bg-layer,
-    .user-badge, .quick-stats, .bulk-banner,
-    .check-cell, #bulkSelectAll {
+    .user-badge, .stats-grid {
       display: none !important;
     }
     body { padding: 0 !important; background: white !important; color: black !important; }
-    .table-card { border: 1px solid #999 !important; background: white !important; box-shadow: none !important; }
+    .table-card { border: 1px solid #000 !important; background: white !important; box-shadow: none !important; }
     table th { background: #f0f0f0 !important; color: black !important; }
-    .member-name, .table-card-title, .table-card-count {
+    .member-name, .tracking-cell, .status-badge,
+    .table-card-title, .table-card-count {
       color: black !important;
       text-shadow: none !important;
     }
@@ -597,8 +649,8 @@
       <a href="members.html">الأعضاء</a>
       <a href="revenue.html">الإيرادات</a>
       <a href="subscriptions.html">الاشتراكات</a>
-      <a href="admin.html">لوحة النقيب</a>
       <a href="head-approval.html" class="active">اعتماد النقيب</a>
+      <a href="admin.html" id="adminLink" style="display:none;">لوحة النقيب</a>
       <a href="#" id="logoutBtn" class="btn-login" style="background:rgba(var(--danger-rgb),0.1) !important; border-color:rgba(var(--danger-rgb),0.4) !important; color:var(--danger) !important;">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -629,7 +681,7 @@
   <div class="page-header">
     <div class="page-header-info">
       <div class="page-header-title">اعتماد النقيب العام</div>
-      <div class="page-header-sub">إصدار أرقام العضوية للطلبات المعتمدة والمدفوعة</div>
+      <div class="page-header-sub">اعتماد الطلبات + إصدار أرقام العضوية + رفع صور الكارنيهات</div>
     </div>
 
     <div class="user-badge">
@@ -646,66 +698,32 @@
     </div>
   </div>
 
-  <!-- QUICK STATS -->
-  <div class="quick-stats">
-    <div class="quick-stat">
-      <div class="quick-stat-icon" style="background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.25);">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:#f59e0b;">
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
-        </svg>
-      </div>
-      <div class="quick-stat-info">
-        <div class="quick-stat-value" id="statAwaiting" style="color:#f59e0b;">—</div>
-        <div class="quick-stat-label">بانتظار الاعتماد</div>
-      </div>
+  <!-- STATS -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card" data-filter="awaiting_membership_no">
+      <div class="stat-num" style="color:var(--warning);" id="statAwaiting">—</div>
+      <div class="stat-label">بانتظار رقم العضوية</div>
     </div>
-
-    <div class="quick-stat">
-      <div class="quick-stat-icon" style="background:rgba(var(--success-rgb),0.08);border-color:rgba(var(--success-rgb),0.25);">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:var(--success);">
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-      </div>
-      <div class="quick-stat-info">
-        <div class="quick-stat-value" id="statAssignedToday" style="color:var(--success);">—</div>
-        <div class="quick-stat-label">اعتُمدت اليوم</div>
-      </div>
+    <div class="stat-card" data-filter="membership_no_assigned">
+      <div class="stat-num" style="color:var(--accent);" id="statAssigned">—</div>
+      <div class="stat-label">تم إصدار رقم العضوية</div>
     </div>
-
-    <div class="quick-stat">
-      <div class="quick-stat-icon" style="background:rgba(var(--accent-rgb),0.08);border-color:rgba(var(--accent-rgb),0.25);">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:var(--accent);">
-          <line x1="12" y1="1" x2="12" y2="23" />
-          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-        </svg>
-      </div>
-      <div class="quick-stat-info">
-        <div class="quick-stat-value" id="statRevenuePending" style="color:var(--accent);">—</div>
-        <div class="quick-stat-label">إجمالي رسوم معلقة (ج)</div>
-      </div>
+    <div class="stat-card" data-filter="card_processing">
+      <div class="stat-num" style="color:var(--accent);" id="statProcessing">—</div>
+      <div class="stat-label">جاري تجهيز الكارنية</div>
     </div>
-  </div>
-
-  <!-- BULK BANNER -->
-  <div class="bulk-banner" id="bulkBanner" style="display:none;">
-    <div class="bulk-banner-icon">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="9" y1="15" x2="15" y2="15" />
-      </svg>
+    <div class="stat-card" data-filter="card_ready">
+      <div class="stat-num" style="color:var(--success);" id="statCardReady">—</div>
+      <div class="stat-label">كارنية جاهز</div>
     </div>
-    <div class="bulk-banner-info">
-      <div class="bulk-banner-title">اعتماد جماعي</div>
-      <div class="bulk-banner-sub" id="bulkSub">اختر الطلبات من الجدول لاعتمادها دفعة واحدة</div>
+    <div class="stat-card" data-filter="delivered">
+      <div class="stat-num" style="color:var(--success);" id="statDelivered">—</div>
+      <div class="stat-label">تم الاستلام</div>
     </div>
-    <button type="button" class="btn btn-primary" id="bulkApproveBtn" disabled>
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <polyline points="20 6 9 17 4 12" />
-      </svg>
-      <span id="bulkBtnText">اعتماد المحددين</span>
-    </button>
+    <div class="stat-card" data-filter="all">
+      <div class="stat-num" style="color:var(--accent);" id="statTotal">—</div>
+      <div class="stat-label">إجمالي الاعتمادات</div>
+    </div>
   </div>
 
   <!-- FILTERS -->
@@ -732,19 +750,28 @@
       <div class="form-group">
         <label for="statusFilter">الحالة</label>
         <select id="statusFilter">
-          <option value="all">الكل</option>
-          <option value="awaiting_membership_no" selected>بانتظار رقم العضوية</option>
+          <option value="all">كل الحالات</option>
+          <option value="awaiting_membership_no">بانتظار رقم العضوية</option>
           <option value="membership_no_assigned">تم إصدار رقم العضوية</option>
           <option value="card_processing">جاري تجهيز الكارنية</option>
-          <option value="card_ready">الكارنية جاهز</option>
+          <option value="card_ready">كارنية جاهز</option>
           <option value="delivered">تم الاستلام</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="branchFilter">الشعبة (عند الإصدار)</label>
-        <select id="branchFilter">
-          <option value="all">الكل</option>
+        <label for="govFilter">المحافظة</label>
+        <select id="govFilter">
+          <option value="all">كل المحافظات</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="sortSelect">الترتيب</label>
+        <select id="sortSelect">
+          <option value="newest">الأحدث أولاً</option>
+          <option value="oldest">الأقدم أولاً</option>
+          <option value="name">الاسم (أ - ي)</option>
         </select>
       </div>
     </div>
@@ -760,22 +787,22 @@
       <span>تحديث</span>
     </button>
 
-    <button type="button" class="btn btn-outline" id="exportCsvBtn">
+    <button type="button" class="btn btn-outline" id="exportBtn">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
         <polyline points="7 10 12 15 17 10" />
         <line x1="12" y1="15" x2="12" y2="3" />
       </svg>
-      <span>تصدير Excel (CSV)</span>
+      <span>تصدير CSV</span>
     </button>
 
-    <button type="button" class="btn btn-outline" id="printBtn">
+    <button type="button" class="btn btn-outline" onclick="window.print()">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <polyline points="6 9 6 2 18 2 18 9" />
         <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
         <rect x="6" y="14" width="12" height="8" />
       </svg>
-      <span>طباعة / PDF</span>
+      <span>طباعة</span>
     </button>
   </div>
 
@@ -784,10 +811,10 @@
     <div class="table-card-header">
       <div class="table-card-title">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 7l4 5 5-7 5 7 4-5v10H3V7z" />
-          <path d="M5 20h14" />
+          <path d="M9 11l3 3L22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
         </svg>
-        <span>الطلبات بانتظار الاعتماد</span>
+        <span>الطلبات المعتمدة</span>
       </div>
       <div class="table-card-count" id="tableCount">—</div>
     </div>
@@ -796,22 +823,21 @@
       <table>
         <thead>
           <tr>
-            <th class="check-cell">
-              <input type="checkbox" id="bulkSelectAll" class="row-check" title="تحديد الكل" />
-            </th>
             <th>العضو</th>
             <th>رقم التتبع</th>
             <th>نوع العضوية</th>
             <th>المحافظة</th>
-            <th>الموبايل</th>
+            <th>الرعاية الصحية</th>
+            <th>المبلغ</th>
             <th>الحالة</th>
-            <th>تاريخ الدفع</th>
+            <th>رقم العضوية</th>
+            <th>التاريخ</th>
             <th style="text-align:center;">إجراءات</th>
           </tr>
         </thead>
         <tbody id="approvalTableBody">
           <tr>
-            <td colspan="9" style="text-align:center;padding:40px;color:var(--text-dim);">
+            <td colspan="10" style="text-align:center;padding:40px;color:var(--text-dim);">
               جاري التحميل...
             </td>
           </tr>
@@ -825,13 +851,13 @@
 </div>
 
 <!-- ============================================
-     ASSIGN NO MODAL
+     APPROVE / ASSIGN MEMBERSHIP NO MODAL
      ============================================ -->
 <div id="assignModal" class="modal modal-sm">
   <div class="modal-content">
 
     <div class="modal-header-custom">
-      <h3>اعتماد رقم العضوية</h3>
+      <h3 id="assignModalTitle">إصدار رقم العضوية</h3>
       <button type="button" class="close-btn" onclick="closeAssignModal()">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <line x1="18" y1="6" x2="6" y2="18" />
@@ -843,15 +869,8 @@
     <div class="modal-body">
       <input type="hidden" id="assignAppId" />
 
-      <div class="info-box">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="16" x2="12" y2="12" />
-          <line x1="12" y1="8" x2="12.01" y2="8" />
-        </svg>
-        <div>
-          <strong>ملاحظة:</strong> سيتم إنشاء العضو في قاعدة البيانات + إصدار رقم العضوية + تسجيل اشتراك.
-        </div>
+      <div class="notice info">
+        <strong>ملاحظة:</strong> رقم العضوية يتم إصداره بشكل تسلسلي حسب الشعبة. يمكنك تعديله يدويًا.
       </div>
 
       <div class="form-group">
@@ -869,21 +888,20 @@
       <div class="form-group">
         <label for="assignNo">رقم العضوية</label>
         <input type="text" id="assignNo" placeholder="MEM-2026-00001" dir="ltr" style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;" />
-        <span class="form-hint">تم توليده تلقائيًا — يمكنك تعديله</span>
+        <span class="form-hint">سيتم توليده تلقائيًا لو تركته فاضيًا</span>
       </div>
 
       <div class="form-group">
         <label for="assignDuration">مدة العضوية (شهور)</label>
-        <select id="assignDuration">
-          <option value="12" selected>سنة (12 شهر)</option>
-          <option value="6">6 شهور</option>
-          <option value="24">سنتان (24 شهر)</option>
-        </select>
+        <input type="number" id="assignDuration" value="12" min="1" max="120" />
       </div>
 
       <div class="form-group" style="margin-bottom:0;">
-        <label for="assignAmount">المبلغ المدفوع (جنيه)</label>
-        <input type="number" id="assignAmount" placeholder="0" min="0" step="10" />
+        <label for="assignHealthCare">تفعيل الرعاية الصحية؟</label>
+        <label class="form-check" style="padding:11px 14px;background:rgba(0,0,0,0.3);border:1px solid var(--border-soft);border-radius:10px;font-size:13px;">
+          <input type="checkbox" id="assignHealthCare" />
+          <span>نعم — العضو دفع الرعاية الصحية</span>
+        </label>
       </div>
     </div>
 
@@ -893,7 +911,7 @@
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <polyline points="20 6 9 17 4 12" />
         </svg>
-        <span>اعتماد وإصدار</span>
+        <span>اعتماد رقم العضوية</span>
       </button>
     </div>
 
@@ -901,11 +919,68 @@
 </div>
 
 <!-- ============================================
-     VIEW MODAL
+     CARD UPLOAD MODAL
      ============================================ -->
-<div id="viewModal" class="modal modal-lg">
+<div id="cardModal" class="modal modal-sm">
   <div class="modal-content">
-    <div id="viewModalContent"></div>
+
+    <div class="modal-header-custom">
+      <h3 id="cardModalTitle">رفع صورة الكارنية</h3>
+      <button type="button" class="close-btn" onclick="closeCardModal()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" id="cardAppId" />
+
+      <div class="notice info">
+        <strong>ملاحظة:</strong> ارفع صورة الكارنية النهائي بعد الطباعة. ستظهر تلقائيًا في شاشة تتبع العضو.
+      </div>
+
+      <div class="form-group">
+        <label>العضو</label>
+        <input type="text" id="cardMemberName" disabled style="opacity:0.7;" />
+      </div>
+
+      <div class="form-group">
+        <label>رقم العضوية</label>
+        <input type="text" id="cardMembershipNo" disabled style="opacity:0.7;font-family:'JetBrains Mono',monospace;" dir="ltr" />
+      </div>
+
+      <label class="upload-card-area" id="uploadCardArea">
+        <input type="file" id="cardFileInput" accept="image/*" />
+        <div class="upload-card-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+        </div>
+        <div class="upload-card-title">اضغط لاختيار صورة الكارنية</div>
+        <div class="upload-card-hint">JPG أو PNG — حد أقصى 5 ميجا</div>
+        <div class="upload-card-filename" id="cardFileName"></div>
+      </label>
+
+      <div id="cardPreviewBox" style="display:none;">
+        <div class="card-preview">
+          <img id="cardPreviewImg" src="" alt="الكارنية" />
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer-custom">
+      <button type="button" class="btn btn-ghost" onclick="closeCardModal()">إلغاء</button>
+      <button type="button" class="btn btn-primary" id="confirmCardBtn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        <span>حفظ واعتماد الكارنية</span>
+      </button>
+    </div>
+
   </div>
 </div>
 
@@ -957,15 +1032,15 @@
     }
 
     function init() {
-      const count = Math.min(45, Math.max(18, Math.floor(W / 34)));
+      const count = Math.min(40, Math.max(15, Math.floor(W / 38)));
       dots = [];
       for (let i = 0; i < count; i++) {
         dots.push({
           x: Math.random() * W,
           y: Math.random() * H,
-          vx: (Math.random() - 0.5) * 0.25,
-          vy: (Math.random() - 0.5) * 0.25,
-          r: Math.random() * 1.3 + 0.5
+          vx: (Math.random() - 0.5) * 0.22,
+          vy: (Math.random() - 0.5) * 0.22,
+          r: Math.random() * 1.2 + 0.4
         });
       }
     }
@@ -977,7 +1052,7 @@
         d.x += d.vx; d.y += d.vy;
         if (d.x < 0 || d.x > W) d.vx *= -1;
         if (d.y < 0 || d.y > H) d.vy *= -1;
-        ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.4)`;
+        ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.35)`;
         ctx.beginPath();
         ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
         ctx.fill();
@@ -986,7 +1061,7 @@
           const dy = d.y - dots[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 130) {
-            ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.07 * (1 - dist / 130)})`;
+            ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.06 * (1 - dist / 130)})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(d.x, d.y);
