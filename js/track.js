@@ -1,5 +1,17 @@
 /* =====================================================
-   IT SYNDICATE — Track Logic
+   IT SYNDICATE — TRACK LOGIC
+   Version: 3.0.0
+   =====================================================
+   يحتوي على:
+   - بحث مزدوج (رقم تتبع / رقم قومي)
+   - Render كامل للطلب + Timeline
+   - 11 مرحلة (pending → delivered)
+   - رفع الأوراق الناقصة
+   - QR Code
+   - Progress Bar
+   - Recent Trackings (آخر 5)
+   - Realtime sync
+   - تحميل كصورة + طباعة
    ===================================================== */
 
 (function () {
@@ -26,6 +38,7 @@
     'approved':                 { label: 'مقبول مبدئيًا',            step: 4, color: '#00ff9d', bg: 'rgba(0, 255, 157, 0.12)',   border: '#00ff9d', active: false },
     'rejected':                 { label: 'مرفوض',                   step: 0, color: '#ff5555', bg: 'rgba(255, 85, 85, 0.12)',   border: '#ff5555', active: false },
     'awaiting_payment':         { label: 'بانتظار الدفع',            step: 5, color: '#ffb800', bg: 'rgba(255, 184, 0, 0.12)',   border: '#ffb800', active: true },
+    'payment_under_review':     { label: 'دفع تحت المراجعة',         step: 5, color: '#00f0ff', bg: 'rgba(0, 240, 255, 0.1)',    border: '#00f0ff', active: true },
     'paid':                     { label: 'تم الدفع',                 step: 6, color: '#00ff9d', bg: 'rgba(0, 255, 157, 0.12)',   border: '#00ff9d', active: false },
     'awaiting_membership_no':   { label: 'بانتظار رقم العضوية',      step: 7, color: '#ffb800', bg: 'rgba(255, 184, 0, 0.12)',   border: '#ffb800', active: true },
     'membership_no_assigned':   { label: 'تم تسجيل رقم العضوية',     step: 8, color: '#00f0ff', bg: 'rgba(0, 240, 255, 0.1)',    border: '#00f0ff', active: false },
@@ -36,7 +49,7 @@
   };
 
   /* ============================================
-     STAGES (Timeline)
+     STAGES
      ============================================ */
   const STAGES = [
     { key: 'pending',                title: 'تم استلام الطلب',          desc: 'تم تسجيل طلبك في النظام' },
@@ -74,27 +87,6 @@
   let unsubscribeWatcher = null;
 
   /* ============================================
-     SVG ICONS
-     ============================================ */
-  const ICONS = {
-    search: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
-    check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"/></svg>',
-    clock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-    x: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-    alert: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-    info: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
-    copy: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
-    user: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-    calendar: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
-    phone: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
-    refresh: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>',
-    upload: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
-    file: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
-    download: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
-    print: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>'
-  };
-
-  /* ============================================
      HELPERS
      ============================================ */
   function escapeHtml(str) {
@@ -115,31 +107,6 @@
         hour: '2-digit', minute: '2-digit'
       });
     } catch (e) { return '---'; }
-  }
-
-  function formatDateShort(dateStr) {
-    if (!dateStr) return '---';
-    try {
-      return new Date(dateStr).toLocaleString('ar-EG', {
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit'
-      });
-    } catch (e) { return '---'; }
-  }
-
-  function timeAgo(dateStr) {
-    if (!dateStr) return '';
-    try {
-      const diff = Date.now() - new Date(dateStr).getTime();
-      const m = Math.floor(diff / 60000);
-      const h = Math.floor(diff / 3600000);
-      const d = Math.floor(diff / 86400000);
-      if (m < 1) return 'الآن';
-      if (m < 60) return `منذ ${m} دقيقة`;
-      if (h < 24) return `منذ ${h} ساعة`;
-      if (d < 30) return `منذ ${d} يوم`;
-      return formatDate(dateStr);
-    } catch (e) { return ''; }
   }
 
   function getStatusInfo(status) {
@@ -186,6 +153,28 @@
   }
 
   /* ============================================
+     SVG ICONS
+     ============================================ */
+  const ICONS = {
+    search: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+    check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    x: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    alert: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    info: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+    copy: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+    user: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    calendar: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    phone: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+    refresh: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>',
+    upload: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+    file: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+    download: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+    print: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
+    card: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>'
+  };
+
+  /* ============================================
      RECENT TRACKINGS
      ============================================ */
   function getRecentTrackings() {
@@ -226,14 +215,11 @@
       <div style="padding:16px 18px;background:rgba(var(--accent-rgb),0.04);border:1px solid rgba(var(--accent-rgb),0.15);border-radius:14px;margin-top:20px;">
         <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:10px;font-weight:600;">آخر عمليات البحث</div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;">
-          ${list.map(item => {
-            const st = getStatusInfo(item.status);
-            return `
-              <button type="button" class="recent-chip" data-tracking="${escapeHtml(item.tracking_no)}">
-                ${escapeHtml(item.tracking_no)}
-              </button>
-            `;
-          }).join('')}
+          ${list.map(item => `
+            <button type="button" class="recent-chip" data-tracking="${escapeHtml(item.tracking_no)}">
+              ${escapeHtml(item.tracking_no)}
+            </button>
+          `).join('')}
         </div>
       </div>
     `;
@@ -318,7 +304,6 @@
 
       currentApplication = data;
 
-      // Load history + attachments
       const [historyRes, attachmentsRes] = await Promise.all([
         client.from('status_history').select('*').eq('application_id', data.id).order('created_at', { ascending: true }),
         loadAttachments(data.id)
@@ -327,14 +312,11 @@
       currentHistory = historyRes.data || [];
       currentAttachments = attachmentsRes || [];
 
-      // Render
       renderResult(data, currentHistory, currentAttachments);
 
-      // Save recent
       addRecentTracking(data);
       renderRecentTrackings();
 
-      // Realtime watch
       setupRealtimeWatch(data.id);
 
     } catch (err) {
@@ -378,14 +360,6 @@
       const date = histItem?.created_at;
       const notes = histItem?.notes;
       const changedByName = histItem?.changed_by_name;
-      const isAuto = histItem?.is_auto;
-
-      const dotColor = {
-        done: 'var(--success)',
-        current: 'var(--warning)',
-        pending: 'rgba(255,255,255,0.15)',
-        skipped: 'rgba(var(--danger-rgb),0.4)'
-      }[state] || 'rgba(255,255,255,0.15)';
 
       const titleColor = state === 'done' ? 'var(--success)'
                        : state === 'current' ? 'var(--warning)'
@@ -441,11 +415,88 @@
                     ${ICONS.upload}
                     <span>${alreadyUploaded ? 'تم الرفع' : 'ارفع الآن'}</span>
                   </button>
-                  <span class="missing-doc-status ${alreadyUploaded ? 'show' : ''}">✓ تم الرفع</span>
+                  <span class="missing-doc-status ${alreadyUploaded ? 'show' : ''}">تم الرفع</span>
                 </div>
               </div>
             `;
           }).join('')}
+        </div>
+      </div>
+    ` : '';
+
+    // Payment section
+    const paymentHTML = app.status === 'awaiting_payment' ? `
+      <div class="payment-section">
+        <div class="payment-title">
+          ${ICONS.card}
+          <span>الفاتورة والدفع</span>
+        </div>
+        <div class="invoice-table">
+          <div class="invoice-row">
+            <span class="label">رسوم العضوية</span>
+            <span class="value">${(parseFloat(app.membership_fee) || 0).toLocaleString('ar-EG')} جنيه</span>
+          </div>
+          ${app.wants_health_care ? `
+            <div class="invoice-row">
+              <span class="label">الرعاية الصحية</span>
+              <span class="value">${(parseFloat(app.health_care_amount) || 0).toLocaleString('ar-EG')} جنيه</span>
+            </div>
+          ` : ''}
+          <div class="invoice-row total">
+            <span class="label">الإجمالي</span>
+            <span class="value">${(parseFloat(app.total_amount) || 0).toLocaleString('ar-EG')} جنيه</span>
+          </div>
+        </div>
+        <div class="payment-methods">
+          <div class="payment-method-card">
+            <div class="pm-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            </div>
+            <div class="pm-title">تحويل بنكي</div>
+            <div class="pm-desc">حوّل المبلغ على حساب النقابة</div>
+          </div>
+          <div class="payment-method-card">
+            <div class="pm-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div class="pm-title">دفع كاش</div>
+            <div class="pm-desc">في فرع النقابة الرئيسي</div>
+          </div>
+        </div>
+        <div class="info-banner">
+          ${ICONS.info}
+          <div>بعد الدفع، ارفع صورة الإيصال هنا ليتم تأكيده.</div>
+        </div>
+        <label class="upload-receipt-box" id="uploadReceiptBox">
+          <input type="file" id="receiptFileInput" accept="image/*,application/pdf" />
+          <div class="up-icon">
+            ${ICONS.upload}
+          </div>
+          <div class="up-text">ارفع صورة إيصال الدفع</div>
+          <div class="up-hint">JPG / PNG / PDF</div>
+          <div class="filename" id="receiptFilename"></div>
+        </label>
+      </div>
+    ` : '';
+
+    // Card section
+    const cardHTML = (app.status === 'card_ready' || app.status === 'delivered') && app.card_image_url ? `
+      <div class="card-section">
+        <div class="card-title">
+          ${ICONS.card}
+          <span>الكارنية الرسمي</span>
+        </div>
+        <div class="card-image-wrap">
+          <img src="${escapeHtml(app.card_image_url)}" alt="الكارنية" />
+        </div>
+        <div class="card-actions">
+          <a href="${escapeHtml(app.card_image_url)}" download="card.jpg" class="btn btn-primary">
+            ${ICONS.download}
+            <span>تحميل</span>
+          </a>
+          <a href="${escapeHtml(app.card_image_url)}" target="_blank" class="btn btn-outline">
+            <span>عرض بحجم كامل</span>
+          </a>
         </div>
       </div>
     ` : '';
@@ -464,9 +515,6 @@
     // Progress
     const totalSteps = STAGES.length;
     const progressPct = isRejected ? 100 : Math.round((currentStep / totalSteps) * 100);
-
-    // Membership type name
-    const typeName = app.membership_type_id ? `نوع #${app.membership_type_id}` : '—';
 
     box.innerHTML = `
       <div class="result-wrap">
@@ -513,6 +561,10 @@
           ${renderDetailCard(ICONS.info, 'المحافظة', app.governorate || '—')}
         </div>
 
+        ${paymentHTML}
+
+        ${cardHTML}
+
         <div class="timeline-card">
           <div class="timeline-title">
             ${ICONS.clock}
@@ -558,7 +610,7 @@
       downloadTrackAsImage(app.tracking_no);
     });
 
-    // Bind missing docs uploads
+    // Missing docs uploads
     document.querySelectorAll('.upload-missing-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const docKey = btn.dataset.doc;
@@ -575,6 +627,9 @@
         await uploadMissingDoc(docKey, file);
       });
     });
+
+    // Receipt upload
+    setupReceiptUpload();
   }
 
   function renderDetailCard(icon, label, value) {
@@ -599,7 +654,6 @@
     const btn = document.querySelector(`.upload-missing-btn[data-doc="${docKey}"]`);
     const statusEl = btn?.closest('.missing-doc-item')?.querySelector('.missing-doc-status');
 
-    // Validation
     if (file.size > MAX_FILE_SIZE) {
       if (window.showTrackToast) window.showTrackToast('حجم الملف كبير — الحد الأقصى 10 ميجا', 'error');
       return;
@@ -614,14 +668,12 @@
       return;
     }
 
-    // Loading state
     if (btn) {
       btn.disabled = true;
       btn.innerHTML = `<span class="upload-spinner"></span><span>جاري الرفع...</span>`;
     }
 
     try {
-      // Upload
       const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
       const path = `${applicationId}/${docKey}_${Date.now()}.${ext}`;
 
@@ -635,7 +687,6 @@
 
       if (upErr) throw new Error(upErr.message);
 
-      // Insert attachment record
       const { error: insErr } = await client.from('attachments').insert([{
         application_id: applicationId,
         file_path: path,
@@ -648,7 +699,6 @@
 
       if (insErr) throw new Error(insErr.message);
 
-      // Update application: remove from missing_docs, set to under_review
       const newMissingDocs = (currentApplication.missing_docs || []).filter(d => d !== docKey);
 
       const updateData = {
@@ -656,7 +706,6 @@
         docs_submitted_at: new Date().toISOString()
       };
 
-      // لو مفيش أوراق ناقصة → روح للمراجعة البشرية
       if (newMissingDocs.length === 0) {
         updateData.status = 'under_review';
         updateData.reviewer_notes = 'تم استلام المستندات الناقصة — الطلب الآن تحت المراجعة';
@@ -669,7 +718,6 @@
 
       if (updErr) throw new Error(updErr.message);
 
-      // UI
       if (statusEl) statusEl.classList.add('show');
       if (btn) {
         btn.disabled = true;
@@ -682,7 +730,6 @@
         window.showTrackToast('تم رفع المستند بنجاح', 'success');
       }
 
-      // Refresh after 1.5s
       setTimeout(() => refreshTracking(), 1500);
 
     } catch (err) {
@@ -695,6 +742,84 @@
         window.showTrackToast('فشل الرفع: ' + err.message, 'error');
       }
     }
+  }
+
+  /* ============================================
+     RECEIPT UPLOAD
+     ============================================ */
+  function setupReceiptUpload() {
+    const box = document.getElementById('uploadReceiptBox');
+    const input = document.getElementById('receiptFileInput');
+    const filenameEl = document.getElementById('receiptFilename');
+
+    if (!box || !input) return;
+
+    box.addEventListener('click', () => input.click());
+
+    input.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > MAX_FILE_SIZE) {
+        if (window.showTrackToast) window.showTrackToast('حجم الملف كبير — الحد الأقصى 10 ميجا', 'error');
+        return;
+      }
+
+      if (!ALLOWED_DOC_TYPES.includes(file.type)) {
+        if (window.showTrackToast) window.showTrackToast('صيغة غير مدعومة', 'error');
+        return;
+      }
+
+      box.classList.add('has-file');
+      if (filenameEl) filenameEl.textContent = file.name;
+
+      // Upload
+      try {
+        const appId = currentApplication.id;
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const path = `${appId}/receipt_${Date.now()}.${ext}`;
+
+        const { error: upErr } = await client.storage
+          .from('attachments')
+          .upload(path, file, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: file.type
+          });
+
+        if (upErr) throw new Error(upErr.message);
+
+        await client.from('attachments').insert([{
+          application_id: appId,
+          file_path: path,
+          file_type: file.type,
+          file_size: file.size,
+          doc_type: 'payment_receipt',
+          is_required: false,
+          ai_verified: false
+        }]);
+
+        const { error: updErr } = await client
+          .from('applications')
+          .update({
+            payment_receipt_url: path,
+            status: 'payment_under_review'
+          })
+          .eq('id', appId);
+
+        if (updErr) throw new Error(updErr.message);
+
+        if (window.showTrackToast) {
+          window.showTrackToast('تم رفع الإيصال — بانتظار التأكيد', 'success');
+        }
+
+        setTimeout(() => refreshTracking(), 1500);
+
+      } catch (err) {
+        console.error('[Receipt] Error:', err);
+        if (window.showTrackToast) window.showTrackToast('فشل الرفع: ' + err.message, 'error');
+      }
+    });
   }
 
   /* ============================================
@@ -774,8 +899,7 @@
     try {
       if (window.showTrackToast) window.showTrackToast('جاري تحضير الصورة...', 'info');
 
-      // اخفاء الأزرار
-      document.querySelectorAll('.result-actions, .upload-missing-btn, .recent-chip').forEach(el => {
+      document.querySelectorAll('.result-actions, .upload-missing-btn, .recent-chip, .upload-receipt-box').forEach(el => {
         el.style.display = 'none';
       });
 
@@ -786,8 +910,7 @@
         useCORS: true
       });
 
-      // استرجع
-      document.querySelectorAll('.result-actions, .upload-missing-btn, .recent-chip').forEach(el => {
+      document.querySelectorAll('.result-actions, .upload-missing-btn, .recent-chip, .upload-receipt-box').forEach(el => {
         el.style.display = '';
       });
 
@@ -800,7 +923,7 @@
 
     } catch (err) {
       console.error('[Download] Error:', err);
-      document.querySelectorAll('.result-actions, .upload-missing-btn, .recent-chip').forEach(el => {
+      document.querySelectorAll('.result-actions, .upload-missing-btn, .recent-chip, .upload-receipt-box').forEach(el => {
         el.style.display = '';
       });
       if (window.showTrackToast) window.showTrackToast('فشل التحميل', 'error');
@@ -842,7 +965,7 @@
           window.showTrackToast('تم تحديث حالة الطلب', 'success');
         }
       }
-    });
+    }, { idColumn: 'id', debounceMs: 500 });
   }
 
   /* ============================================
@@ -857,11 +980,9 @@
     window.onSupabaseReady(async (c) => {
       client = c;
 
-      // Search button
       const searchBtn = document.getElementById('searchBtn');
       if (searchBtn) searchBtn.addEventListener('click', search);
 
-      // Enter key
       document.querySelectorAll('#trackingInput, #nationalIdInput').forEach(el => {
         el.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') {
@@ -871,7 +992,6 @@
         });
       });
 
-      // Auto-search from URL
       try {
         const params = new URLSearchParams(window.location.search);
         const tr = params.get('tracking') || params.get('t');
@@ -891,6 +1011,8 @@
       } catch (e) {}
 
       renderRecentTrackings();
+
+      console.log('[Track] Ready');
     });
   }
 
