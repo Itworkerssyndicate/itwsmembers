@@ -1,5 +1,18 @@
 /* =====================================================
-   IT SYNDICATE — Dashboard Logic
+   IT SYNDICATE — DASHBOARD LOGIC (Committee)
+   Version: 3.0.0
+   =====================================================
+   يحتوي على:
+   - Auth + Role check
+   - 8 كروت إحصائية قابلة للنقر
+   - جدول الطلبات + Pagination
+   - 5 فلاتر (بحث + حالة + نوع + محافظة + ترتيب)
+   - Detail Modal (مع المرفقات + Timeline)
+   - Status Modal (14 حالة + missing docs)
+   - Payment Modal (تأكيد/رفض الدفع)
+   - تقرير المحافظات
+   - Export CSV + Print
+   - Realtime
    ===================================================== */
 
 (function () {
@@ -11,20 +24,31 @@
   const PAGE_SIZE = 20;
 
   const STATUS_MAP = {
-    'pending':                { label: 'بانتظار الفحص',          color: '#ffb800', bg: 'rgba(255, 184, 0, 0.12)',   border: '#ffb800' },
-    'ai_review':              { label: 'فحص تلقائي',             color: '#00f0ff', bg: 'rgba(0, 240, 255, 0.1)',    border: '#00f0ff' },
-    'under_review':           { label: 'تحت المراجعة',           color: '#00f0ff', bg: 'rgba(0, 240, 255, 0.1)',    border: '#00f0ff' },
-    'needs_docs':             { label: 'مستندات ناقصة',          color: '#ffb800', bg: 'rgba(255, 184, 0, 0.12)',   border: '#ffb800' },
-    'approved':               { label: 'مقبول',                  color: '#00ff9d', bg: 'rgba(0, 255, 157, 0.12)',   border: '#00ff9d' },
-    'rejected':               { label: 'مرفوض',                  color: '#ff5555', bg: 'rgba(255, 85, 85, 0.12)',   border: '#ff5555' },
-    'awaiting_payment':       { label: 'بانتظار الدفع',           color: '#ffb800', bg: 'rgba(255, 184, 0, 0.12)',   border: '#ffb800' },
-    'paid':                   { label: 'تم الدفع',                color: '#00ff9d', bg: 'rgba(0, 255, 157, 0.12)',   border: '#00ff9d' },
-    'awaiting_membership_no': { label: 'بانتظار رقم العضوية',     color: '#ffb800', bg: 'rgba(255, 184, 0, 0.12)',   border: '#ffb800' },
-    'membership_no_assigned': { label: 'تم إصدار رقم العضوية',    color: '#00f0ff', bg: 'rgba(0, 240, 255, 0.1)',    border: '#00f0ff' },
-    'card_processing':        { label: 'تجهيز الكارنية',         color: '#00f0ff', bg: 'rgba(0, 240, 255, 0.1)',    border: '#00f0ff' },
-    'card_ready':             { label: 'الكارنية جاهز',          color: '#00ff9d', bg: 'rgba(0, 255, 157, 0.12)',   border: '#00ff9d' },
-    'delivered':              { label: 'تم الاستلام',              color: '#00ff9d', bg: 'rgba(0, 255, 157, 0.12)',   border: '#00ff9d' },
-    'cancelled':              { label: 'ملغي',                    color: '#888',    bg: 'rgba(136, 136, 136, 0.12)', border: '#888' }
+    'pending':                  { label: 'بانتظار الفحص',          color: '#ffb800', bg: 'rgba(255, 184, 0, 0.12)',   border: '#ffb800' },
+    'ai_review':                { label: 'فحص تلقائي',             color: '#00f0ff', bg: 'rgba(0, 240, 255, 0.1)',    border: '#00f0ff' },
+    'under_review':             { label: 'تحت المراجعة',           color: '#00f0ff', bg: 'rgba(0, 240, 255, 0.1)',    border: '#00f0ff' },
+    'needs_docs':               { label: 'مستندات ناقصة',          color: '#ffb800', bg: 'rgba(255, 184, 0, 0.12)',   border: '#ffb800' },
+    'approved':                 { label: 'مقبول',                  color: '#00ff9d', bg: 'rgba(0, 255, 157, 0.12)',   border: '#00ff9d' },
+    'rejected':                 { label: 'مرفوض',                  color: '#ff5555', bg: 'rgba(255, 85, 85, 0.12)',   border: '#ff5555' },
+    'awaiting_payment':         { label: 'بانتظار الدفع',           color: '#ffb800', bg: 'rgba(255, 184, 0, 0.12)',   border: '#ffb800' },
+    'payment_under_review':     { label: 'دفع تحت المراجعة',        color: '#00f0ff', bg: 'rgba(0, 240, 255, 0.1)',    border: '#00f0ff' },
+    'paid':                     { label: 'تم الدفع',                color: '#00ff9d', bg: 'rgba(0, 255, 157, 0.12)',   border: '#00ff9d' },
+    'awaiting_membership_no':   { label: 'بانتظار رقم العضوية',     color: '#ffb800', bg: 'rgba(255, 184, 0, 0.12)',   border: '#ffb800' },
+    'membership_no_assigned':   { label: 'تم إصدار رقم العضوية',    color: '#00f0ff', bg: 'rgba(0, 240, 255, 0.1)',    border: '#00f0ff' },
+    'card_processing':          { label: 'تجهيز الكارنية',         color: '#00f0ff', bg: 'rgba(0, 240, 255, 0.1)',    border: '#00f0ff' },
+    'card_ready':               { label: 'الكارنية جاهز',          color: '#00ff9d', bg: 'rgba(0, 255, 157, 0.12)',   border: '#00ff9d' },
+    'delivered':                { label: 'تم الاستلام',              color: '#00ff9d', bg: 'rgba(0, 255, 157, 0.12)',   border: '#00ff9d' },
+    'cancelled':                { label: 'ملغي',                    color: '#888',    bg: 'rgba(136, 136, 136, 0.12)', border: '#888' }
+  };
+
+  const DOC_LABELS = {
+    id_front: 'بطاقة الرقم القومي (وجه)',
+    id_back: 'بطاقة الرقم القومي (ظهر)',
+    certificate: 'الشهادة الدراسية',
+    photo: 'الصورة الشخصية',
+    work_certificate: 'شهادة إثبات عمل',
+    criminal_record: 'فيش وتشبيه',
+    payment_receipt: 'إيصال الدفع'
   };
 
   /* ============================================
@@ -34,9 +58,10 @@
   let currentUser = null;
   let userRole = null;
   let applications = [];
-  let filteredApplications = [];
   let currentPage = 1;
   let totalCount = 0;
+  let membershipTypes = [];
+  let reportData = [];
   let filters = {
     status: 'all',
     search: '',
@@ -44,17 +69,16 @@
     governorate: 'all'
   };
   let sortBy = 'newest';
-  let membershipTypes = [];
   let unsubscribeRealtime = null;
   let currentDetailApp = null;
   let currentDetailAttachments = [];
-  let reportData = [];
+  let currentStatusAppId = null;
+  let currentPaymentApp = null;
 
   /* ============================================
      HELPERS
      ============================================ */
   const $ = (sel) => document.querySelector(sel);
-  const $$ = (sel) => document.querySelectorAll(sel);
 
   function escapeHtml(str) {
     if (str === null || str === undefined) return '';
@@ -100,6 +124,14 @@
     };
   }
 
+  function getInitials(name) {
+    if (!name) return '؟';
+    const parts = String(name).trim().split(/\s+/);
+    if (parts.length === 0) return '؟';
+    if (parts.length === 1) return parts[0].charAt(0);
+    return parts[0].charAt(0) + ' ' + parts[1].charAt(0);
+  }
+
   function showToast(message, type = 'info') {
     if (window.showToast) {
       window.showToast(message, type);
@@ -108,28 +140,33 @@
     console.log(`[${type}] ${message}`);
   }
 
+  function getTypeName(typeId) {
+    const t = membershipTypes.find(x => String(x.id) === String(typeId));
+    return t?.name || '—';
+  }
+
+  function formatMoney(n) {
+    if (n === null || n === undefined || n === '') return '—';
+    return parseFloat(n).toLocaleString('ar-EG') + ' ج';
+  }
+
   /* ============================================
      SVG ICONS
      ============================================ */
   const ICONS = {
-    search: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
     check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"/></svg>',
     x: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-    user: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-    phone: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
-    calendar: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
     clock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
     eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
     edit: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
-    refresh: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>',
-    stats: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>',
     inbox: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>',
-    logout: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
-    close: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
     file: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+    user: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    close: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
     chevronLeft: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>',
     chevronRight: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>',
-    shield: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
+    card: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>'
   };
 
   /* ============================================
@@ -146,31 +183,35 @@
 
       currentUser = session.user;
 
-      const { data: userData, error } = await client
+      const { data: userData } = await client
         .from('users')
         .select('role, full_name')
         .eq('id', currentUser.id)
         .maybeSingle();
 
-      if (error) console.warn('[Dashboard] Role fetch failed:', error.message);
-
       userRole = userData?.role || 'committee';
       window.currentUserRole = userRole;
       window.currentUserName = userData?.full_name || currentUser.email || 'موظف';
 
-      // Show admin link if head
+      const allowedRoles = ['head', 'vice_president', 'deputy', 'committee'];
+      if (!allowedRoles.includes(userRole)) {
+        alert('هذه الصفحة مخصصة للجنة العضويات فقط');
+        window.location.href = 'login.html';
+        return false;
+      }
+
       if (userRole === 'head') {
         const adminLink = document.getElementById('adminLink');
         if (adminLink) adminLink.style.display = 'flex';
       }
 
-      // Set user name
       document.querySelectorAll('[data-user-name]').forEach(el => {
         el.textContent = window.currentUserName;
       });
 
       const roleLabel = userRole === 'head' ? 'النقيب العام'
                       : userRole === 'vice_president' ? 'نائب رئيس النقابة'
+                      : userRole === 'deputy' ? 'الوكيل'
                       : 'لجنة العضويات';
 
       document.querySelectorAll('[data-user-role]').forEach(el => {
@@ -208,13 +249,8 @@
     }
   }
 
-  function getTypeName(typeId) {
-    const t = membershipTypes.find(x => x.id === typeId);
-    return t?.name || '—';
-  }
-
   /* ============================================
-     STATS
+     LOAD STATS
      ============================================ */
   async function loadStats() {
     try {
@@ -356,22 +392,18 @@
     try {
       let query = client.from('applications').select('*', { count: 'exact' });
 
-      // Status filter
       if (filters.status && filters.status !== 'all') {
         query = query.eq('status', filters.status);
       }
 
-      // Type filter
       if (filters.membershipType && filters.membershipType !== 'all') {
         query = query.eq('membership_type_id', parseInt(filters.membershipType));
       }
 
-      // Governorate filter
       if (filters.governorate && filters.governorate !== 'all') {
         query = query.eq('governorate', filters.governorate);
       }
 
-      // Search
       if (filters.search) {
         const s = filters.search.trim();
         query = query.or(
@@ -379,12 +411,10 @@
         );
       }
 
-      // Sort
       if (sortBy === 'newest') query = query.order('created_at', { ascending: false });
       else if (sortBy === 'oldest') query = query.order('created_at', { ascending: true });
       else if (sortBy === 'name') query = query.order('full_name', { ascending: true });
 
-      // Pagination
       const from = (currentPage - 1) * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
       query = query.range(from, to);
@@ -441,7 +471,7 @@
     tbody.innerHTML = applications.map(app => {
       const status = getStatusInfo(app.status);
       const typeName = getTypeName(app.membership_type_id);
-      const initials = (window.getInitials ? window.getInitials(app.full_name) : '؟');
+      const initials = getInitials(app.full_name);
 
       return `
         <tr data-id="${app.id}" style="cursor:pointer;transition:background 0.2s;border-bottom:1px solid var(--border-soft);">
@@ -492,7 +522,6 @@
       `;
     }).join('');
 
-    // Row click
     tbody.querySelectorAll('tr[data-id]').forEach(tr => {
       tr.addEventListener('click', (e) => {
         if (e.target.closest('.row-btn')) return;
@@ -502,7 +531,6 @@
       tr.addEventListener('mouseleave', () => { tr.style.background = ''; });
     });
 
-    // Buttons
     tbody.querySelectorAll('.row-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -664,15 +692,6 @@
     const attachmentsByType = {};
     attachments.forEach(a => { attachmentsByType[a.doc_type] = a; });
 
-    const docLabels = {
-      id_front: 'بطاقة الرقم القومي - وجه',
-      id_back: 'بطاقة الرقم القومي - ظهر',
-      certificate: 'الشهادة الدراسية',
-      photo: 'الصورة الشخصية',
-      work_certificate: 'شهادة إثبات عمل',
-      criminal_record: 'فيش وتشبيه'
-    };
-
     content.innerHTML = `
       <div style="animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
 
@@ -698,6 +717,8 @@
           <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:24px;">
             ${renderDetailItem('الاسم الرباعي', app.full_name)}
             ${renderDetailItem('الرقم القومي', app.national_id, true)}
+            ${renderDetailItem('تاريخ الميلاد', formatDate(app.birth_date))}
+            ${renderDetailItem('السن', app.age || '—')}
             ${renderDetailItem('الموبايل', app.phone, true)}
             ${renderDetailItem('البريد', app.email || '—')}
             ${renderDetailItem('العنوان', app.address || '—')}
@@ -725,12 +746,21 @@
             </div>
           ` : ''}
 
+          ${app.wants_health_care ? `
+            <div style="padding:14px 16px;background:rgba(236,72,153,0.08);border:1px solid rgba(236,72,153,0.3);border-radius:10px;margin-bottom:24px;">
+              <div style="font-size:12px;color:#ec4899;font-weight:700;margin-bottom:6px;">الرعاية الصحية</div>
+              <div style="font-size:14px;color:var(--text);">
+                مبلغ الرعاية: <strong>${formatMoney(app.health_care_amount)}</strong>
+              </div>
+            </div>
+          ` : ''}
+
           <h4 style="font-family:'Tajawal',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px;">
             <span style="width:16px;height:16px;display:inline-flex;color:var(--accent);">${ICONS.file}</span>
             المرفقات
           </h4>
           <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:24px;">
-            ${Object.entries(docLabels).map(([key, label]) => {
+            ${Object.entries(DOC_LABELS).map(([key, label]) => {
               const att = attachmentsByType[key];
               if (!att) {
                 return `
@@ -743,7 +773,7 @@
               return `
                 <div style="padding:14px;background:rgba(var(--accent-rgb),0.04);border:1px solid rgba(var(--accent-rgb),0.15);border-radius:12px;text-align:center;">
                   <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">${escapeHtml(label)}</div>
-                  ${att.ai_verified ? `<div style="font-size:11px;color:var(--success);margin-bottom:6px;">✓ فحص آلي: ${att.ai_score ? Math.round(att.ai_score) + '%' : 'نعم'}</div>` : ''}
+                  ${att.ai_verified ? `<div style="font-size:11px;color:var(--success);margin-bottom:6px;">فحص آلي: ${att.ai_score ? Math.round(att.ai_score) + '%' : 'نعم'}</div>` : ''}
                   <button type="button" onclick="viewAttachment('${escapeHtml(att.file_path)}')" style="padding:6px 14px;background:rgba(var(--accent-rgb),0.1);border:1px solid rgba(var(--accent-rgb),0.3);color:var(--accent);border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
                     <span style="width:12px;height:12px;display:inline-flex;">${ICONS.eye}</span>
                     <span>عرض</span>
@@ -780,6 +810,12 @@
         </div>
 
         <div style="padding:16px 24px;border-top:1px solid var(--border-soft);display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+          ${(app.status === 'payment_under_review') ? `
+            <button type="button" onclick="openPaymentModal('${app.id}')" style="padding:11px 22px;background:linear-gradient(135deg, var(--success), #00cc7a);border:none;border-radius:10px;color:#000;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;">
+              <span style="width:14px;height:14px;display:inline-flex;">${ICONS.check}</span>
+              <span>مراجعة الدفع</span>
+            </button>
+          ` : ''}
           <button type="button" onclick="openStatusModal('${app.id}')" style="padding:11px 22px;background:linear-gradient(135deg, var(--accent), var(--accent-2));border:none;border-radius:10px;color:#000;font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;">
             <span style="width:14px;height:14px;display:inline-flex;">${ICONS.edit}</span>
             <span>تحديث الحالة</span>
@@ -828,8 +864,6 @@
   /* ============================================
      STATUS MODAL
      ============================================ */
-  let currentStatusAppId = null;
-
   window.openStatusModal = function (appId) {
     const modal = document.getElementById('statusModal');
     if (!modal) return;
@@ -844,10 +878,8 @@
     if (notes) notes.value = '';
     if (missingField) missingField.style.display = 'none';
 
-    // Reset checkboxes
     document.querySelectorAll('input[name="missing_doc"]').forEach(cb => { cb.checked = false; });
 
-    // Pre-fill
     if (currentDetailApp && String(currentDetailApp.id) === String(appId)) {
       if (newStatus) newStatus.value = currentDetailApp.status || '';
       if (notes) notes.value = currentDetailApp.reviewer_notes || '';
@@ -867,13 +899,12 @@
       }
     }
 
-    // Show/hide missing docs field on status change
     if (newStatus) {
-      newStatus.addEventListener('change', () => {
+      newStatus.onchange = () => {
         if (missingField) {
           missingField.style.display = newStatus.value === 'needs_docs' ? 'block' : 'none';
         }
-      });
+      };
     }
 
     modal.classList.add('open');
@@ -898,7 +929,6 @@
       return;
     }
 
-    // لو needs_docs → لازم نختار أوراق
     let missingDocs = [];
     if (newStatus === 'needs_docs') {
       document.querySelectorAll('input[name="missing_doc"]:checked').forEach(cb => {
@@ -917,10 +947,12 @@
     }
 
     try {
+      const app = applications.find(a => String(a.id) === String(currentStatusAppId)) || currentDetailApp;
+
       const updateData = {
         status: newStatus,
         reviewer_notes: notes || null,
-        reviewed_by: currentUser?.id,
+        reviewed_by: currentUser.id,
         reviewed_at: new Date().toISOString()
       };
 
@@ -936,6 +968,19 @@
 
       if (error) throw error;
 
+      // Log status history
+      try {
+        await client.from('status_history').insert([{
+          application_id: currentStatusAppId,
+          old_status: app?.status || null,
+          new_status: newStatus,
+          notes: notes || null,
+          changed_by: currentUser.id,
+          changed_by_name: window.currentUserName,
+          is_auto: false
+        }]);
+      } catch (e) {}
+
       showToast('تم تحديث الحالة بنجاح', 'success');
 
       closeStatusModal();
@@ -944,14 +989,165 @@
       await loadApplications();
       await loadStats();
 
+      if (window.Realtime) {
+        window.Realtime.sendBroadcast('app-status-updated', { appId: currentStatusAppId });
+      }
+
     } catch (err) {
       console.error('[Dashboard] Update error:', err);
       showToast('فشل التحديث: ' + err.message, 'error');
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"/></svg><span>حفظ التحديث</span>';
+        btn.innerHTML = `${ICONS.check}<span>حفظ التحديث</span>`;
       }
+    }
+  }
+
+  /* ============================================
+     PAYMENT MODAL
+     ============================================ */
+  window.openPaymentModal = async function (appId) {
+    const modal = document.getElementById('paymentModal');
+    const body = document.getElementById('paymentModalBody');
+    const footer = document.getElementById('paymentModalFooter');
+    if (!modal || !body || !footer) return;
+
+    currentPaymentApp = applications.find(a => String(a.id) === String(appId)) || currentDetailApp;
+    if (!currentPaymentApp) {
+      showToast('لم يتم العثور على الطلب', 'error');
+      return;
+    }
+
+    const app = currentPaymentApp;
+    const receiptUrl = app.payment_receipt_url;
+
+    let receiptHTML = '<div style="padding:20px;text-align:center;color:var(--text-dim);">لا يوجد إيصال مرفوع</div>';
+
+    if (receiptUrl) {
+      try {
+        const { data } = await client.storage
+          .from('attachments')
+          .createSignedUrl(receiptUrl, 3600);
+
+        if (data?.signedUrl) {
+          receiptHTML = `
+            <div style="padding:16px;background:rgba(0,0,0,0.3);border-radius:12px;border:1px solid var(--border-soft);">
+              <img src="${data.signedUrl}" alt="إيصال الدفع" class="receipt-preview-img" />
+            </div>
+          `;
+        }
+      } catch (e) {}
+    }
+
+    body.innerHTML = `
+      <div class="payment-info-box">
+        <div class="pi-label">العضو</div>
+        <div class="pi-value">${escapeHtml(app.full_name)}</div>
+      </div>
+
+      <div class="payment-info-box">
+        <div class="pi-label">رقم التتبع</div>
+        <div class="pi-value mono">${escapeHtml(app.tracking_no)}</div>
+      </div>
+
+      <div class="payment-info-box">
+        <div class="pi-label">المبلغ</div>
+        <div class="pi-value">${formatMoney(app.total_amount)}</div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">إيصال الدفع:</div>
+        ${receiptHTML}
+      </div>
+    `;
+
+    footer.innerHTML = `
+      <button type="button" class="btn btn-ghost" onclick="closePaymentModal()">إلغاء</button>
+      <button type="button" class="btn btn-outline" id="rejectPaymentBtn" style="color:var(--danger);border-color:rgba(var(--danger-rgb),0.4);">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        <span>رفض</span>
+      </button>
+      <button type="button" class="btn btn-success" id="confirmPaymentBtn">
+        <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>تأكيد الدفع</span>
+      </button>
+    `;
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    document.getElementById('confirmPaymentBtn')?.addEventListener('click', () => confirmPayment(true));
+    document.getElementById('rejectPaymentBtn')?.addEventListener('click', () => confirmPayment(false));
+  };
+
+  window.closePaymentModal = function () {
+    const modal = document.getElementById('paymentModal');
+    if (modal) modal.classList.remove('open');
+    document.body.style.overflow = '';
+    currentPaymentApp = null;
+  };
+
+  async function confirmPayment(approved) {
+    if (!currentPaymentApp) return;
+
+    const btn = approved
+      ? document.getElementById('confirmPaymentBtn')
+      : document.getElementById('rejectPaymentBtn');
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>جاري المعالجة...</span><span class="spinner"></span>';
+    }
+
+    try {
+      const updateData = approved
+        ? {
+            status: 'paid',
+            payment_confirmed_at: new Date().toISOString(),
+            payment_confirmed_by: currentUser.id
+          }
+        : {
+            status: 'awaiting_payment',
+            payment_rejection_reason: 'تم رفض الإيصال — يرجى رفع صورة واضحة',
+            payment_receipt_url: null
+          };
+
+      const { error } = await client
+        .from('applications')
+        .update(updateData)
+        .eq('id', currentPaymentApp.id);
+
+      if (error) throw error;
+
+      try {
+        await client.from('status_history').insert([{
+          application_id: currentPaymentApp.id,
+          old_status: currentPaymentApp.status,
+          new_status: updateData.status,
+          notes: approved ? 'تم تأكيد الدفع' : 'تم رفض إيصال الدفع',
+          changed_by: currentUser.id,
+          changed_by_name: window.currentUserName,
+          is_auto: false
+        }]);
+      } catch (e) {}
+
+      showToast(approved ? 'تم تأكيد الدفع' : 'تم رفض الدفع', approved ? 'success' : 'warning');
+
+      closePaymentModal();
+      closeDetailModal();
+
+      await loadApplications();
+      await loadStats();
+
+    } catch (err) {
+      console.error('[Payment] Error:', err);
+      showToast('فشل: ' + err.message, 'error');
     }
   }
 
@@ -1048,13 +1244,15 @@
 
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
-      const debouncedSearch = window.debounce ? window.debounce(() => {
-        filters.search = searchInput.value;
-        currentPage = 1;
-        loadApplications();
-      }, 400) : () => {};
-
-      searchInput.addEventListener('input', debouncedSearch);
+      let searchTimer = null;
+      searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+          filters.search = searchInput.value;
+          currentPage = 1;
+          loadApplications();
+        }, 400);
+      });
     }
 
     const sortSelect = document.getElementById('sortSelect');
@@ -1078,9 +1276,7 @@
     }
 
     const exportBtn = document.getElementById('exportBtn');
-    if (exportBtn) {
-      exportBtn.addEventListener('click', exportCSV);
-    }
+    if (exportBtn) exportBtn.addEventListener('click', exportCSV);
 
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
@@ -1092,22 +1288,21 @@
     }
 
     const saveBtn = document.getElementById('saveStatusBtn');
-    if (saveBtn) {
-      saveBtn.addEventListener('click', saveStatusUpdate);
-    }
+    if (saveBtn) saveBtn.addEventListener('click', saveStatusUpdate);
   }
 
   /* ============================================
      MODAL BACKDROPS
      ============================================ */
   function setupModalBackdrops() {
-    ['detailModal', 'statusModal'].forEach(id => {
+    ['detailModal', 'statusModal', 'paymentModal'].forEach(id => {
       const modal = document.getElementById(id);
       if (!modal) return;
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
           if (id === 'detailModal') window.closeDetailModal();
-          else window.closeStatusModal();
+          else if (id === 'statusModal') window.closeStatusModal();
+          else if (id === 'paymentModal') window.closePaymentModal();
         }
       });
     });
@@ -1116,6 +1311,7 @@
       if (e.key === 'Escape') {
         window.closeDetailModal();
         window.closeStatusModal();
+        window.closePaymentModal();
       }
     });
   }
