@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="neon-dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#000000" />
+<meta name="description" content="مدير اللجان — نقابة تكنولوجيا المعلومات والبرمجيات" />
+<title>مدير اللجان — نقابة تكنولوجيا المعلومات والبرمجيات</title>
+
+<link rel="icon" id="faviconLink" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="css/themes.css" />
+<link rel="stylesheet" href="css/style.css" />
+
+<style>
+  /* ============================================
+     PAGE-SPECIFIC: COMMITTEES MANAGER
+     ============================================ */
+  body { padding: 100px 0 40px; }
+
+  .cm-wrap {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Page header */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .page-header-info { flex: 1; min-width: 240px; }
+
+  .page-header-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: clamp(24px, 3.5vw, 32px);
+    font-weight: 900;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 3s linear infinite;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  @keyframes shine { to { background-position: 200% center; } }
+  .page-header-sub { font-size: 13.5px; color: var(--text-muted); }
+
+  .user-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 18px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .user-avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.2), rgba(var(--accent-2-rgb), 0.2));
+    border: 1.5px solid rgba(var(--accent-rgb), 0.5);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: var(--glow-accent);
+  }
+  .user-avatar svg {
+    width: 20px; height: 20px;
+    stroke: var(--accent); fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .user-info { line-height: 1.25; }
+  .user-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
+  .user-role { font-size: 11.5px; color: var(--accent); letter-spacing: 0.5px; font-weight: 600; }
+
+  /* Committee hero */
+  .committee-hero {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.08), rgba(var(--accent-2-rgb), 0.04));
+    border: 1.5px solid rgba(var(--accent-rgb), 0.3);
+    border-radius: var(--radius-xl);
+    margin-bottom: 24px;
+  }
+  .committee-hero-icon {
+    width: 56px; height: 56px;
+    border-radius: var(--radius-md);
+    background: rgba(var(--accent-rgb), 0.12);
+    border: 1.5px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .committee-hero-icon svg {
+    width: 28px; height: 28px;
+    stroke: var(--accent); fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .committee-hero-info { flex: 1; min-width: 0; }
+  .committee-hero-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .committee-hero-name {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent);
+    text-shadow: var(--glow-accent);
+  }
+  .committee-hero-desc {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* Committee cards grid */
+  .committees-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .committee-card {
+    padding: 24px;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-xl);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+
+  .committee-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.6;
+  }
+
+  .committee-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .committee-card.social::before { background: linear-gradient(90deg, transparent, #ec4899, transparent); }
+  .committee-card.social:hover { border-color: rgba(236, 72, 153, 0.5); }
+  .committee-card.social .committee-card-icon {
+    background: rgba(236, 72, 153, 0.1);
+    border-color: rgba(236, 72, 153, 0.4);
+  }
+  .committee-card.social .committee-card-icon svg { stroke: #ec4899; }
+  .committee-card.social .committee-card-title { color: #ec4899; }
+
+  .committee-card.pr::before { background: linear-gradient(90deg, transparent, #f97316, transparent); }
+  .committee-card.pr:hover { border-color: rgba(249, 115, 22, 0.5); }
+  .committee-card.pr .committee-card-icon {
+    background: rgba(249, 115, 22, 0.1);
+    border-color: rgba(249, 115, 22, 0.4);
+  }
+  .committee-card.pr .committee-card-icon svg { stroke: #f97316; }
+  .committee-card.pr .committee-card-title { color: #f97316; }
+
+  .committee-card.membership::before { background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+  .committee-card.membership:hover { border-color: rgba(var(--accent-rgb), 0.5); }
+  .committee-card.membership .committee-card-icon {
+    background: rgba(var(--accent-rgb), 0.1);
+    border-color: rgba(var(--accent-rgb), 0.4);
+  }
+  .committee-card.membership .committee-card-icon svg { stroke: var(--accent); }
+  .committee-card.membership .committee-card-title { color: var(--accent); }
+
+  .committee-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .committee-card-icon {
+    width: 52px; height: 52px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1.5px solid;
+  }
+  .committee-card-icon svg {
+    width: 26px; height: 26px;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .committee-card-info { flex: 1; min-width: 0; }
+  .committee-card-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .committee-card-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .committee-card-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .committee-stat {
+    padding: 12px 14px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+  }
+  .committee-stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .committee-stat-label {
+    font-size: 11.5px;
+    color: var(--text-dim);
+  }
+
+  .committee-card-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 11px;
+    background: rgba(var(--accent-rgb), 0.06);
+    border: 1.5px solid rgba(var(--accent-rgb), 0.25);
+    border-radius: 10px;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .committee-card-link:hover {
+    background: rgba(var(--accent-rgb), 0.15);
+    transform: translateY(-2px);
+  }
+  .committee-card-link svg {
+    width: 14px; height: 14px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .committee-card.social .committee-card-link {
+    background: rgba(236, 72, 153, 0.06);
+    border-color: rgba(236, 72, 153, 0.25);
+    color: #ec4899;
+  }
+  .committee-card.social .committee-card-link:hover {
+    background: rgba(236, 72, 153, 0.15);
+  }
+
+  .committee-card.pr .committee-card-link {
+    background: rgba(249, 115, 22, 0.06);
+    border-color: rgba(249, 115, 22, 0.25);
+    color: #f97316;
+  }
+  .committee-card.pr .committee-card-link:hover {
+    background: rgba(249, 115, 22, 0.15);
+  }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    padding: 18px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.25s;
+  }
+  .stat-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
+  }
+  .stat-icon {
+    width: 48px; height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid;
+  }
+  .stat-icon svg {
+    width: 22px; height: 22px;
+    stroke: currentColor; fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .stat-info { min-width: 0; }
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-label { font-size: 12px; color: var(--text-muted); }
+
+  /* Recent activity */
+  .table-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    margin-bottom: 20px;
+  }
+  .table-card-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .table-card-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .table-card-title svg {
+    width: 18px; height: 18px;
+    stroke: var(--accent); fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .table-card-count {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; min-width: 1000px; }
+  table th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: rgba(10, 12, 20, 0.98);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Status badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 11.5px;
+    font-weight: 700;
+    border: 1.5px solid;
+    white-space: nowrap;
+  }
+  .status-badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  /* Time cell */
+  .time-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .time-cell svg {
+    width: 12px; height: 12px;
+    stroke: var(--text-dim);
+    fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 50px 20px;
+    text-align: center;
+    color: var(--text-dim);
+  }
+  .empty-state svg {
+    width: 42px; height: 42px;
+    stroke: var(--text-dim);
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    margin: 0 auto 12px;
+    display: block;
+    opacity: 0.5;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .committees-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 90px 0 30px; }
+    .cm-wrap { padding: 0 16px; }
+    .page-header { flex-direction: column; align-items: stretch; }
+    .user-badge { justify-content: center; }
+    .stats-grid { grid-template-columns: 1fr; }
+    .committee-hero { padding: 16px; }
+    .committee-hero-name { font-size: 18px; }
+    .committee-card-stats { grid-template-columns: 1fr; }
+  }
+
+  /* Print */
+  @media print {
+    .navbar, .actions-row, .footer, .bg-grid, .bg-glow, .bg-layer,
+    .user-badge, .committee-card-link {
+      display: none !important;
+    }
+    body { padding: 0 !important; background: white !important; color: black !important; }
+    .committee-card, .table-card {
+      border: 1px solid #999 !important;
+      background: white !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      page-break-inside: avoid !important;
+    }
+    .committee-card-title, .table-card-title, .stat-value {
+      color: black !important;
+      text-shadow: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND -->
+<canvas id="bgCanvas" class="bg-layer"></canvas>
+<div class="bg-grid"></div>
+<div class="bg-glow glow-1"></div>
+<div class="bg-glow glow-2"></div>
+
+<!-- NAVBAR -->
+<header class="navbar scrolled" id="navbar">
+  <div class="nav-container">
+
+    <a href="home.html" class="nav-logo">
+      <div class="logo-badge">
+        <img id="navLogoImg" src="" alt="شعار النقابة" style="display:none;" />
+        <svg class="logo-fallback" id="navLogoFallback" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+          <line x1="14" y1="4" x2="10" y2="20" />
+        </svg>
+      </div>
+      <div class="logo-text">
+        <div class="logo-main" data-site-name>نقابة تكنولوجيا المعلومات</div>
+        <div class="logo-sub">COMMITTEES MANAGER</div>
+      </div>
+    </a>
+
+    <nav class="nav-links" id="navLinks">
+      <a href="committees-manager.html" class="active">مدير اللجان</a>
+      <a href="#" id="logoutBtn" class="btn-login" style="background:rgba(var(--danger-rgb),0.1) !important; border-color:rgba(var(--danger-rgb),0.4) !important; color:var(--danger) !important;">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+        <span>خروج</span>
+      </a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="icon-btn" onclick="toggleMobileNav()" id="mobileToggle" aria-label="القائمة">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+    </div>
+
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="cm-wrap">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-header-info">
+      <div class="page-header-title">مدير اللجان</div>
+      <div class="page-header-sub">متابعة شاملة لكل اللجان — بدون الإيرادات والمصروفات</div>
+    </div>
+
+    <div class="user-badge">
+      <div class="user-avatar">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="3" width="7" height="7" />
+          <rect x="14" y="3" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" />
+          <rect x="3" y="14" width="7" height="7" />
+        </svg>
+      </div>
+      <div class="user-info">
+        <div class="user-name" data-user-name>—</div>
+        <div class="user-role">مدير اللجان</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMITTEE HERO -->
+  <div class="committee-hero">
+    <div class="committee-hero-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="3" width="7" height="7" />
+        <rect x="14" y="3" width="7" height="7" />
+        <rect x="14" y="14" width="7" height="7" />
+        <rect x="3" y="14" width="7" height="7" />
+      </svg>
+    </div>
+    <div class="committee-hero-info">
+      <div class="committee-hero-label">الإدارة</div>
+      <div class="committee-hero-name">مدير اللجان</div>
+      <div class="committee-hero-desc">متابعة اللجنة الاجتماعية + العلاقات العامة + لجنة العضويات</div>
+    </div>
+  </div>
+
+  <!-- OVERALL STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(var(--accent-rgb),0.08);border-color:rgba(var(--accent-rgb),0.3);color:var(--accent);">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value" style="color:var(--accent);" id="statTotalMembers">—</div>
+        <div class="stat-label">إجمالي الأعضاء</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(var(--warning-rgb),0.08);border-color:rgba(var(--warning-rgb),0.3);color:var(--warning);">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value" style="color:var(--warning);" id="statPendingApps">—</div>
+        <div class="stat-label">طلبات قيد المراجعة</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(var(--success-rgb),0.08);border-color:rgba(var(--success-rgb),0.3);color:var(--success);">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value" style="color:var(--success);" id="statApprovedApps">—</div>
+        <div class="stat-label">طلبات مقبولة</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(236,72,153,0.08);border-color:rgba(236,72,153,0.3);color:#ec4899;">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value" style="color:#ec4899;" id="statHealthCare">—</div>
+        <div class="stat-label">أعضاء الرعاية الصحية</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.3);color:#22c55e;">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value" style="color:#22c55e;" id="statGovs">—</div>
+        <div class="stat-label">عدد المحافظات</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMITTEES CARDS -->
+  <div class="committees-grid">
+
+    <!-- Social Committee -->
+    <div class="committee-card social">
+      <div class="committee-card-header">
+        <div class="committee-card-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </div>
+        <div class="committee-card-info">
+          <div class="committee-card-title">اللجنة الاجتماعية</div>
+          <div class="committee-card-desc">متابعة الأعضاء والرعاية الصحية</div>
+        </div>
+      </div>
+
+      <div class="committee-card-stats">
+        <div class="committee-stat">
+          <div class="committee-stat-value" style="color:#ec4899;" id="socialHC">—</div>
+          <div class="committee-stat-label">لهم رعاية صحية</div>
+        </div>
+        <div class="committee-stat">
+          <div class="committee-stat-value" style="color:var(--success);" id="socialHCActive">—</div>
+          <div class="committee-stat-label">رعاية سارية</div>
+        </div>
+      </div>
+
+      <a href="social-committee.html" class="committee-card-link">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
+        </svg>
+        <span>فتح اللجنة</span>
+      </a>
+    </div>
+
+    <!-- Public Relations -->
+    <div class="committee-card pr">
+      <div class="committee-card-header">
+        <div class="committee-card-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </div>
+        <div class="committee-card-info">
+          <div class="committee-card-title">العلاقات العامة</div>
+          <div class="committee-card-desc">بيانات التواصل مع الأعضاء</div>
+        </div>
+      </div>
+
+      <div class="committee-card-stats">
+        <div class="committee-stat">
+          <div class="committee-stat-value" style="color:#f97316;" id="prTotal">—</div>
+          <div class="committee-stat-label">إجمالي الأعضاء</div>
+        </div>
+        <div class="committee-stat">
+          <div class="committee-stat-value" style="color:var(--success);" id="prWithContact">—</div>
+          <div class="committee-stat-label">لهم بيانات تواصل</div>
+        </div>
+      </div>
+
+      <a href="public-relations.html" class="committee-card-link">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
+        </svg>
+        <span>فتح اللجنة</span>
+      </a>
+    </div>
+
+    <!-- Membership Committee -->
+    <div class="committee-card membership">
+      <div class="committee-card-header">
+        <div class="committee-card-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
+        </div>
+        <div class="committee-card-info">
+          <div class="committee-card-title">لجنة العضويات</div>
+          <div class="committee-card-desc">مراجعة طلبات العضوية الجديدة</div>
+        </div>
+      </div>
+
+      <div class="committee-card-stats">
+        <div class="committee-stat">
+          <div class="committee-stat-value" style="color:var(--warning);" id="memPending">—</div>
+          <div class="committee-stat-label">قيد المراجعة</div>
+        </div>
+        <div class="committee-stat">
+          <div class="committee-stat-value" style="color:var(--success);" id="memApproved">—</div>
+          <div class="committee-stat-label">مقبولة</div>
+        </div>
+      </div>
+
+      <a href="dashboard.html" class="committee-card-link">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
+        </svg>
+        <span>فتح اللجنة</span>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- RECENT APPLICATIONS -->
+  <div class="table-card">
+    <div class="table-card-header">
+      <div class="table-card-title">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+        <span>آخر الطلبات</span>
+      </div>
+      <div class="table-card-count" id="recentCount">—</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>العضو</th>
+            <th>رقم التتبع</th>
+            <th>نوع العضوية</th>
+            <th>المحافظة</th>
+            <th>الحالة</th>
+            <th>التاريخ</th>
+          </tr>
+        </thead>
+        <tbody id="recentAppsBody">
+          <tr>
+            <td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">
+              جاري التحميل...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="footer" style="margin-top:40px;">
+  <div class="container">
+    <div class="footer-bottom" style="border-top:none;padding-top:0;justify-content:center;">
+      <div>© 2026 <span data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</span> — جميع الحقوق محفوظة</div>
+    </div>
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="js/supabase-config.js"></script>
+<script src="js/theme-manager.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/realtime.js"></script>
+<script src="js/committees-manager.js"></script>
+
+<script>
+  window.toggleMobileNav = function () {
+    const nav = document.getElementById('navLinks');
+    if (nav) nav.classList.toggle('open');
+  };
+
+  /* Background particles */
+  (function () {
+    const canvas = document.getElementById('bgCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0, dots = [];
+
+    function accentRgb() {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim();
+      if (raw) {
+        const parts = raw.split(',').map(s => parseInt(s.trim()));
+        return { r: parts[0] || 0, g: parts[1] || 240, b: parts[2] || 255 };
+      }
+      return { r: 0, g: 240, b: 255 };
+    }
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      init();
+    }
+
+    function init() {
+      const count = Math.min(45, Math.max(18, Math.floor(W / 34)));
+      dots = [];
+      for (let i = 0; i < count; i++) {
+        dots.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.25,
+          vy: (Math.random() - 0.5) * 0.25,
+          r: Math.random() * 1.3 + 0.5
+        });
+      }
+    }
+
+    function loop() {
+      const rgb = accentRgb();
+      ctx.clearRect(0, 0, W, H);
+      dots.forEach((d, i) => {
+        d.x += d.vx; d.y += d.vy;
+        if (d.x < 0 || d.x > W) d.vx *= -1;
+        if (d.y < 0 || d.y > H) d.vy *= -1;
+        ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.4)`;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        ctx.fill();
+        for (let j = i + 1; j < dots.length; j++) {
+          const dx = d.x - dots[j].x;
+          const dy = d.y - dots[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 130) {
+            ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.07 * (1 - dist / 130)})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(d.x, d.y);
+            ctx.lineTo(dots[j].x, dots[j].y);
+            ctx.stroke();
+          }
+        }
+      });
+      requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('resize', () => {
+      clearTimeout(window.__cmResizeT);
+      window.__cmResizeT = setTimeout(resize, 200);
+    });
+
+    resize();
+    loop();
+  })();
+</script>
+
+</body>
+</html>
