@@ -208,7 +208,7 @@
     margin-top: 8px;
   }
 
-  /* Optional label */
+  /* Optional tag */
   .optional-tag {
     display: inline-block;
     padding: 2px 8px;
@@ -222,58 +222,7 @@
     vertical-align: middle;
   }
 
-  /* Terms */
-  .terms-box {
-    padding: 16px 18px;
-    background: rgba(var(--accent-rgb), 0.04);
-    border: 1px solid rgba(var(--accent-rgb), 0.15);
-    border-radius: var(--radius-md);
-    font-size: 13px;
-    color: var(--text-muted);
-    line-height: 1.75;
-    margin-bottom: 16px;
-  }
-
-  /* Submit area */
-  .submit-area {
-    display: flex;
-    gap: 12px;
-    margin-top: 24px;
-    flex-wrap: wrap;
-  }
-
-  .submit-area .btn {
-    flex: 1;
-    min-width: 200px;
-  }
-
-  /* Info banner */
-  .info-banner {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 18px;
-    background: rgba(var(--accent-rgb), 0.05);
-    border: 1px solid rgba(var(--accent-rgb), 0.2);
-    border-radius: var(--radius-md);
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-bottom: 20px;
-    line-height: 1.7;
-  }
-
-  .info-banner svg {
-    width: 20px;
-    height: 20px;
-    stroke: var(--accent);
-    fill: none;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    flex-shrink: 0;
-  }
-
-  /* Camera buttons inside file-upload */
+  /* Upload actions */
   .upload-actions {
     display: flex;
     gap: 8px;
@@ -313,7 +262,213 @@
     stroke-linejoin: round;
   }
 
-  /* Camera modal */
+  /* Health Care Box */
+  .health-care-box {
+    padding: 18px 20px;
+    background: linear-gradient(135deg, rgba(var(--success-rgb), 0.06), rgba(var(--accent-rgb), 0.04));
+    border: 1.5px solid rgba(var(--success-rgb), 0.3);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    transition: all 0.3s;
+  }
+
+  .health-care-box:hover {
+    border-color: var(--success);
+    background: linear-gradient(135deg, rgba(var(--success-rgb), 0.1), rgba(var(--accent-rgb), 0.06));
+  }
+
+  .health-care-box.checked {
+    border-color: var(--success);
+    box-shadow: 0 0 25px rgba(var(--success-rgb), 0.3);
+  }
+
+  .health-care-box .icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(var(--success-rgb), 0.12);
+    border: 1.5px solid var(--success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .health-care-box .icon-wrap svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--success);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .health-care-box .info {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .health-care-box .title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .health-care-box .desc {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .health-care-box .price {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--success);
+    text-shadow: 0 0 15px rgba(var(--success-rgb), 0.5);
+    white-space: nowrap;
+  }
+
+  .health-care-box .check-indicator {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid rgba(var(--success-rgb), 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.3s;
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .health-care-box .check-indicator svg {
+    width: 16px;
+    height: 16px;
+    stroke: var(--success);
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .health-care-box.checked .check-indicator {
+    background: var(--success);
+    border-color: var(--success);
+  }
+
+  .health-care-box.checked .check-indicator svg {
+    opacity: 1;
+    stroke: #000;
+  }
+
+  /* Invoice Preview */
+  .invoice-preview {
+    padding: 20px 22px;
+    background: rgba(var(--accent-rgb), 0.06);
+    border: 1.5px solid rgba(var(--accent-rgb), 0.3);
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    animation: fadeUp 0.4s;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .invoice-preview .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 13.5px;
+  }
+
+  .invoice-preview .row.total {
+    padding-top: 14px;
+    margin-top: 8px;
+    border-top: 1.5px dashed rgba(var(--accent-rgb), 0.3);
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  .invoice-preview .row.total .value {
+    color: var(--accent);
+    text-shadow: var(--glow-accent);
+    font-size: 20px;
+  }
+
+  .invoice-preview .label {
+    color: var(--text-muted);
+  }
+
+  .invoice-preview .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* Terms */
+  .terms-box {
+    padding: 16px 18px;
+    background: rgba(var(--accent-rgb), 0.04);
+    border: 1px solid rgba(var(--accent-rgb), 0.15);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.75;
+    margin-bottom: 16px;
+  }
+
+  /* Submit */
+  .submit-area {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+
+  .submit-area .btn {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  /* Info banner */
+  .info-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: rgba(var(--accent-rgb), 0.05);
+    border: 1px solid rgba(var(--accent-rgb), 0.2);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    line-height: 1.7;
+  }
+
+  .info-banner svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--accent);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  .info-banner strong { color: var(--accent); }
+
+  /* Camera Modal */
   .camera-modal {
     position: fixed;
     inset: 0;
@@ -327,9 +482,7 @@
     padding: 20px;
   }
 
-  .camera-modal.open {
-    display: flex;
-  }
+  .camera-modal.open { display: flex; }
 
   .camera-modal-content {
     background: #000;
@@ -402,7 +555,6 @@
     max-height: 60vh;
   }
 
-  /* Guide overlay */
   .camera-guide {
     position: absolute;
     inset: 0;
@@ -418,32 +570,6 @@
     border: 3px dashed var(--accent);
     border-radius: 12px;
     box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
-    position: relative;
-  }
-
-  .guide-box::before,
-  .guide-box::after {
-    content: '';
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    border: 3px solid var(--accent);
-  }
-
-  .guide-box::before {
-    top: -3px;
-    right: -3px;
-    border-bottom: none;
-    border-left: none;
-    border-top-right-radius: 12px;
-  }
-
-  .guide-box::after {
-    bottom: -3px;
-    left: -3px;
-    border-top: none;
-    border-right: none;
-    border-bottom-left-radius: 12px;
   }
 
   .camera-hint {
@@ -501,9 +627,7 @@
     box-shadow: var(--glow-accent);
   }
 
-  .camera-btn-capture:hover {
-    transform: translateY(-2px);
-  }
+  .camera-btn-capture:hover { transform: translateY(-2px); }
 
   .camera-btn-switch {
     background: rgba(255, 255, 255, 0.1);
@@ -511,11 +635,9 @@
     color: #fff;
   }
 
-  .camera-btn-switch:hover {
-    background: rgba(255, 255, 255, 0.2);
-  }
+  .camera-btn-switch:hover { background: rgba(255, 255, 255, 0.2); }
 
-  /* AI Analysis Overlay */
+  /* AI Overlay */
   .ai-overlay {
     position: fixed;
     inset: 0;
@@ -529,9 +651,7 @@
     padding: 20px;
   }
 
-  .ai-overlay.open {
-    display: flex;
-  }
+  .ai-overlay.open { display: flex; }
 
   .ai-card {
     background: var(--card-bg-solid);
@@ -560,7 +680,7 @@
 
   @keyframes aiPulse {
     0%, 100% { box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.4); }
-    50% { box-shadow: 0 0 60px rgba(var(--accent-rgb), 0.7); }
+    50%      { box-shadow: 0 0 60px rgba(var(--accent-rgb), 0.7); }
   }
 
   .ai-icon svg {
@@ -574,9 +694,7 @@
     animation: aiRotate 3s linear infinite;
   }
 
-  @keyframes aiRotate {
-    to { transform: rotate(360deg); }
-  }
+  @keyframes aiRotate { to { transform: rotate(360deg); } }
 
   .ai-title {
     font-family: 'Tajawal', sans-serif;
@@ -619,21 +737,9 @@
   }
 
   .ai-result.show { display: block; }
-  .ai-result.success {
-    background: rgba(var(--success-rgb), 0.1);
-    border: 1.5px solid var(--success);
-    color: var(--success);
-  }
-  .ai-result.error {
-    background: rgba(var(--danger-rgb), 0.1);
-    border: 1.5px solid var(--danger);
-    color: var(--danger);
-  }
-  .ai-result.warning {
-    background: rgba(var(--warning-rgb), 0.1);
-    border: 1.5px solid var(--warning);
-    color: var(--warning);
-  }
+  .ai-result.success { background: rgba(var(--success-rgb), 0.1); border: 1.5px solid var(--success); color: var(--success); }
+  .ai-result.error { background: rgba(var(--danger-rgb), 0.1); border: 1.5px solid var(--danger); color: var(--danger); }
+  .ai-result.warning { background: rgba(var(--warning-rgb), 0.1); border: 1.5px solid var(--warning); color: var(--warning); }
 
   .ai-actions {
     margin-top: 20px;
@@ -642,6 +748,96 @@
     justify-content: center;
     flex-wrap: wrap;
   }
+
+  /* Draft indicator */
+  .draft-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 90;
+    padding: 8px 14px;
+    background: rgba(var(--accent-rgb), 0.1);
+    border: 1px solid rgba(var(--accent-rgb), 0.3);
+    border-radius: 100px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    backdrop-filter: blur(10px);
+  }
+
+  .draft-indicator .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulseDot 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulseDot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.4); opacity: 0.6; }
+  }
+
+  /* AI Check */
+  .ai-check {
+    margin-top: 8px;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    font-size: 12.5px;
+    font-weight: 600;
+    display: none;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ai-check.checking {
+    display: flex;
+    background: rgba(var(--warning-rgb), 0.1);
+    border: 1px solid var(--warning);
+    color: var(--warning);
+  }
+
+  .ai-check.pass {
+    display: flex;
+    background: rgba(var(--success-rgb), 0.1);
+    border: 1px solid var(--success);
+    color: var(--success);
+  }
+
+  .ai-check.fail {
+    display: flex;
+    background: rgba(var(--danger-rgb), 0.1);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+  }
+
+  .ai-check svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  .ai-check .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(var(--warning-rgb), 0.3);
+    border-top-color: var(--warning);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   /* Responsive */
   @media (max-width: 768px) {
@@ -660,6 +856,7 @@
     .form-section-icon { width: 36px; height: 36px; }
     .form-section-icon svg { width: 18px; height: 18px; }
     .form-section-title { font-size: 16px; }
+    .draft-indicator { bottom: 14px; left: 14px; font-size: 10.5px; }
   }
 </style>
 </head>
@@ -793,6 +990,18 @@
 
       <div class="form-row">
         <div class="form-group">
+          <label for="birth_date">تاريخ الميلاد <span class="required">*</span></label>
+          <input type="date" id="birth_date" name="birth_date" required />
+          <span class="form-hint" id="ageHint"></span>
+        </div>
+        <div class="form-group">
+          <label for="age">السن</label>
+          <input type="text" id="age" name="age" readonly placeholder="—" style="opacity:0.7;cursor:not-allowed;" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
           <label for="phone">رقم الموبايل <span class="required">*</span></label>
           <input type="tel" id="phone" name="phone" placeholder="01xxxxxxxxx" required pattern="01[0125]\d{8}" maxlength="11" inputmode="numeric" dir="ltr" style="text-align:right;" autocomplete="tel" />
         </div>
@@ -870,33 +1079,6 @@
         <label for="governorate">المحافظة</label>
         <select id="governorate" name="governorate">
           <option value="">-- اختر المحافظة --</option>
-          <option>القاهرة</option>
-          <option>الجيزة</option>
-          <option>الإسكندرية</option>
-          <option>الدقهلية</option>
-          <option>الشرقية</option>
-          <option>القليوبية</option>
-          <option>المنوفية</option>
-          <option>الغربية</option>
-          <option>البحيرة</option>
-          <option>كفر الشيخ</option>
-          <option>دمياط</option>
-          <option>بورسعيد</option>
-          <option>الإسماعيلية</option>
-          <option>السويس</option>
-          <option>شمال سيناء</option>
-          <option>جنوب سيناء</option>
-          <option>الفيوم</option>
-          <option>بني سويف</option>
-          <option>المنيا</option>
-          <option>أسيوط</option>
-          <option>سوهاج</option>
-          <option>قنا</option>
-          <option>الأقصر</option>
-          <option>أسوان</option>
-          <option>البحر الأحمر</option>
-          <option>الوادي الجديد</option>
-          <option>مطروح</option>
         </select>
       </div>
     </div>
@@ -935,7 +1117,43 @@
       </div>
     </div>
 
-    <!-- ============ SECTION 4: ATTACHMENTS ============ -->
+    <!-- ============ SECTION 4: HEALTH CARE ============ -->
+    <div class="form-section" id="healthCareSection" style="display:none;">
+      <div class="form-section-header">
+        <div class="form-section-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+          </svg>
+        </div>
+        <div>
+          <div class="form-section-title">رعاية صحية (اختياري)</div>
+          <div class="form-section-sub">إضافة رعاية صحية على الكارنية</div>
+        </div>
+      </div>
+
+      <div class="health-care-box" id="healthCareBox" onclick="toggleHealthCare()">
+        <input type="checkbox" id="wantsHealthCare" name="wants_health_care" style="display:none;" />
+        <div class="icon-wrap">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </div>
+        <div class="info">
+          <div class="title" id="healthCareLabel">أرغب في إضافة رعاية صحية على الكارنية</div>
+          <div class="desc">خدمة اختيارية تُضاف على رسوم العضوية</div>
+        </div>
+        <div class="price">
+          +<span id="healthCarePrice">150</span> ج
+        </div>
+        <div class="check-indicator">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SECTION 5: ATTACHMENTS ============ -->
     <div class="form-section">
       <div class="form-section-header">
         <div class="form-section-icon">
@@ -947,7 +1165,7 @@
         </div>
         <div>
           <div class="form-section-title">المرفقات المطلوبة</div>
-          <div class="form-section-sub">صور واضحة بصيغة JPG أو PNG أو PDF (حد أقصى 5 ميجا)</div>
+          <div class="form-section-sub">صور واضحة بصيغة JPG أو PNG أو PDF (حد أقصى 10 ميجا)</div>
         </div>
       </div>
 
@@ -1096,7 +1314,7 @@
       </div>
     </div>
 
-    <!-- ============ SECTION 5: TERMS ============ -->
+    <!-- ============ SECTION 6: INVOICE + TERMS ============ -->
     <div class="form-section">
       <div class="form-section-header">
         <div class="form-section-icon">
@@ -1105,8 +1323,24 @@
           </svg>
         </div>
         <div>
-          <div class="form-section-title">الإقرار والموافقة</div>
+          <div class="form-section-title">الإقرار والفاتورة</div>
           <div class="form-section-sub">يرجى قراءة الشروط قبل الإرسال</div>
+        </div>
+      </div>
+
+      <!-- Invoice Preview -->
+      <div class="invoice-preview" id="invoicePreview" style="display:none;">
+        <div class="row">
+          <span class="label">رسوم العضوية</span>
+          <span class="value" id="previewMembershipFee">0 جنيه</span>
+        </div>
+        <div class="row" id="previewHealthRow" style="display:none;">
+          <span class="label">الرعاية الصحية</span>
+          <span class="value" id="previewHealthFee">0 جنيه</span>
+        </div>
+        <div class="row total">
+          <span class="label">الإجمالي</span>
+          <span class="value" id="previewTotal">0 جنيه</span>
         </div>
       </div>
 
@@ -1118,7 +1352,6 @@
         <input type="checkbox" id="agreeTerms" name="agree_terms" required />
         <span>أوافق على جميع الشروط والأحكام، وأقر بصحة البيانات والمستندات المقدمة.</span>
       </label>
-
     </div>
 
     <!-- ============ SUBMIT ============ -->
@@ -1219,8 +1452,8 @@
 </div>
 
 <!-- DRAFT INDICATOR -->
-<div class="draft-indicator" id="draftIndicator" style="position:fixed;bottom:20px;left:20px;z-index:90;padding:8px 14px;background:rgba(var(--accent-rgb),0.1);border:1px solid rgba(var(--accent-rgb),0.3);border-radius:100px;font-size:11.5px;font-weight:600;color:var(--accent);display:flex;align-items:center;gap:8px;opacity:0;pointer-events:none;transition:opacity 0.3s;backdrop-filter:blur(10px);">
-  <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulseDot 1.5s ease-in-out infinite;"></span>
+<div class="draft-indicator" id="draftIndicator">
+  <span class="dot"></span>
   <span>تم حفظ المسودة تلقائيًا</span>
 </div>
 
@@ -1411,6 +1644,22 @@
       });
     });
   })();
+
+  /* ============================================
+     HEALTH CARE TOGGLE
+     ============================================ */
+  window.toggleHealthCare = function () {
+    const checkbox = document.getElementById('wantsHealthCare');
+    const box = document.getElementById('healthCareBox');
+    if (!checkbox || !box) return;
+
+    checkbox.checked = !checkbox.checked;
+    box.classList.toggle('checked', checkbox.checked);
+
+    if (typeof window.updateInvoicePreview === 'function') {
+      window.updateInvoicePreview();
+    }
+  };
 </script>
 
 </body>
