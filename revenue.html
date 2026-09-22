@@ -58,88 +58,204 @@
   @keyframes shine { to { background-position: 200% center; } }
   .page-header-sub { font-size: 13.5px; color: var(--text-muted); }
 
-  /* Big total card */
-  .total-card {
-    padding: 32px;
-    background: linear-gradient(135deg, rgba(var(--success-rgb), 0.08), rgba(var(--accent-rgb), 0.05));
-    border: 1.5px solid rgba(var(--success-rgb), 0.4);
-    border-radius: var(--radius-xl);
+  /* Tabs */
+  .tabs-nav {
+    display: flex;
+    gap: 6px;
+    padding: 6px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     margin-bottom: 24px;
+    overflow-x: auto;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    scrollbar-width: none;
+  }
+  .tabs-nav::-webkit-scrollbar { display: none; }
+
+  .tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.25s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .tab-btn:hover {
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.05);
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-2-rgb), 0.15));
+    border-color: rgba(var(--accent-rgb), 0.4);
+    color: var(--accent);
+    box-shadow: var(--glow-accent);
+  }
+  .tab-btn svg {
+    width: 16px; height: 16px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  [data-tab-content] {
+    animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============ BIG TOTAL CARDS ============ */
+  .totals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .total-card {
+    padding: 26px 24px;
+    border-radius: var(--radius-xl);
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
+
+  .total-card.revenue {
+    background: linear-gradient(135deg, rgba(var(--success-rgb), 0.08), rgba(var(--accent-rgb), 0.05));
+    border: 1.5px solid rgba(var(--success-rgb), 0.4);
+  }
+  .total-card.expenses {
+    background: linear-gradient(135deg, rgba(var(--danger-rgb), 0.08), rgba(var(--warning-rgb), 0.04));
+    border: 1.5px solid rgba(var(--danger-rgb), 0.4);
+  }
+  .total-card.net {
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.08), rgba(var(--accent-2-rgb), 0.06));
+    border: 1.5px solid rgba(var(--accent-rgb), 0.4);
+  }
+  .total-card.net.negative {
+    background: linear-gradient(135deg, rgba(var(--danger-rgb), 0.1), rgba(var(--warning-rgb), 0.05));
+    border-color: rgba(var(--danger-rgb), 0.5);
+  }
+
   .total-card::before {
     content: '';
     position: absolute;
-    top: -100px;
-    left: -100px;
-    width: 400px;
-    height: 400px;
+    top: -80px;
+    left: -80px;
+    width: 240px;
+    height: 240px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(var(--success-rgb), 0.15), transparent 70%);
     pointer-events: none;
   }
+  .total-card.revenue::before {
+    background: radial-gradient(circle, rgba(var(--success-rgb), 0.15), transparent 70%);
+  }
+  .total-card.expenses::before {
+    background: radial-gradient(circle, rgba(var(--danger-rgb), 0.15), transparent 70%);
+  }
+  .total-card.net::before {
+    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.15), transparent 70%);
+  }
+
   .total-card-inner {
     position: relative;
     z-index: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
+    gap: 16px;
     flex-wrap: wrap;
   }
+
   .total-label {
     font-size: 13.5px;
     color: var(--text-muted);
     margin-bottom: 8px;
     letter-spacing: 1px;
   }
+
   .total-value {
     font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(36px, 6vw, 56px);
+    font-size: clamp(28px, 4.5vw, 42px);
     font-weight: 800;
-    color: var(--success);
-    text-shadow: 0 0 30px rgba(var(--success-rgb), 0.5);
     line-height: 1;
     margin-bottom: 8px;
   }
+
+  .total-card.revenue .total-value { color: var(--success); text-shadow: 0 0 30px rgba(var(--success-rgb), 0.5); }
+  .total-card.expenses .total-value { color: var(--danger); text-shadow: 0 0 30px rgba(var(--danger-rgb), 0.5); }
+  .total-card.net .total-value { color: var(--accent); text-shadow: 0 0 30px rgba(var(--accent-rgb), 0.5); }
+  .total-card.net.negative .total-value { color: var(--danger); text-shadow: 0 0 30px rgba(var(--danger-rgb), 0.5); }
+
   .total-value small {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--text-muted);
   }
+
   .total-sub {
-    font-size: 13px;
+    font-size: 12.5px;
     color: var(--text-dim);
   }
+
   .total-icon {
-    width: 90px;
-    height: 90px;
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
-    background: rgba(var(--success-rgb), 0.1);
-    border: 2px solid var(--success);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 40px rgba(var(--success-rgb), 0.3);
     flex-shrink: 0;
   }
+
+  .total-card.revenue .total-icon {
+    background: rgba(var(--success-rgb), 0.1);
+    border: 2px solid var(--success);
+    box-shadow: 0 0 40px rgba(var(--success-rgb), 0.3);
+  }
+  .total-card.expenses .total-icon {
+    background: rgba(var(--danger-rgb), 0.1);
+    border: 2px solid var(--danger);
+    box-shadow: 0 0 40px rgba(var(--danger-rgb), 0.3);
+  }
+  .total-card.net .total-icon {
+    background: rgba(var(--accent-rgb), 0.1);
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 40px rgba(var(--accent-rgb), 0.3);
+  }
+
   .total-icon svg {
-    width: 44px;
-    height: 44px;
-    stroke: var(--success);
+    width: 34px;
+    height: 34px;
+    stroke: currentColor;
     fill: none;
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 
-  /* Quick stats */
+  .total-card.revenue .total-icon svg { stroke: var(--success); }
+  .total-card.expenses .total-icon svg { stroke: var(--danger); }
+  .total-card.net .total-icon svg { stroke: var(--accent); }
+  .total-card.net.negative .total-icon svg { stroke: var(--danger); }
+
+  /* ============ QUICK STATS ============ */
   .quick-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 14px;
     margin-bottom: 24px;
   }
@@ -155,24 +271,17 @@
     gap: 14px;
   }
   .quick-stat-icon {
-    width: 46px;
-    height: 46px;
+    width: 46px; height: 46px;
     border-radius: var(--radius-md);
     background: rgba(var(--accent-rgb), 0.08);
     border: 1px solid rgba(var(--accent-rgb), 0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
   .quick-stat-icon svg {
-    width: 22px;
-    height: 22px;
-    stroke: var(--accent);
-    fill: none;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    width: 22px; height: 22px;
+    stroke: var(--accent); fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
   }
   .quick-stat-info { min-width: 0; }
   .quick-stat-value {
@@ -189,7 +298,7 @@
     color: var(--text-muted);
   }
 
-  /* Filters */
+  /* ============ FILTERS ============ */
   .filters-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -208,13 +317,9 @@
     border-bottom: 1px solid var(--border-soft);
   }
   .filters-header svg {
-    width: 18px;
-    height: 18px;
-    stroke: var(--accent);
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    width: 18px; height: 18px;
+    stroke: var(--accent); fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
   .filters-header-title {
     font-family: 'Tajawal', sans-serif;
@@ -278,7 +383,7 @@
     margin-bottom: 20px;
   }
 
-  /* Tables */
+  /* ============ TABLES GRID ============ */
   .tables-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -315,13 +420,9 @@
     gap: 10px;
   }
   .table-card-title svg {
-    width: 18px;
-    height: 18px;
-    stroke: var(--accent);
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    width: 18px; height: 18px;
+    stroke: var(--accent); fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
   .table-card-count {
     font-size: 12.5px;
@@ -331,8 +432,8 @@
 
   .table-wrap { overflow-x: auto; max-height: 60vh; }
   table { width: 100%; }
-  .table-card table { min-width: 500px; }
-  .table-card.full table { min-width: 1000px; }
+  .table-card table { min-width: 600px; }
+  .table-card.full table { min-width: 1100px; }
   table th {
     position: sticky;
     top: 0;
@@ -350,6 +451,44 @@
     color: var(--success);
     text-shadow: 0 0 10px rgba(var(--success-rgb), 0.3);
     white-space: nowrap;
+  }
+  .amount-cell.expense {
+    color: var(--danger);
+    text-shadow: 0 0 10px rgba(var(--danger-rgb), 0.3);
+  }
+
+  /* Member cell */
+  .member-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .member-avatar {
+    width: 34px; height: 34px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-2-rgb), 0.15));
+    border: 1px solid rgba(var(--accent-rgb), 0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 10.5px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .member-info { min-width: 0; line-height: 1.25; }
+  .member-name {
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+  }
+  .member-nid {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--text-dim);
   }
 
   /* Governorate card */
@@ -398,6 +537,45 @@
     padding: 20px;
   }
 
+  /* Category card */
+  .cat-card {
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+  .cat-card:hover {
+    border-color: rgba(var(--danger-rgb), 0.4);
+    background: rgba(var(--danger-rgb), 0.05);
+  }
+  .cat-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .cat-stats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .cat-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--text-muted);
+  }
+  .cat-amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--danger);
+    text-shadow: 0 0 10px rgba(var(--danger-rgb), 0.3);
+  }
+
   /* Empty state */
   .empty-state {
     padding: 60px 20px;
@@ -405,8 +583,7 @@
     color: var(--text-dim);
   }
   .empty-state svg {
-    width: 48px;
-    height: 48px;
+    width: 48px; height: 48px;
     stroke: var(--text-dim);
     fill: none;
     stroke-width: 1.5;
@@ -426,6 +603,52 @@
     color: var(--text-dim);
   }
 
+  /* Status badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 11.5px;
+    font-weight: 700;
+    border: 1.5px solid;
+    white-space: nowrap;
+  }
+  .status-badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .status-confirmed {
+    background: rgba(var(--success-rgb), 0.1);
+    border-color: var(--success);
+    color: var(--success);
+  }
+  .status-pending {
+    background: rgba(var(--warning-rgb), 0.1);
+    border-color: var(--warning);
+    color: var(--warning);
+  }
+  .status-rejected {
+    background: rgba(var(--danger-rgb), 0.1);
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+
+  /* Method badge */
+  .method-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(var(--accent-rgb), 0.06);
+    border: 1px solid rgba(var(--accent-rgb), 0.18);
+    border-radius: var(--radius-full);
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
   /* Responsive */
   @media (max-width: 1024px) {
     .tables-grid { grid-template-columns: 1fr; }
@@ -439,16 +662,16 @@
     .filters-grid { grid-template-columns: 1fr; }
     .actions-row { flex-direction: column; }
     .actions-row .btn { width: 100%; }
-    .total-card { padding: 24px 20px; }
-    .total-icon { width: 70px; height: 70px; }
-    .total-icon svg { width: 32px; height: 32px; }
+    .total-card { padding: 20px 18px; }
+    .total-icon { width: 56px; height: 56px; }
+    .total-icon svg { width: 26px; height: 26px; }
     .quick-stats { grid-template-columns: 1fr; }
   }
 
   /* Print */
   @media print {
     .navbar, .actions-row, .filters-card, .quick-dates,
-    .footer, .bg-grid, .bg-glow, .bg-layer {
+    .footer, .bg-grid, .bg-glow, .bg-layer, .tabs-nav {
       display: none !important;
     }
     body { padding: 0 !important; background: white !important; color: black !important; }
@@ -533,167 +756,344 @@
   <div class="page-header">
     <div class="page-header-info">
       <div class="page-header-title">التقارير المالية</div>
-      <div class="page-header-sub">إيرادات العضويات والاشتراكات — بالتفصيل</div>
+      <div class="page-header-sub">الإيرادات + المصروفات + الصافي — بالتفصيل</div>
     </div>
   </div>
 
-  <!-- TOTAL CARD -->
-  <div class="total-card">
-    <div class="total-card-inner">
-      <div>
-        <div class="total-label">إجمالي الإيرادات</div>
-        <div class="total-value" id="totalRevenue">— <small>جنيه</small></div>
-        <div class="total-sub" id="totalSub">—</div>
+  <!-- TABS -->
+  <div class="tabs-nav">
+    <button type="button" class="tab-btn active" data-tab-btn="overview">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <line x1="12" y1="20" x2="12" y2="10" />
+        <line x1="18" y1="20" x2="18" y2="4" />
+        <line x1="6" y1="20" x2="6" y2="16" />
+      </svg>
+      <span>نظرة عامة</span>
+    </button>
+
+    <button type="button" class="tab-btn" data-tab-btn="payments">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="7" width="20" height="14" rx="2" />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      </svg>
+      <span>الإيرادات</span>
+    </button>
+
+    <button type="button" class="tab-btn" data-tab-btn="expenses">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <line x1="12" y1="1" x2="12" y2="23" />
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      </svg>
+      <span>المصروفات</span>
+    </button>
+  </div>
+
+  <!-- ============================================
+       TAB 1: OVERVIEW
+       ============================================ -->
+  <div data-tab-content="overview">
+
+    <!-- TOTALS -->
+    <div class="totals-grid">
+      <div class="total-card revenue">
+        <div class="total-card-inner">
+          <div>
+            <div class="total-label">إجمالي الإيرادات</div>
+            <div class="total-value" id="totalRevenue">— <small>جنيه</small></div>
+            <div class="total-sub" id="totalRevenueSub">—</div>
+          </div>
+          <div class="total-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <line x1="12" y1="1" x2="12" y2="23" />
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+          </div>
+        </div>
       </div>
-      <div class="total-icon">
+
+      <div class="total-card expenses">
+        <div class="total-card-inner">
+          <div>
+            <div class="total-label">إجمالي المصروفات</div>
+            <div class="total-value" id="totalExpenses">— <small>جنيه</small></div>
+            <div class="total-sub" id="totalExpensesSub">—</div>
+          </div>
+          <div class="total-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+              <polyline points="17 18 23 18 23 12" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="total-card net" id="netCard">
+        <div class="total-card-inner">
+          <div>
+            <div class="total-label">الصافي</div>
+            <div class="total-value" id="totalNet">— <small>جنيه</small></div>
+            <div class="total-sub" id="totalNetSub">—</div>
+          </div>
+          <div class="total-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK STATS -->
+    <div class="quick-stats">
+      <div class="quick-stat">
+        <div class="quick-stat-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="7" width="20" height="14" rx="2" />
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+          </svg>
+        </div>
+        <div class="quick-stat-info">
+          <div class="quick-stat-value" id="statPaymentsCount">—</div>
+          <div class="quick-stat-label">عدد الدفعات</div>
+        </div>
+      </div>
+
+      <div class="quick-stat">
+        <div class="quick-stat-icon" style="background:rgba(var(--success-rgb),0.08);border-color:rgba(var(--success-rgb),0.25);">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:var(--success);">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+          </svg>
+        </div>
+        <div class="quick-stat-info">
+          <div class="quick-stat-value" id="statAvgPayment" style="color:var(--success);">—</div>
+          <div class="quick-stat-label">متوسط الدفعة</div>
+        </div>
+      </div>
+
+      <div class="quick-stat">
+        <div class="quick-stat-icon" style="background:rgba(var(--warning-rgb),0.08);border-color:rgba(var(--warning-rgb),0.25);">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:var(--warning);">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+        </div>
+        <div class="quick-stat-info">
+          <div class="quick-stat-value" id="statTodayRevenue" style="color:var(--warning);">—</div>
+          <div class="quick-stat-label">إيرادات اليوم</div>
+        </div>
+      </div>
+
+      <div class="quick-stat">
+        <div class="quick-stat-icon" style="background:rgba(var(--danger-rgb),0.08);border-color:rgba(var(--danger-rgb),0.25);">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:var(--danger);">
+            <line x1="12" y1="1" x2="12" y2="23" />
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+        </div>
+        <div class="quick-stat-info">
+          <div class="quick-stat-value" id="statExpensesCount" style="color:var(--danger);">—</div>
+          <div class="quick-stat-label">عدد المصروفات</div>
+        </div>
+      </div>
+
+      <div class="quick-stat">
+        <div class="quick-stat-icon" style="background:rgba(var(--accent-2-rgb),0.08);border-color:rgba(var(--accent-2-rgb),0.25);">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:var(--accent-2);">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+        </div>
+        <div class="quick-stat-info">
+          <div class="quick-stat-value" id="statGovernorates" style="color:var(--accent-2);">—</div>
+          <div class="quick-stat-label">عدد المحافظات</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters-card">
+      <div class="filters-header">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <line x1="12" y1="1" x2="12" y2="23" />
-          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
         </svg>
+        <div class="filters-header-title">فلترة بالتاريخ</div>
+      </div>
+
+      <div class="filters-grid">
+        <div class="form-group">
+          <label for="dateFrom">من تاريخ</label>
+          <input type="date" id="dateFrom" />
+        </div>
+
+        <div class="form-group">
+          <label for="dateTo">إلى تاريخ</label>
+          <input type="date" id="dateTo" />
+        </div>
+
+        <div class="form-group">
+          <label for="paymentMethodFilter">طريقة الدفع</label>
+          <select id="paymentMethodFilter">
+            <option value="all">الكل</option>
+            <option value="cash">نقدي</option>
+            <option value="bank">تحويل بنكي</option>
+            <option value="instapay">إنستاباي</option>
+            <option value="wallet">محفظة إلكترونية</option>
+            <option value="fawry">فوري</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="statusFilter">حالة الدفع</label>
+          <select id="statusFilter">
+            <option value="all">الكل</option>
+            <option value="confirmed">مؤكد</option>
+            <option value="pending">معلق</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="quick-dates">
+        <button type="button" class="quick-date-btn" data-range="today">اليوم</button>
+        <button type="button" class="quick-date-btn" data-range="week">آخر 7 أيام</button>
+        <button type="button" class="quick-date-btn" data-range="month">هذا الشهر</button>
+        <button type="button" class="quick-date-btn" data-range="quarter">آخر 3 شهور</button>
+        <button type="button" class="quick-date-btn" data-range="year">هذه السنة</button>
+        <button type="button" class="quick-date-btn active" data-range="all">الكل</button>
       </div>
     </div>
-  </div>
 
-  <!-- QUICK STATS -->
-  <div class="quick-stats">
-    <div class="quick-stat">
-      <div class="quick-stat-icon">
+    <!-- ACTIONS -->
+    <div class="actions-row">
+      <button type="button" class="btn btn-outline" id="refreshBtn">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <rect x="2" y="7" width="20" height="14" rx="2" />
-          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+          <polyline points="1 4 1 10 7 10" />
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
         </svg>
+        <span>تحديث</span>
+      </button>
+
+      <button type="button" class="btn btn-outline" id="exportCsvBtn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        <span>تصدير Excel (CSV)</span>
+      </button>
+
+      <button type="button" class="btn btn-outline" id="printBtn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="6 9 6 2 18 2 18 9" />
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+          <rect x="6" y="14" width="12" height="8" />
+        </svg>
+        <span>طباعة / PDF</span>
+      </button>
+    </div>
+
+    <!-- GOVERNORATE REPORT -->
+    <div class="table-card full" style="margin-bottom:20px;">
+      <div class="table-card-header">
+        <div class="table-card-title">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          <span>الإيرادات حسب المحافظة</span>
+        </div>
+        <div class="table-card-count" id="govCount">—</div>
       </div>
-      <div class="quick-stat-info">
-        <div class="quick-stat-value" id="statPaymentsCount">—</div>
-        <div class="quick-stat-label">عدد الدفعات</div>
+
+      <div class="gov-grid" id="govGrid">
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);">
+          جاري التحميل...
+        </div>
       </div>
     </div>
 
-    <div class="quick-stat">
-      <div class="quick-stat-icon" style="background:rgba(var(--success-rgb),0.08);border-color:rgba(var(--success-rgb),0.25);">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:var(--success);">
-          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-          <polyline points="17 6 23 6 23 12" />
-        </svg>
+    <!-- EXPENSE CATEGORIES REPORT -->
+    <div class="table-card full">
+      <div class="table-card-header">
+        <div class="table-card-title">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="9" y1="9" x2="15" y2="9" />
+            <line x1="9" y1="13" x2="15" y2="13" />
+            <line x1="9" y1="17" x2="13" y2="17" />
+          </svg>
+          <span>المصروفات حسب التصنيف</span>
+        </div>
+        <div class="table-card-count" id="catCount">—</div>
       </div>
-      <div class="quick-stat-info">
-        <div class="quick-stat-value" id="statAvgPayment" style="color:var(--success);">—</div>
-        <div class="quick-stat-label">متوسط الدفعة</div>
+
+      <div class="gov-grid" id="catGrid">
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);">
+          جاري التحميل...
+        </div>
       </div>
     </div>
 
-    <div class="quick-stat">
-      <div class="quick-stat-icon" style="background:rgba(var(--warning-rgb),0.08);border-color:rgba(var(--warning-rgb),0.25);">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:var(--warning);">
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
-        </svg>
-      </div>
-      <div class="quick-stat-info">
-        <div class="quick-stat-value" id="statTodayRevenue" style="color:var(--warning);">—</div>
-        <div class="quick-stat-label">إيرادات اليوم</div>
-      </div>
-    </div>
-
-    <div class="quick-stat">
-      <div class="quick-stat-icon" style="background:rgba(var(--accent-2-rgb),0.08);border-color:rgba(var(--accent-2-rgb),0.25);">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:var(--accent-2);">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-          <circle cx="12" cy="10" r="3" />
-        </svg>
-      </div>
-      <div class="quick-stat-info">
-        <div class="quick-stat-value" id="statGovernorates" style="color:var(--accent-2);">—</div>
-        <div class="quick-stat-label">عدد المحافظات</div>
-      </div>
-    </div>
   </div>
 
-  <!-- FILTERS -->
-  <div class="filters-card">
-    <div class="filters-header">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-      </svg>
-      <div class="filters-header-title">فلترة بالتاريخ</div>
+  <!-- ============================================
+       TAB 2: PAYMENTS
+       ============================================ -->
+  <div data-tab-content="payments" style="display:none;">
+
+    <!-- FILTERS (same) -->
+    <div class="filters-card">
+      <div class="filters-header">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+        </svg>
+        <div class="filters-header-title">فلترة بالتاريخ</div>
+      </div>
+
+      <div class="filters-grid">
+        <div class="form-group">
+          <label for="dateFrom2">من تاريخ</label>
+          <input type="date" id="dateFrom2" />
+        </div>
+
+        <div class="form-group">
+          <label for="dateTo2">إلى تاريخ</label>
+          <input type="date" id="dateTo2" />
+        </div>
+
+        <div class="form-group">
+          <label for="paymentMethodFilter2">طريقة الدفع</label>
+          <select id="paymentMethodFilter2">
+            <option value="all">الكل</option>
+            <option value="cash">نقدي</option>
+            <option value="bank">تحويل بنكي</option>
+            <option value="instapay">إنستاباي</option>
+            <option value="wallet">محفظة إلكترونية</option>
+            <option value="fawry">فوري</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="statusFilter2">حالة الدفع</label>
+          <select id="statusFilter2">
+            <option value="all">الكل</option>
+            <option value="confirmed">مؤكد</option>
+            <option value="pending">معلق</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="quick-dates">
+        <button type="button" class="quick-date-btn" data-range2="today">اليوم</button>
+        <button type="button" class="quick-date-btn" data-range2="week">آخر 7 أيام</button>
+        <button type="button" class="quick-date-btn" data-range2="month">هذا الشهر</button>
+        <button type="button" class="quick-date-btn" data-range2="quarter">آخر 3 شهور</button>
+        <button type="button" class="quick-date-btn" data-range2="year">هذه السنة</button>
+        <button type="button" class="quick-date-btn active" data-range2="all">الكل</button>
+      </div>
     </div>
 
-    <div class="filters-grid">
-      <div class="form-group">
-        <label for="dateFrom">من تاريخ</label>
-        <input type="date" id="dateFrom" />
-      </div>
-
-      <div class="form-group">
-        <label for="dateTo">إلى تاريخ</label>
-        <input type="date" id="dateTo" />
-      </div>
-
-      <div class="form-group">
-        <label for="paymentMethodFilter">طريقة الدفع</label>
-        <select id="paymentMethodFilter">
-          <option value="all">الكل</option>
-          <option value="cash">نقدي</option>
-          <option value="bank">تحويل بنكي</option>
-          <option value="instapay">إنستاباي</option>
-          <option value="wallet">محفظة إلكترونية</option>
-          <option value="fawry">فوري</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="statusFilter">حالة الدفع</label>
-        <select id="statusFilter">
-          <option value="all">الكل</option>
-          <option value="confirmed">مؤكد</option>
-          <option value="pending">معلق</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="quick-dates">
-      <button type="button" class="quick-date-btn" data-range="today">اليوم</button>
-      <button type="button" class="quick-date-btn" data-range="week">آخر 7 أيام</button>
-      <button type="button" class="quick-date-btn" data-range="month">هذا الشهر</button>
-      <button type="button" class="quick-date-btn" data-range="quarter">آخر 3 شهور</button>
-      <button type="button" class="quick-date-btn" data-range="year">هذه السنة</button>
-      <button type="button" class="quick-date-btn active" data-range="all">الكل</button>
-    </div>
-  </div>
-
-  <!-- ACTIONS -->
-  <div class="actions-row">
-    <button type="button" class="btn btn-outline" id="refreshBtn">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <polyline points="1 4 1 10 7 10" />
-        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-      </svg>
-      <span>تحديث</span>
-    </button>
-
-    <button type="button" class="btn btn-outline" id="exportCsvBtn">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-        <polyline points="7 10 12 15 17 10" />
-        <line x1="12" y1="15" x2="12" y2="3" />
-      </svg>
-      <span>تصدير Excel (CSV)</span>
-    </button>
-
-    <button type="button" class="btn btn-outline" id="printBtn">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <polyline points="6 9 6 2 18 2 18 9" />
-        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-        <rect x="6" y="14" width="12" height="8" />
-      </svg>
-      <span>طباعة / PDF</span>
-    </button>
-  </div>
-
-  <!-- TABLES -->
-  <div class="tables-grid">
-
-    <!-- Payments Table -->
+    <!-- PAYMENTS TABLE -->
     <div class="table-card full">
       <div class="table-card-header">
         <div class="table-card-title">
@@ -730,28 +1130,190 @@
       </div>
     </div>
 
-    <!-- Governorate Report -->
+  </div>
+
+  <!-- ============================================
+       TAB 3: EXPENSES
+       ============================================ -->
+  <div data-tab-content="expenses" style="display:none;">
+
+    <!-- EXPENSES SUMMARY -->
+    <div class="quick-stats" style="margin-bottom:24px;">
+      <div class="quick-stat">
+        <div class="quick-stat-icon" style="background:rgba(var(--danger-rgb),0.08);border-color:rgba(var(--danger-rgb),0.25);">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:var(--danger);">
+            <line x1="12" y1="1" x2="12" y2="23" />
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+          </svg>
+        </div>
+        <div class="quick-stat-info">
+          <div class="quick-stat-value" id="expensesTotal" style="color:var(--danger);">—</div>
+          <div class="quick-stat-label">إجمالي المصروفات</div>
+        </div>
+      </div>
+
+      <div class="quick-stat">
+        <div class="quick-stat-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <line x1="8" y1="6" x2="21" y2="6" />
+            <line x1="8" y1="12" x2="21" y2="12" />
+            <line x1="8" y1="18" x2="21" y2="18" />
+            <line x1="3" y1="6" x2="3.01" y2="6" />
+            <line x1="3" y1="12" x2="3.01" y2="12" />
+            <line x1="3" y1="18" x2="3.01" y2="18" />
+          </svg>
+        </div>
+        <div class="quick-stat-info">
+          <div class="quick-stat-value" id="expensesCount">—</div>
+          <div class="quick-stat-label">عدد المصروفات</div>
+        </div>
+      </div>
+
+      <div class="quick-stat">
+        <div class="quick-stat-icon" style="background:rgba(var(--warning-rgb),0.08);border-color:rgba(var(--warning-rgb),0.25);">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="stroke:var(--warning);">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+          </svg>
+        </div>
+        <div class="quick-stat-info">
+          <div class="quick-stat-value" id="expensesAvg" style="color:var(--warning);">—</div>
+          <div class="quick-stat-label">متوسط المصروف</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions-row">
+      <button type="button" class="btn btn-primary" id="addExpenseBtn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        <span>إضافة مصروف</span>
+      </button>
+
+      <button type="button" class="btn btn-outline" id="exportExpensesCsvBtn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        <span>تصدير Excel (CSV)</span>
+      </button>
+    </div>
+
+    <!-- EXPENSES TABLE -->
     <div class="table-card full">
       <div class="table-card-header">
         <div class="table-card-title">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-            <circle cx="12" cy="10" r="3" />
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
           </svg>
-          <span>الإيرادات حسب المحافظة</span>
+          <span>سجل المصروفات</span>
         </div>
-        <div class="table-card-count" id="govCount">—</div>
+        <div class="table-card-count" id="expensesTableCount">—</div>
       </div>
 
-      <div class="gov-grid" id="govGrid">
-        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);">
-          جاري التحميل...
-        </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>التاريخ</th>
+              <th>الوصف</th>
+              <th>التصنيف</th>
+              <th>عضو (اختياري)</th>
+              <th>المحافظة</th>
+              <th>المبلغ</th>
+            </tr>
+          </thead>
+          <tbody id="expensesTableBody">
+            <tr>
+              <td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">
+                جاري التحميل...
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
   </div>
 
+</div>
+
+<!-- ============================================
+     ADD EXPENSE MODAL
+     ============================================ -->
+<div id="expenseModal" class="modal modal-sm">
+  <div class="modal-content">
+
+    <div class="modal-header-custom">
+      <h3>إضافة مصروف جديد</h3>
+      <button type="button" class="close-btn" onclick="closeExpenseModal()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="expDescription">الوصف <span style="color:var(--danger);">*</span></label>
+        <input type="text" id="expDescription" placeholder="مثال: صيانة أجهزة الحاسب" />
+      </div>
+
+      <div class="form-group">
+        <label for="expAmount">المبلغ (جنيه) <span style="color:var(--danger);">*</span></label>
+        <input type="number" id="expAmount" placeholder="0" min="0" step="10" />
+      </div>
+
+      <div class="form-group">
+        <label for="expCategory">التصنيف</label>
+        <select id="expCategory">
+          <option value="">-- اختر التصنيف --</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="expMember">هل المصروف لعضو معين؟ (اختياري)</label>
+        <select id="expMember">
+          <option value="">-- لا يوجد --</option>
+        </select>
+        <span class="form-hint">اتركها فارغة لو المصروف عام</span>
+      </div>
+
+      <div class="form-group">
+        <label for="expGov">المحافظة (اختياري)</label>
+        <select id="expGov">
+          <option value="">-- لا يوجد --</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="expDate">التاريخ</label>
+        <input type="date" id="expDate" />
+      </div>
+
+      <div class="form-group" style="margin-bottom:0;">
+        <label for="expNotes">ملاحظات</label>
+        <textarea id="expNotes" rows="2" placeholder="ملاحظات إضافية..."></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer-custom">
+      <button type="button" class="btn btn-ghost" onclick="closeExpenseModal()">إلغاء</button>
+      <button type="button" class="btn btn-primary" id="saveExpenseBtn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        <span>حفظ</span>
+      </button>
+    </div>
+
+  </div>
 </div>
 
 <!-- FOOTER -->
@@ -850,6 +1412,21 @@
 
     resize();
     loop();
+  })();
+
+  /* Tabs */
+  (function () {
+    document.querySelectorAll('[data-tab-btn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tabBtn;
+        document.querySelectorAll('[data-tab-btn]').forEach(b => {
+          b.classList.toggle('active', b === btn);
+        });
+        document.querySelectorAll('[data-tab-content]').forEach(el => {
+          el.style.display = el.dataset.tabContent === tab ? 'block' : 'none';
+        });
+      });
+    });
   })();
 </script>
 
