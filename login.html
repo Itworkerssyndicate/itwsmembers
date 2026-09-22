@@ -151,9 +151,9 @@
 
   .brand-logo {
     position: relative;
-    width: 82px;
-    height: 82px;
-    border-radius: 50%;
+    width: 90px;
+    height: 90px;
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -175,8 +175,8 @@
   }
 
   .brand-logo img {
-    width: 85%;
-    height: 85%;
+    width: 88%;
+    height: 88%;
     object-fit: contain;
     filter: drop-shadow(0 0 8px var(--accent));
   }
@@ -374,6 +374,21 @@
     font-size: 14px;
   }
 
+  /* Role redirect indicator */
+  .redirect-info {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--text-dim);
+    padding: 10px;
+    background: rgba(var(--success-rgb), 0.06);
+    border: 1px solid rgba(var(--success-rgb), 0.2);
+    border-radius: var(--radius-md);
+    display: none;
+  }
+
+  .redirect-info.show { display: block; }
+
   /* Responsive */
   @media (max-width: 480px) {
     .login-card {
@@ -392,8 +407,8 @@
     }
 
     .brand-logo {
-      width: 70px;
-      height: 70px;
+      width: 76px;
+      height: 76px;
     }
 
     .brand-title {
@@ -510,6 +525,8 @@
         </svg>
         <span>دخول</span>
       </button>
+
+      <div class="redirect-info" id="redirectInfo"></div>
 
     </form>
 
@@ -711,6 +728,14 @@
     if (box) box.innerHTML = '';
   }
 
+  function showRedirectInfo(msg) {
+    const el = document.getElementById('redirectInfo');
+    if (el) {
+      el.textContent = msg;
+      el.classList.add('show');
+    }
+  }
+
   /* ============================================
      WAIT FOR SUPABASE
      ============================================ */
@@ -740,6 +765,56 @@
   }
 
   /* ============================================
+     REDIRECT BY ROLE
+     ============================================ */
+  function getRedirectPath(role) {
+    const routes = {
+      // الأدوار الأساسية
+      'head': 'admin.html',
+      'vice_president': 'admin.html',
+      'deputy': 'admin.html',
+      'committee': 'dashboard.html',
+
+      // المحافظات
+      'governorate_head': 'governorate.html',
+      'governorate_board': 'governorate.html',
+
+      // الفروع
+      'branches_manager': 'branches.html',
+
+      // اللجان
+      'social_committee_head': 'social-committee.html',
+      'social_committee_vice': 'social-committee.html',
+      'public_relations_head': 'public-relations.html',
+      'public_relations_vice': 'public-relations.html',
+      'committees_manager_head': 'committees-manager.html',
+      'committees_manager_vice': 'committees-manager.html'
+    };
+
+    return routes[role] || 'dashboard.html';
+  }
+
+  function getRoleLabel(role) {
+    const labels = {
+      'head': 'النقيب العام',
+      'vice_president': 'نائب رئيس النقابة',
+      'deputy': 'الوكيل',
+      'committee': 'لجنة العضوية',
+      'governorate_head': 'نقيب محافظة',
+      'governorate_board': 'مجلس محافظة',
+      'branches_manager': 'مدير الفروع',
+      'social_committee_head': 'رئيس اللجنة الاجتماعية',
+      'social_committee_vice': 'نائب اللجنة الاجتماعية',
+      'public_relations_head': 'رئيس العلاقات العامة',
+      'public_relations_vice': 'نائب العلاقات العامة',
+      'committees_manager_head': 'مدير اللجان',
+      'committees_manager_vice': 'نائب مدير اللجان'
+    };
+
+    return labels[role] || 'موظف';
+  }
+
+  /* ============================================
      TRANSLATE AUTH ERRORS
      ============================================ */
   function translateAuthError(msg) {
@@ -757,6 +832,9 @@
     }
     if (m.includes('network')) {
       return 'فشل الاتصال، تحقق من الإنترنت';
+    }
+    if (m.includes('user not found')) {
+      return 'المستخدم غير موجود';
     }
     return msg;
   }
@@ -794,6 +872,7 @@
           throw new Error('فشل تحميل النظام، حاول تحديث الصفحة');
         }
 
+        // 1) تسجيل الدخول
         const { data, error } = await client.auth.signInWithPassword({
           email,
           password
@@ -807,7 +886,7 @@
           throw new Error('لم يتم العثور على المستخدم');
         }
 
-        // Remember me
+        // 2) تذكرني
         try {
           if (remember) {
             localStorage.setItem('its_remember_email', email);
@@ -816,43 +895,59 @@
           }
         } catch (err) {}
 
-        // Get user role
+        // 3) جلب بيانات المستخدم (الدور + الصفة)
         let role = 'committee';
-        let roleLabel = 'لجنة العضوية';
+        let position = '';
+        let fullName = '';
+        let isActive = true;
 
         try {
           const { data: userData } = await client
             .from('users')
-            .select('role, full_name')
+            .select('role, full_name, position, is_active')
             .eq('id', data.user.id)
             .maybeSingle();
 
-          if (userData?.role) {
-            role = userData.role;
-            if (role === 'head') roleLabel = 'النقيب العام';
-            else if (role === 'vice_president') roleLabel = 'نائب رئيس النقابة';
+          if (userData) {
+            role = userData.role || 'committee';
+            position = userData.position || '';
+            fullName = userData.full_name || '';
+            isActive = userData.is_active !== false;
           }
         } catch (err) {}
 
-        // Log action
+        // 4) التأكد إن الحساب نشط
+        if (!isActive) {
+          await client.auth.signOut();
+          throw new Error('هذا الحساب معطّل. تواصل مع النقيب العام.');
+        }
+
+        // 5) تسجيل آخر دخول
+        try {
+          await client
+            .from('users')
+            .update({ last_login_at: new Date().toISOString() })
+            .eq('id', data.user.id);
+        } catch (e) {}
+
+        // 6) تسجيل الإجراء
         if (window.logUserAction) {
           try {
             await window.logUserAction('login', 'auth', data.user.id, `role: ${role}`);
           } catch (e) {}
         }
 
+        // 7) عرض الرسالة
+        const roleLabel = getRoleLabel(role);
         showAlert('success', `مرحبًا ${roleLabel} — جاري التحويل...`);
+        showRedirectInfo(`سيتم تحويلك إلى لوحة التحكم خلال لحظات...`);
 
-        // Redirect based on role
+        // 8) التحويل حسب الدور
+        const redirectPath = getRedirectPath(role);
+
         setTimeout(() => {
-          if (role === 'head') {
-            window.location.href = 'admin.html';
-          } else if (role === 'vice_president') {
-            window.location.href = 'dashboard.html';
-          } else {
-            window.location.href = 'dashboard.html';
-          }
-        }, 700);
+          window.location.href = redirectPath;
+        }, 800);
 
       } catch (err) {
         console.error('[Login] Error:', err);
