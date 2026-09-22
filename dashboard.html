@@ -153,6 +153,36 @@
     gap: 14px;
   }
 
+  .stat-card {
+    padding: 18px;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-md), var(--glow-accent);
+  }
+
+  .stat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--accent);
+    text-shadow: var(--glow-accent);
+  }
+
+  .stat-label {
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+
   /* ============ FILTERS ============ */
   .filters-card {
     background: var(--card-bg);
@@ -285,7 +315,7 @@
 
   table {
     width: 100%;
-    min-width: 1100px;
+    min-width: 1200px;
   }
 
   table th {
@@ -482,6 +512,44 @@
     font-weight: 800;
     color: var(--accent);
     text-shadow: var(--glow-accent);
+  }
+
+  /* ============ PAYMENT INFO ============ */
+  .payment-info-box {
+    padding: 14px 16px;
+    background: rgba(var(--accent-rgb), 0.06);
+    border: 1px solid rgba(var(--accent-rgb), 0.25);
+    border-radius: var(--radius-md);
+    margin-bottom: 14px;
+  }
+
+  .payment-info-box .pi-label {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .payment-info-box .pi-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  .payment-info-box .pi-value.mono {
+    font-family: 'JetBrains Mono', monospace;
+    direction: ltr;
+    text-align: right;
+  }
+
+  /* Receipt preview */
+  .receipt-preview-img {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 10px;
+    display: block;
+    margin: 12px auto 0;
+    border: 1px solid var(--border-soft);
   }
 
   /* ============ RESPONSIVE ============ */
@@ -720,6 +788,7 @@
           <option value="needs_docs">مستندات ناقصة</option>
           <option value="approved">مقبول</option>
           <option value="awaiting_payment">بانتظار الدفع</option>
+          <option value="payment_under_review">دفع تحت المراجعة</option>
           <option value="paid">تم الدفع</option>
           <option value="awaiting_membership_no">بانتظار رقم العضوية</option>
           <option value="card_ready">كارنية جاهز</option>
@@ -739,33 +808,6 @@
         <label for="govFilter">المحافظة</label>
         <select id="govFilter">
           <option value="all">كل المحافظات</option>
-          <option>القاهرة</option>
-          <option>الجيزة</option>
-          <option>الإسكندرية</option>
-          <option>الدقهلية</option>
-          <option>الشرقية</option>
-          <option>القليوبية</option>
-          <option>المنوفية</option>
-          <option>الغربية</option>
-          <option>البحيرة</option>
-          <option>كفر الشيخ</option>
-          <option>دمياط</option>
-          <option>بورسعيد</option>
-          <option>الإسماعيلية</option>
-          <option>السويس</option>
-          <option>شمال سيناء</option>
-          <option>جنوب سيناء</option>
-          <option>الفيوم</option>
-          <option>بني سويف</option>
-          <option>المنيا</option>
-          <option>أسيوط</option>
-          <option>سوهاج</option>
-          <option>قنا</option>
-          <option>الأقصر</option>
-          <option>أسوان</option>
-          <option>البحر الأحمر</option>
-          <option>الوادي الجديد</option>
-          <option>مطروح</option>
         </select>
       </div>
 
@@ -868,6 +910,7 @@
           <option value="approved">مقبول مبدئيًا</option>
           <option value="rejected">مرفوض</option>
           <option value="awaiting_payment">بانتظار الدفع</option>
+          <option value="payment_under_review">دفع تحت المراجعة</option>
           <option value="paid">تم الدفع</option>
           <option value="awaiting_membership_no">بانتظار رقم العضوية</option>
           <option value="membership_no_assigned">تم إصدار رقم العضوية</option>
@@ -922,6 +965,41 @@
         </svg>
         <span>حفظ التحديث</span>
       </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================
+     PAYMENT CONFIRM MODAL
+     ============================================ -->
+<div id="paymentModal" class="modal modal-sm">
+  <div class="modal-content">
+
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg, rgba(var(--success-rgb), 0.06), transparent);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--success);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;">
+          <line x1="12" y1="1" x2="12" y2="23" />
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+        <h3 style="font-family:'Tajawal',sans-serif;font-size:17px;font-weight:800;color:var(--success);" id="paymentModalTitle">
+          تأكيد الدفع
+        </h3>
+      </div>
+      <button type="button" onclick="closePaymentModal()" style="width:32px;height:32px;border-radius:var(--radius-sm);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body" id="paymentModalBody">
+      <!-- content injected dynamically -->
+    </div>
+
+    <div style="padding:16px 24px;border-top:1px solid var(--border-soft);display:flex;gap:10px;justify-content:flex-end;" id="paymentModalFooter">
+      <!-- footer injected dynamically -->
     </div>
 
   </div>
