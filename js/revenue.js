@@ -1,9 +1,28 @@
 /* =====================================================
-   IT SYNDICATE — Revenue Reports Logic
+   IT SYNDICATE — REVENUE LOGIC
+   Version: 3.0.0
+   =====================================================
+   يحتوي على:
+   - Auth + Role check
+   - جلب الإيرادات (payments)
+   - جلب المصروفات (expenses)
+   - حساب الإجمالي + الصافي
+   - تقرير المحافظات + تصنيفات المصروفات
+   - جداول مفصلة (Payments + Expenses)
+   - إضافة مصروف جديد
+   - فلترة بالتاريخ + طريقة الدفع + الحالة
+   - تصدير CSV + طباعة
+   - Realtime
    ===================================================== */
 
 (function () {
   'use strict';
+
+  /* ============================================
+     CONSTANTS
+     ============================================ */
+  const PAGE_SIZE = 30;
+  const ATTACHMENTS_BUCKET = 'attachments';
 
   /* ============================================
      STATE
@@ -11,16 +30,22 @@
   let client = null;
   let currentUser = null;
   let userRole = null;
-  let payments = [];
-  let filteredPayments = [];
-  let currentRange = 'all';
 
-  let filters = {
-    dateFrom: '',
-    dateTo: '',
-    paymentMethod: 'all',
-    status: 'all'
-  };
+  let payments = [];
+  let expenses = [];
+  let members = [];
+  let governorates = [];
+  let expenseCategories = [];
+  let membershipTypes = [];
+
+  let dateFrom = null;
+  let dateTo = null;
+  let paymentMethodFilter = 'all';
+  let paymentStatusFilter = 'all';
+  let quickRange = 'all';
+
+  let paymentsPage = 1;
+  let expensesPage = 1;
 
   let unsubscribeRealtime = null;
 
@@ -28,7 +53,6 @@
      HELPERS
      ============================================ */
   const $ = (sel) => document.querySelector(sel);
-  const $$ = (sel) => document.querySelectorAll(sel);
 
   function escapeHtml(str) {
     if (str === null || str === undefined) return '';
@@ -43,25 +67,35 @@
   function formatDate(dateStr) {
     if (!dateStr) return '---';
     try {
-      return new Date(dateStr).toLocaleDateString('ar-EG', {
+      return new Date(dateStr).toLocaleString('ar-EG', {
         year: 'numeric', month: '2-digit', day: '2-digit'
       });
     } catch (e) { return '---'; }
   }
 
-  function formatDateTime(dateStr) {
+  function formatDateFull(dateStr) {
     if (!dateStr) return '---';
     try {
       return new Date(dateStr).toLocaleString('ar-EG', {
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit'
+        year: 'numeric', month: 'long', day: 'numeric'
       });
     } catch (e) { return '---'; }
   }
 
-  function formatNumber(n) {
-    if (n === null || n === undefined) return '0';
-    return Number(n).toLocaleString('en-US');
+  function formatMoney(amount, withCurrency = true) {
+    if (amount === null || amount === undefined || amount === '') return withCurrency ? '0 ج' : '0';
+    const num = parseFloat(amount);
+    if (isNaN(num)) return withCurrency ? '0 ج' : '0';
+    const formatted = num.toLocaleString('ar-EG', { maximumFractionDigits: 2 });
+    return withCurrency ? formatted + ' ج' : formatted;
+  }
+
+  function getInitials(name) {
+    if (!name) return '؟';
+    const parts = String(name).trim().split(/\s+/);
+    if (parts.length === 0) return '؟';
+    if (parts.length === 1) return parts[0].charAt(0);
+    return parts[0].charAt(0) + ' ' + parts[1].charAt(0);
   }
 
   function showToast(message, type = 'info') {
@@ -72,15 +106,49 @@
     console.log(`[${type}] ${message}`);
   }
 
+  function getMemberName(memberId) {
+    if (!memberId) return '—';
+    const m = members.find(x => String(x.id) === String(memberId));
+    return m?.full_name || '—';
+  }
+
+  function getMembershipNo(memberId) {
+    if (!memberId) return '—';
+    const m = members.find(x => String(x.id) === String(memberId));
+    return m?.membership_no || '—';
+  }
+
+  function getCategoryName(catId) {
+    if (!catId) return 'غير محدد';
+    const c = expenseCategories.find(x => String(x.id) === String(catId));
+    return c?.name || 'غير محدد';
+  }
+
   /* ============================================
-     ICONS
+     SVG ICONS
      ============================================ */
   const ICONS = {
-    file: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+    revenue: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    expense: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>',
+    net: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    card: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+    trending: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    user: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    map: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+    tag: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>',
+    eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+    plus: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+    close: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    refresh: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>',
+    download: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+    print: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
+    chevronLeft: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>',
+    chevronRight: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>'
   };
 
   /* ============================================
-     AUTH
+     AUTH CHECK
      ============================================ */
   async function checkAuth() {
     try {
@@ -100,6 +168,16 @@
         .maybeSingle();
 
       userRole = userData?.role || 'committee';
+      window.currentUserRole = userRole;
+      window.currentUserName = userData?.full_name || currentUser.email || 'موظف';
+
+      // Revenue is only for head/deputy/vp
+      const allowedRoles = ['head', 'vice_president', 'deputy'];
+      if (!allowedRoles.includes(userRole)) {
+        alert('هذه الصفحة مخصصة للنقيب العام والوكيل فقط');
+        window.location.href = 'dashboard.html';
+        return false;
+      }
 
       if (userRole === 'head') {
         const adminLink = document.getElementById('adminLink');
@@ -115,362 +193,652 @@
   }
 
   /* ============================================
+     LOAD LOOKUPS
+     ============================================ */
+  async function loadLookups() {
+    try {
+      const [membersRes, govRes, catRes, typesRes] = await Promise.all([
+        client.from('members').select('id, full_name, membership_no').eq('is_active', true),
+        client.from('governorates').select('*').order('sort_order', { ascending: true }),
+        client.from('expense_categories').select('*').order('sort_order', { ascending: true }),
+        client.from('membership_types').select('*').order('sort_order', { ascending: true })
+      ]);
+
+      members = membersRes.data || [];
+      governorates = govRes.data || [];
+      expenseCategories = catRes.data || [];
+      membershipTypes = typesRes.data || [];
+
+      // Fill category select in expense modal
+      const catSelect = document.getElementById('expCategory');
+      if (catSelect) {
+        catSelect.innerHTML = '<option value="">-- اختر التصنيف --</option>';
+        expenseCategories.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = c.name;
+          catSelect.appendChild(opt);
+        });
+      }
+
+      // Fill member select in expense modal
+      const memberSelect = document.getElementById('expMember');
+      if (memberSelect) {
+        memberSelect.innerHTML = '<option value="">-- لا يوجد --</option>';
+        members.slice(0, 200).forEach(m => {
+          const opt = document.createElement('option');
+          opt.value = m.id;
+          opt.textContent = `${m.full_name}${m.membership_no ? ' — ' + m.membership_no : ''}`;
+          memberSelect.appendChild(opt);
+        });
+      }
+
+      // Fill governorate select in expense modal
+      const govSelect = document.getElementById('expGov');
+      if (govSelect) {
+        govSelect.innerHTML = '<option value="">-- لا يوجد --</option>';
+        governorates.forEach(g => {
+          const opt = document.createElement('option');
+          opt.value = g.id;
+          opt.textContent = g.name;
+          govSelect.appendChild(opt);
+        });
+      }
+
+    } catch (err) {
+      console.error('[Revenue] Lookups error:', err);
+    }
+  }
+
+  /* ============================================
+     DATE FILTERS
+     ============================================ */
+  function getDateRange() {
+    let from = dateFrom;
+    let to = dateTo;
+
+    if (quickRange === 'today') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      from = today.toISOString();
+      to = new Date().toISOString();
+    } else if (quickRange === 'week') {
+      const d = new Date();
+      d.setDate(d.getDate() - 7);
+      from = d.toISOString();
+      to = new Date().toISOString();
+    } else if (quickRange === 'month') {
+      const d = new Date();
+      d.setDate(1);
+      d.setHours(0, 0, 0, 0);
+      from = d.toISOString();
+      to = new Date().toISOString();
+    } else if (quickRange === 'quarter') {
+      const d = new Date();
+      d.setMonth(d.getMonth() - 3);
+      from = d.toISOString();
+      to = new Date().toISOString();
+    } else if (quickRange === 'year') {
+      const d = new Date();
+      d.setMonth(0);
+      d.setDate(1);
+      d.setHours(0, 0, 0, 0);
+      from = d.toISOString();
+      to = new Date().toISOString();
+    }
+
+    return { from, to };
+  }
+
+  /* ============================================
      LOAD PAYMENTS
      ============================================ */
   async function loadPayments() {
     const tbody = document.getElementById('paymentsTableBody');
     if (tbody) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">
-            <div style="display:inline-flex;align-items:center;gap:10px;">
-              <span class="spinner"></span>
-              <span>جاري التحميل...</span>
-            </div>
-          </td>
-        </tr>
-      `;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
     }
 
     try {
+      const { from, to } = getDateRange();
+
       let query = client
         .from('payments')
-        .select('*, members:member_id(full_name, membership_no, governorate, national_id, phone), applications:application_id(full_name, tracking_no, governorate)');
+        .select('*, members(full_name, membership_no, governorate, national_id)', { count: 'exact' });
 
-      // Date filter
-      if (filters.dateFrom) {
-        query = query.gte('paid_at', filters.dateFrom + 'T00:00:00');
-      }
-      if (filters.dateTo) {
-        query = query.lte('paid_at', filters.dateTo + 'T23:59:59');
-      }
+      if (from) query = query.gte('created_at', from);
+      if (to) query = query.lte('created_at', to);
 
-      // Method
-      if (filters.paymentMethod !== 'all') {
-        query = query.eq('payment_method', filters.paymentMethod);
+      if (paymentMethodFilter && paymentMethodFilter !== 'all') {
+        query = query.eq('payment_method', paymentMethodFilter);
       }
 
-      // Status
-      if (filters.status !== 'all') {
-        query = query.eq('status', filters.status);
+      if (paymentStatusFilter && paymentStatusFilter !== 'all') {
+        query = query.eq('status', paymentStatusFilter);
       }
 
-      query = query.order('paid_at', { ascending: false });
+      query = query.order('created_at', { ascending: false });
 
-      const { data, error } = await query;
+      const { data, error, count } = await query;
 
       if (error) throw error;
 
       payments = data || [];
-      filteredPayments = payments;
 
-      renderStats();
       renderPaymentsTable();
-      renderGovernorateReport();
+      updateTotals();
 
     } catch (err) {
-      console.error('[Revenue] Load error:', err);
+      console.error('[Revenue] Payments error:', err);
       if (tbody) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="7" style="text-align:center;padding:40px;color:var(--danger);">
-              ${escapeHtml(err.message)}
-            </td>
-          </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--danger);">${escapeHtml(err.message)}</td></tr>`;
       }
     }
   }
 
   /* ============================================
-     STATS
-     ============================================ */
-  function renderStats() {
-    const total = filteredPayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-    const count = filteredPayments.length;
-    const avg = count > 0 ? total / count : 0;
-
-    // Today's revenue
-    const today = new Date().toISOString().split('T')[0];
-    const todayTotal = filteredPayments
-      .filter(p => p.paid_at && p.paid_at.startsWith(today))
-      .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-
-    // Governorates count
-    const govs = new Set();
-    filteredPayments.forEach(p => {
-      const gov = p.members?.governorate || p.applications?.governorate;
-      if (gov) govs.add(gov);
-    });
-
-    // Update total card
-    const totalEl = document.getElementById('totalRevenue');
-    if (totalEl) {
-      totalEl.innerHTML = `${formatNumber(total)} <small>جنيه</small>`;
-    }
-
-    const totalSub = document.getElementById('totalSub');
-    if (totalSub) {
-      if (currentRange === 'all') {
-        totalSub.textContent = `إجمالي ${count} دفعة — كل الفترات`;
-      } else {
-        const from = filters.dateFrom ? formatDate(filters.dateFrom) : '—';
-        const to = filters.dateTo ? formatDate(filters.dateTo) : '—';
-        totalSub.textContent = `${count} دفعة من ${from} إلى ${to}`;
-      }
-    }
-
-    // Quick stats
-    const setVal = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = val;
-    };
-
-    setVal('statPaymentsCount', formatNumber(count));
-    setVal('statAvgPayment', formatNumber(Math.round(avg)));
-    setVal('statTodayRevenue', formatNumber(todayTotal));
-    setVal('statGovernorates', govs.size);
-
-    // Update payments count
-    const paymentsCountEl = document.getElementById('paymentsCount');
-    if (paymentsCountEl) paymentsCountEl.textContent = `${count} دفعة`;
-  }
-
-  /* ============================================
-     PAYMENTS TABLE
+     RENDER PAYMENTS TABLE
      ============================================ */
   function renderPaymentsTable() {
     const tbody = document.getElementById('paymentsTableBody');
     if (!tbody) return;
 
-    if (!filteredPayments.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="7" style="text-align:center;padding:60px 20px;">
-            <div style="display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--text-dim);">
-              <span style="width:48px;height:48px;display:inline-flex;">${ICONS.file}</span>
-              <div style="font-size:15px;">لا توجد مدفوعات مطابقة</div>
-              <div style="font-size:13px;">جرب تغيير الفترة الزمنية أو الفلاتر</div>
-            </div>
-          </td>
-        </tr>
-      `;
+    if (!payments.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:60px;color:var(--text-dim);">لا توجد مدفوعات</td></tr>`;
+      const countEl = document.getElementById('paymentsCount');
+      if (countEl) countEl.textContent = '0';
       return;
     }
 
-    const methodLabels = {
-      cash: 'نقدي',
-      bank: 'تحويل بنكي',
-      instapay: 'إنستاباي',
-      wallet: 'محفظة إلكترونية',
-      fawry: 'فوري',
-      card: 'بطاقة بنكية'
-    };
+    const start = (paymentsPage - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    const pagePayments = payments.slice(start, end);
 
-    tbody.innerHTML = filteredPayments.map(p => {
-      const memberName = p.members?.full_name || p.applications?.full_name || '—';
-      const memberNo = p.members?.membership_no || '';
-      const governorate = p.members?.governorate || p.applications?.governorate || p.governorate || '—';
-      const method = methodLabels[p.payment_method] || p.payment_method || '—';
-      const amount = parseFloat(p.amount) || 0;
-
-      let statusBadge = '';
-      if (p.status === 'confirmed') {
-        statusBadge = `<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(var(--success-rgb),0.1);border:1px solid var(--success);border-radius:100px;font-size:11.5px;color:var(--success);font-weight:700;"><span style="width:6px;height:6px;border-radius:50%;background:var(--success);"></span>مؤكد</span>`;
-      } else if (p.status === 'pending') {
-        statusBadge = `<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(var(--warning-rgb),0.1);border:1px solid var(--warning);border-radius:100px;font-size:11.5px;color:var(--warning);font-weight:700;"><span style="width:6px;height:6px;border-radius:50%;background:var(--warning);"></span>معلق</span>`;
-      } else {
-        statusBadge = `<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(var(--danger-rgb),0.1);border:1px solid var(--danger);border-radius:100px;font-size:11.5px;color:var(--danger);font-weight:700;"><span style="width:6px;height:6px;border-radius:50%;background:var(--danger);"></span>${escapeHtml(p.status)}</span>`;
-      }
+    tbody.innerHTML = pagePayments.map(p => {
+      const member = p.members || {};
+      const initials = getInitials(member.full_name);
+      const status = p.status === 'confirmed'
+        ? { label: 'مؤكد', cls: 'status-confirmed' }
+        : p.status === 'pending'
+        ? { label: 'معلق', cls: 'status-pending' }
+        : { label: 'مرفوض', cls: 'status-rejected' };
 
       return `
         <tr style="border-bottom:1px solid var(--border-soft);">
-          <td style="padding:14px 12px;font-size:12.5px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">
-            ${escapeHtml(formatDateTime(p.paid_at))}
+          <td style="padding:14px 12px;font-size:12px;color:var(--text-muted);">${escapeHtml(formatDate(p.created_at))}</td>
+          <td style="padding:14px 12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg, rgba(var(--accent-rgb),0.15), rgba(var(--accent-2-rgb),0.15));border:1px solid rgba(var(--accent-rgb),0.25);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10.5px;color:var(--accent);flex-shrink:0;">
+                ${escapeHtml(initials)}
+              </div>
+              <div style="min-width:0;line-height:1.25;">
+                <div style="font-weight:700;font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">
+                  ${escapeHtml(member.full_name || '—')}
+                </div>
+              </div>
+            </div>
           </td>
           <td style="padding:14px 12px;">
-            <div style="font-weight:700;font-size:13.5px;color:var(--text);">${escapeHtml(memberName)}</div>
+            ${member.membership_no ? `<span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--success);font-weight:700;">${escapeHtml(member.membership_no)}</span>` : '—'}
           </td>
           <td style="padding:14px 12px;">
-            ${memberNo
-              ? `<span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);font-weight:700;">${escapeHtml(memberNo)}</span>`
-              : `<span style="color:var(--text-dim);font-size:12px;">—</span>`}
-          </td>
-          <td style="padding:14px 12px;">
-            <span style="display:inline-block;padding:4px 10px;background:rgba(var(--accent-rgb),0.06);border:1px solid rgba(var(--accent-rgb),0.18);border-radius:100px;font-size:11.5px;color:var(--text-muted);font-weight:600;">
-              ${escapeHtml(governorate)}
+            <span style="display:inline-block;padding:4px 10px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:100px;font-size:11.5px;color:#22c55e;font-weight:600;white-space:nowrap;">
+              ${escapeHtml(member.governorate || '—')}
             </span>
           </td>
-          <td style="padding:14px 12px;font-size:12.5px;color:var(--text-muted);">
-            ${escapeHtml(method)}
+          <td style="padding:14px 12px;">
+            <span class="method-badge">${escapeHtml(p.payment_method || '—')}</span>
           </td>
           <td style="padding:14px 12px;">
-            <span class="amount-cell">${formatNumber(amount)} ج</span>
+            <span class="amount-cell">${formatMoney(p.amount)}</span>
           </td>
-          <td style="padding:14px 12px;">${statusBadge}</td>
+          <td style="padding:14px 12px;">
+            <span class="status-badge ${status.cls}">
+              <span class="dot"></span>
+              ${status.label}
+            </span>
+          </td>
         </tr>
       `;
     }).join('');
+
+    const countEl = document.getElementById('paymentsCount');
+    if (countEl) countEl.textContent = `${payments.length} عملية`;
+
+    // Pagination for payments
+    renderPaymentsPagination();
+  }
+
+  function renderPaymentsPagination() {
+    const box = document.getElementById('paymentsPagination');
+    if (!box) return;
+
+    const totalPages = Math.ceil(payments.length / PAGE_SIZE);
+    if (totalPages <= 1) {
+      box.innerHTML = '';
+      return;
+    }
+
+    box.innerHTML = `
+      <div style="display:flex;justify-content:center;gap:6px;">
+        <button data-page="${paymentsPage - 1}" ${paymentsPage === 1 ? 'disabled' : ''} style="padding:8px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text-muted);font-family:inherit;font-weight:600;cursor:${paymentsPage === 1 ? 'not-allowed' : 'pointer'};">
+          السابق
+        </button>
+        <span style="padding:8px 14px;color:var(--text-dim);font-size:13px;">
+          صفحة ${paymentsPage} من ${totalPages}
+        </span>
+        <button data-page="${paymentsPage + 1}" ${paymentsPage === totalPages ? 'disabled' : ''} style="padding:8px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text-muted);font-family:inherit;font-weight:600;cursor:${paymentsPage === totalPages ? 'not-allowed' : 'pointer'};">
+          التالي
+        </button>
+      </div>
+    `;
+
+    box.querySelectorAll('button[data-page]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = parseInt(btn.dataset.page);
+        if (p >= 1 && p <= totalPages && p !== paymentsPage) {
+          paymentsPage = p;
+          renderPaymentsTable();
+        }
+      });
+    });
+  }
+
+  /* ============================================
+     LOAD EXPENSES
+     ============================================ */
+  async function loadExpenses() {
+    const tbody = document.getElementById('expensesTableBody');
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
+    }
+
+    try {
+      const { from, to } = getDateRange();
+
+      let query = client
+        .from('expenses')
+        .select('*, expense_categories(name), members(full_name), governorates(name)', { count: 'exact' });
+
+      if (from) query = query.gte('created_at', from);
+      if (to) query = query.lte('created_at', to);
+
+      query = query.order('created_at', { ascending: false });
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      expenses = data || [];
+
+      renderExpensesTable();
+      updateExpensesStats();
+
+    } catch (err) {
+      console.error('[Revenue] Expenses error:', err);
+      if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--danger);">${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+  }
+
+  function renderExpensesTable() {
+    const tbody = document.getElementById('expensesTableBody');
+    if (!tbody) return;
+
+    if (!expenses.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:60px;color:var(--text-dim);">لا توجد مصروفات</td></tr>`;
+      const countEl = document.getElementById('expensesTableCount');
+      if (countEl) countEl.textContent = '0';
+      return;
+    }
+
+    const start = (expensesPage - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    const pageExpenses = expenses.slice(start, end);
+
+    tbody.innerHTML = pageExpenses.map(e => {
+      const catName = e.expense_categories?.name || 'غير محدد';
+      const memberName = e.members?.full_name || '—';
+      const govName = e.governorates?.name || '—';
+
+      return `
+        <tr style="border-bottom:1px solid var(--border-soft);">
+          <td style="padding:14px 12px;font-size:12px;color:var(--text-muted);">${escapeHtml(formatDate(e.created_at))}</td>
+          <td style="padding:14px 12px;font-size:13px;color:var(--text);">${escapeHtml(e.description || '—')}</td>
+          <td style="padding:14px 12px;">
+            <span style="display:inline-block;padding:4px 10px;background:rgba(var(--danger-rgb),0.06);border:1px solid rgba(var(--danger-rgb),0.2);border-radius:100px;font-size:11.5px;color:var(--danger);font-weight:600;white-space:nowrap;">
+              ${escapeHtml(catName)}
+            </span>
+          </td>
+          <td style="padding:14px 12px;font-size:12.5px;color:var(--text-muted);">${escapeHtml(memberName)}</td>
+          <td style="padding:14px 12px;font-size:12.5px;color:var(--text-muted);">${escapeHtml(govName)}</td>
+          <td style="padding:14px 12px;">
+            <span class="amount-cell expense">${formatMoney(e.amount)}</span>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    const countEl = document.getElementById('expensesTableCount');
+    if (countEl) countEl.textContent = `${expenses.length} مصروف`;
+
+    renderExpensesPagination();
+  }
+
+  function renderExpensesPagination() {
+    const box = document.getElementById('expensesPagination');
+    if (!box) return;
+
+    const totalPages = Math.ceil(expenses.length / PAGE_SIZE);
+    if (totalPages <= 1) {
+      box.innerHTML = '';
+      return;
+    }
+
+    box.innerHTML = `
+      <div style="display:flex;justify-content:center;gap:6px;">
+        <button data-page="${expensesPage - 1}" ${expensesPage === 1 ? 'disabled' : ''} style="padding:8px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text-muted);font-family:inherit;font-weight:600;cursor:${expensesPage === 1 ? 'not-allowed' : 'pointer'};">
+          السابق
+        </button>
+        <span style="padding:8px 14px;color:var(--text-dim);font-size:13px;">
+          صفحة ${expensesPage} من ${totalPages}
+        </span>
+        <button data-page="${expensesPage + 1}" ${expensesPage === totalPages ? 'disabled' : ''} style="padding:8px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text-muted);font-family:inherit;font-weight:600;cursor:${expensesPage === totalPages ? 'not-allowed' : 'pointer'};">
+          التالي
+        </button>
+      </div>
+    `;
+
+    box.querySelectorAll('button[data-page]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = parseInt(btn.dataset.page);
+        if (p >= 1 && p <= totalPages && p !== expensesPage) {
+          expensesPage = p;
+          renderExpensesTable();
+        }
+      });
+    });
+  }
+
+  /* ============================================
+     UPDATE TOTALS
+     ============================================ */
+  function updateTotals() {
+    const totalRevenue = payments
+      .filter(p => p.status === 'confirmed')
+      .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+
+    const totalExpenses = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+
+    const net = totalRevenue - totalExpenses;
+
+    // Update UI
+    const revEl = document.getElementById('totalRevenue');
+    if (revEl) revEl.innerHTML = `${formatMoney(totalRevenue, false)} <small>جنيه</small>`;
+
+    const revSubEl = document.getElementById('totalRevenueSub');
+    if (revSubEl) revSubEl.textContent = `${payments.filter(p => p.status === 'confirmed').length} دفعة مؤكدة`;
+
+    const expEl = document.getElementById('totalExpenses');
+    if (expEl) expEl.innerHTML = `${formatMoney(totalExpenses, false)} <small>جنيه</small>`;
+
+    const expSubEl = document.getElementById('totalExpensesSub');
+    if (expSubEl) expSubEl.textContent = `${expenses.length} مصروف`;
+
+    const netEl = document.getElementById('totalNet');
+    if (netEl) netEl.innerHTML = `${formatMoney(Math.abs(net), false)} <small>جنيه</small>`;
+
+    const netSubEl = document.getElementById('totalNetSub');
+    if (netSubEl) netSubEl.textContent = net >= 0 ? 'ربح' : 'خسارة';
+
+    const netCard = document.getElementById('netCard');
+    if (netCard) {
+      netCard.classList.toggle('negative', net < 0);
+    }
+
+    // Quick stats
+    const statCount = document.getElementById('statPaymentsCount');
+    if (statCount) statCount.textContent = payments.length;
+
+    const confirmedPayments = payments.filter(p => p.status === 'confirmed');
+    const avgPayment = confirmedPayments.length
+      ? totalRevenue / confirmedPayments.length
+      : 0;
+
+    const statAvg = document.getElementById('statAvgPayment');
+    if (statAvg) statAvg.textContent = formatMoney(avgPayment, false);
+
+    // Today revenue
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayRevenue = payments
+      .filter(p => p.status === 'confirmed' && new Date(p.created_at) >= today)
+      .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+
+    const statToday = document.getElementById('statTodayRevenue');
+    if (statToday) statToday.textContent = formatMoney(todayRevenue, false);
+
+    const statExpCount = document.getElementById('statExpensesCount');
+    if (statExpCount) statExpCount.textContent = expenses.length;
+
+    // Gov count
+    const govSet = new Set();
+    payments.forEach(p => {
+      const gov = p.members?.governorate;
+      if (gov) govSet.add(gov);
+    });
+
+    const statGovs = document.getElementById('statGovernorates');
+    if (statGovs) statGovs.textContent = govSet.size;
+
+    // Build reports
+    buildGovReport();
+    buildCatReport();
+  }
+
+  function updateExpensesStats() {
+    const totalExpenses = expenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+
+    const totalEl = document.getElementById('expensesTotal');
+    if (totalEl) totalEl.textContent = formatMoney(totalExpenses, false);
+
+    const countEl = document.getElementById('expensesCount');
+    if (countEl) countEl.textContent = expenses.length;
+
+    const avg = expenses.length ? totalExpenses / expenses.length : 0;
+    const avgEl = document.getElementById('expensesAvg');
+    if (avgEl) avgEl.textContent = formatMoney(avg, false);
+
+    updateTotals();
   }
 
   /* ============================================
      GOVERNORATE REPORT
      ============================================ */
-  function renderGovernorateReport() {
+  function buildGovReport() {
     const grid = document.getElementById('govGrid');
     const countEl = document.getElementById('govCount');
     if (!grid) return;
 
-    if (!filteredPayments.length) {
-      grid.innerHTML = `
-        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);">
-          لا توجد بيانات
-        </div>
-      `;
-      if (countEl) countEl.textContent = '—';
-      return;
-    }
-
-    // Group by governorate
     const govMap = {};
-    filteredPayments.forEach(p => {
-      const gov = p.members?.governorate || p.applications?.governorate || p.governorate || 'غير محدد';
-      if (!govMap[gov]) {
-        govMap[gov] = { count: 0, total: 0 };
-      }
-      govMap[gov].count += 1;
-      govMap[gov].total += parseFloat(p.amount) || 0;
-    });
 
-    const govArray = Object.entries(govMap)
+    payments
+      .filter(p => p.status === 'confirmed')
+      .forEach(p => {
+        const gov = p.members?.governorate || 'غير محدد';
+        if (!govMap[gov]) govMap[gov] = { count: 0, total: 0 };
+        govMap[gov].count++;
+        govMap[gov].total += parseFloat(p.amount) || 0;
+      });
+
+    const list = Object.entries(govMap)
       .map(([name, data]) => ({ name, ...data }))
       .sort((a, b) => b.total - a.total);
 
-    if (countEl) countEl.textContent = `${govArray.length} محافظة`;
+    if (!list.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);">لا توجد بيانات</div>';
+      if (countEl) countEl.textContent = '0';
+      return;
+    }
 
-    grid.innerHTML = govArray.map(g => `
+    grid.innerHTML = list.map(r => `
       <div class="gov-card">
-        <div class="gov-name">${escapeHtml(g.name)}</div>
+        <div class="gov-name">${escapeHtml(r.name)}</div>
         <div class="gov-stats">
-          <div class="gov-count">${g.count} دفعة</div>
-          <div class="gov-amount">${formatNumber(g.total)} ج</div>
+          <span class="gov-count">${r.count} دفعة</span>
+          <span class="gov-amount">${formatMoney(r.total, false)} ج</span>
         </div>
       </div>
     `).join('');
+
+    if (countEl) countEl.textContent = `${list.length} محافظة`;
   }
 
   /* ============================================
-     DATE RANGES
+     CATEGORY REPORT
      ============================================ */
-  function applyDateRange(range) {
-    currentRange = range;
+  function buildCatReport() {
+    const grid = document.getElementById('catGrid');
+    const countEl = document.getElementById('catCount');
+    if (!grid) return;
 
-    // Update active button
-    document.querySelectorAll('.quick-date-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.range === range);
+    const catMap = {};
+
+    expenses.forEach(e => {
+      const cat = e.expense_categories?.name || 'غير محدد';
+      if (!catMap[cat]) catMap[cat] = { count: 0, total: 0 };
+      catMap[cat].count++;
+      catMap[cat].total += parseFloat(e.amount) || 0;
     });
 
-    const dateFrom = document.getElementById('dateFrom');
-    const dateTo = document.getElementById('dateTo');
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const list = Object.entries(catMap)
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.total - a.total);
 
-    let from = '';
-    let to = todayStr;
-
-    switch (range) {
-      case 'today':
-        from = todayStr;
-        to = todayStr;
-        break;
-
-      case 'week':
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        from = weekAgo.toISOString().split('T')[0];
-        break;
-
-      case 'month':
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        from = monthStart.toISOString().split('T')[0];
-        break;
-
-      case 'quarter':
-        const quarterAgo = new Date();
-        quarterAgo.setMonth(quarterAgo.getMonth() - 3);
-        from = quarterAgo.toISOString().split('T')[0];
-        break;
-
-      case 'year':
-        const yearStart = new Date(today.getFullYear(), 0, 1);
-        from = yearStart.toISOString().split('T')[0];
-        break;
-
-      case 'all':
-      default:
-        from = '';
-        to = '';
-        break;
+    if (!list.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);">لا توجد بيانات</div>';
+      if (countEl) countEl.textContent = '0';
+      return;
     }
 
-    if (dateFrom) dateFrom.value = from;
-    if (dateTo) dateTo.value = to;
+    grid.innerHTML = list.map(r => `
+      <div class="cat-card">
+        <div class="cat-name">${escapeHtml(r.name)}</div>
+        <div class="cat-stats">
+          <span class="cat-count">${r.count} مصروف</span>
+          <span class="cat-amount">${formatMoney(r.total, false)} ج</span>
+        </div>
+      </div>
+    `).join('');
 
-    filters.dateFrom = from;
-    filters.dateTo = to;
+    if (countEl) countEl.textContent = `${list.length} تصنيف`;
+  }
 
-    loadPayments();
+  /* ============================================
+     ADD EXPENSE
+     ============================================ */
+  window.openExpenseModal = function () {
+    const modal = document.getElementById('expenseModal');
+    if (!modal) return;
+
+    document.getElementById('expDescription').value = '';
+    document.getElementById('expAmount').value = '';
+    document.getElementById('expCategory').value = '';
+    document.getElementById('expMember').value = '';
+    document.getElementById('expGov').value = '';
+    document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('expNotes').value = '';
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeExpenseModal = function () {
+    const modal = document.getElementById('expenseModal');
+    if (modal) modal.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  async function saveExpense() {
+    const description = document.getElementById('expDescription').value.trim();
+    const amount = parseFloat(document.getElementById('expAmount').value);
+    const categoryId = document.getElementById('expCategory').value;
+    const memberId = document.getElementById('expMember').value;
+    const govId = document.getElementById('expGov').value;
+    const date = document.getElementById('expDate').value;
+    const notes = document.getElementById('expNotes').value.trim();
+
+    if (!description) {
+      showToast('الوصف مطلوب', 'warning');
+      return;
+    }
+    if (!amount || amount <= 0) {
+      showToast('المبلغ يجب أن يكون أكبر من صفر', 'warning');
+      return;
+    }
+
+    const btn = document.getElementById('saveExpenseBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>جاري الحفظ...</span><span class="spinner"></span>';
+    }
+
+    try {
+      const payload = {
+        description,
+        amount,
+        category_id: categoryId ? parseInt(categoryId) : null,
+        member_id: memberId || null,
+        governorate_id: govId ? parseInt(govId) : null,
+        expense_date: date || new Date().toISOString().slice(0, 10),
+        notes: notes || null,
+        created_by: currentUser.id
+      };
+
+      const { error } = await client.from('expenses').insert([payload]);
+      if (error) throw error;
+
+      showToast('تم إضافة المصروف بنجاح', 'success');
+      closeExpenseModal();
+
+      await loadExpenses();
+
+      if (window.Realtime) {
+        window.Realtime.sendBroadcast('expense-added', {});
+      }
+
+    } catch (err) {
+      console.error('[Revenue] Save expense error:', err);
+      showToast('فشل: ' + err.message, 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `${ICONS.check || ''}<span>حفظ</span>`;
+      }
+    }
   }
 
   /* ============================================
      EXPORT CSV
      ============================================ */
-  function exportCSV() {
-    if (!filteredPayments.length) {
+  function exportPaymentsCSV() {
+    if (!payments.length) {
       showToast('لا توجد بيانات للتصدير', 'warning');
       return;
     }
 
-    const headers = [
-      'التاريخ', 'العضو', 'رقم العضوية', 'المحافظة',
-      'طريقة الدفع', 'المبلغ', 'الحالة'
-    ];
+    const headers = ['التاريخ', 'العضو', 'رقم العضوية', 'المحافظة', 'طريقة الدفع', 'المبلغ', 'الحالة'];
 
-    const methodLabels = {
-      cash: 'نقدي',
-      bank: 'تحويل بنكي',
-      instapay: 'إنستاباي',
-      wallet: 'محفظة إلكترونية',
-      fawry: 'فوري',
-      card: 'بطاقة بنكية'
-    };
-
-    const statusLabels = {
-      confirmed: 'مؤكد',
-      pending: 'معلق',
-      rejected: 'مرفوض',
-      refunded: 'مسترد'
-    };
-
-    const rows = filteredPayments.map(p => {
-      const memberName = p.members?.full_name || p.applications?.full_name || '';
-      const memberNo = p.members?.membership_no || '';
-      const governorate = p.members?.governorate || p.applications?.governorate || p.governorate || '';
-
-      return [
-        formatDateTime(p.paid_at),
-        memberName,
-        memberNo,
-        governorate,
-        methodLabels[p.payment_method] || p.payment_method || '',
-        parseFloat(p.amount) || 0,
-        statusLabels[p.status] || p.status || ''
-      ];
-    });
-
-    // Add totals row
-    const totalAmount = filteredPayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-    rows.push(['', '', '', '', 'الإجمالي', totalAmount, '']);
+    const rows = payments.map(p => [
+      formatDate(p.created_at),
+      p.members?.full_name || '—',
+      p.members?.membership_no || '—',
+      p.members?.governorate || '—',
+      p.payment_method || '—',
+      p.amount || 0,
+      p.status || '—'
+    ]);
 
     const csvContent = '\uFEFF' + [
       headers.join(','),
@@ -481,13 +849,48 @@
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `revenue_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `payments_${new Date().toISOString().slice(0, 10)}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    showToast('تم تصدير البيانات', 'success');
+    showToast('تم تصدير المدفوعات', 'success');
+  }
+
+  function exportExpensesCSV() {
+    if (!expenses.length) {
+      showToast('لا توجد بيانات للتصدير', 'warning');
+      return;
+    }
+
+    const headers = ['التاريخ', 'الوصف', 'التصنيف', 'العضو', 'المحافظة', 'المبلغ'];
+
+    const rows = expenses.map(e => [
+      formatDate(e.created_at),
+      e.description || '',
+      e.expense_categories?.name || '—',
+      e.members?.full_name || '—',
+      e.governorates?.name || '—',
+      e.amount || 0
+    ]);
+
+    const csvContent = '\uFEFF' + [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `expenses_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showToast('تم تصدير المصروفات', 'success');
   }
 
   /* ============================================
@@ -497,91 +900,125 @@
     if (!window.Realtime) return;
 
     unsubscribeRealtime = window.Realtime.watchManyAndReload(
-      ['payments', 'members'],
+      ['payments', 'expenses', 'members'],
       async () => {
         await loadPayments();
+        await loadExpenses();
       },
-      { debounceMs: 600, immediate: false }
+      { debounceMs: 800, immediate: false }
     );
   }
 
   /* ============================================
-     FILTERS
+     SETUP LISTENERS
      ============================================ */
-  function setupFilters() {
-    // Date inputs
-    const dateFrom = document.getElementById('dateFrom');
-    const dateTo = document.getElementById('dateTo');
+  function setupListeners() {
+    // Date filters
+    const fromInput = document.getElementById('dateFrom');
+    if (fromInput) {
+      fromInput.addEventListener('change', (e) => {
+        dateFrom = e.target.value ? new Date(e.target.value).toISOString() : null;
+        quickRange = null;
+        loadPayments();
+        loadExpenses();
+      });
+    }
 
-    if (dateFrom) {
-      dateFrom.addEventListener('change', (e) => {
-        filters.dateFrom = e.target.value;
-        currentRange = 'custom';
-        document.querySelectorAll('.quick-date-btn').forEach(btn => btn.classList.remove('active'));
+    const toInput = document.getElementById('dateTo');
+    if (toInput) {
+      toInput.addEventListener('change', (e) => {
+        dateTo = e.target.value ? new Date(e.target.value).toISOString() : null;
+        quickRange = null;
+        loadPayments();
+        loadExpenses();
+      });
+    }
+
+    // Payment method filter
+    const pmFilter = document.getElementById('paymentMethodFilter');
+    if (pmFilter) {
+      pmFilter.addEventListener('change', (e) => {
+        paymentMethodFilter = e.target.value;
         loadPayments();
       });
     }
 
-    if (dateTo) {
-      dateTo.addEventListener('change', (e) => {
-        filters.dateTo = e.target.value;
-        currentRange = 'custom';
-        document.querySelectorAll('.quick-date-btn').forEach(btn => btn.classList.remove('active'));
-        loadPayments();
-      });
-    }
-
-    // Payment method
-    const methodFilter = document.getElementById('paymentMethodFilter');
-    if (methodFilter) {
-      methodFilter.addEventListener('change', (e) => {
-        filters.paymentMethod = e.target.value;
-        loadPayments();
-      });
-    }
-
-    // Status
+    // Status filter
     const statusFilter = document.getElementById('statusFilter');
     if (statusFilter) {
       statusFilter.addEventListener('change', (e) => {
-        filters.status = e.target.value;
+        paymentStatusFilter = e.target.value;
         loadPayments();
       });
     }
 
     // Quick date buttons
-    document.querySelectorAll('.quick-date-btn').forEach(btn => {
+    document.querySelectorAll('[data-range]').forEach(btn => {
       btn.addEventListener('click', () => {
-        applyDateRange(btn.dataset.range);
+        const range = btn.dataset.range;
+        quickRange = range;
+        dateFrom = null;
+        dateTo = null;
+
+        document.querySelectorAll('[data-range]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        loadPayments();
+        loadExpenses();
       });
     });
 
-    // Actions
+    // Refresh
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) {
       refreshBtn.addEventListener('click', async () => {
         refreshBtn.disabled = true;
         await loadPayments();
+        await loadExpenses();
         refreshBtn.disabled = false;
         showToast('تم التحديث', 'success', 1500);
       });
     }
 
-    const exportCsvBtn = document.getElementById('exportCsvBtn');
-    if (exportCsvBtn) exportCsvBtn.addEventListener('click', exportCSV);
+    // Export buttons
+    const exportBtn = document.getElementById('exportCsvBtn');
+    if (exportBtn) exportBtn.addEventListener('click', exportPaymentsCSV);
 
+    const exportExpBtn = document.getElementById('exportExpensesCsvBtn');
+    if (exportExpBtn) exportExpBtn.addEventListener('click', exportExpensesCSV);
+
+    // Print
     const printBtn = document.getElementById('printBtn');
     if (printBtn) printBtn.addEventListener('click', () => window.print());
+
+    // Add expense
+    const addExpBtn = document.getElementById('addExpenseBtn');
+    if (addExpBtn) addExpBtn.addEventListener('click', () => window.openExpenseModal());
+
+    const saveExpBtn = document.getElementById('saveExpenseBtn');
+    if (saveExpBtn) saveExpBtn.addEventListener('click', saveExpense);
 
     // Logout
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
-        if (confirm('تسجيل الخروج؟')) {
+        if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
           if (window.signOut) window.signOut('login.html');
         }
       });
     }
+
+    // Modal backdrop
+    const modal = document.getElementById('expenseModal');
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) window.closeExpenseModal();
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') window.closeExpenseModal();
+    });
   }
 
   /* ============================================
@@ -599,9 +1036,12 @@
       const ok = await checkAuth();
       if (!ok) return;
 
-      setupFilters();
+      await loadLookups();
+
+      setupListeners();
 
       await loadPayments();
+      await loadExpenses();
 
       setupRealtime();
 
