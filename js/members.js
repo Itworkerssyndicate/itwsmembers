@@ -1,5 +1,17 @@
 /* =====================================================
-   IT SYNDICATE — Members Management Logic
+   IT SYNDICATE — MEMBERS LOGIC
+   Version: 3.0.0
+   =====================================================
+   يحتوي على:
+   - Auth + Role check
+   - 5 كروت إحصائية (إجمالي / نشط / قريب / منتهي / رعاية)
+   - جدول الأعضاء + Pagination
+   - 5 فلاتر (بحث + شعبة + محافظة + نوع + حالة)
+   - Member Detail Modal (4 تابات)
+   - Assign Membership No Modal
+   - Renew Modal
+   - Export CSV + Print
+   - Realtime
    ===================================================== */
 
 (function () {
@@ -10,6 +22,8 @@
      ============================================ */
   const PAGE_SIZE = 20;
   const SOON_DAYS = 30;
+  const CARD_BUCKET = 'cards';
+  const ATTACHMENTS_BUCKET = 'attachments';
 
   /* ============================================
      STATE
@@ -18,13 +32,11 @@
   let currentUser = null;
   let userRole = null;
   let members = [];
-  let membersWithSubs = [];
-  let filteredMembers = [];
   let currentPage = 1;
   let totalCount = 0;
   let branches = [];
+  let governorates = [];
   let membershipTypes = [];
-
   let filters = {
     search: '',
     branch: 'all',
@@ -32,15 +44,15 @@
     type: 'all',
     subStatus: 'all'
   };
-
   let unsubscribeRealtime = null;
-  let currentMemberForAssign = null;
+  let currentMember = null;
+  let currentMemberDetail = null;
+  let pendingApprovalOnly = false;
 
   /* ============================================
      HELPERS
      ============================================ */
   const $ = (sel) => document.querySelector(sel);
-  const $$ = (sel) => document.querySelectorAll(sel);
 
   function escapeHtml(str) {
     if (str === null || str === undefined) return '';
@@ -55,19 +67,28 @@
   function formatDate(dateStr) {
     if (!dateStr) return '---';
     try {
-      return new Date(dateStr).toLocaleDateString('ar-EG', {
+      return new Date(dateStr).toLocaleString('ar-EG', {
         year: 'numeric', month: '2-digit', day: '2-digit'
       });
     } catch (e) { return '---'; }
   }
 
-  function getStatusColor(status) {
-    const map = {
-      active: 'var(--success)',
-      soon: 'var(--warning)',
-      expired: 'var(--danger)'
-    };
-    return map[status] || 'var(--text-muted)';
+  function formatDateFull(dateStr) {
+    if (!dateStr) return '---';
+    try {
+      return new Date(dateStr).toLocaleString('ar-EG', {
+        year: 'numeric', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    } catch (e) { return '---'; }
+  }
+
+  function getInitials(name) {
+    if (!name) return '؟';
+    const parts = String(name).trim().split(/\s+/);
+    if (parts.length === 0) return '؟';
+    if (parts.length === 1) return parts[0].charAt(0);
+    return parts[0].charAt(0) + ' ' + parts[1].charAt(0);
   }
 
   function showToast(message, type = 'info') {
@@ -78,31 +99,64 @@
     console.log(`[${type}] ${message}`);
   }
 
+  function getBranchName(branchId) {
+    const b = branches.find(x => String(x.id) === String(branchId));
+    return b?.name || '—';
+  }
+
+  function getTypeName(typeId) {
+    const t = membershipTypes.find(x => String(x.id) === String(typeId));
+    return t?.name || '—';
+  }
+
+  function getDaysRemaining(endDate) {
+    if (!endDate) return null;
+    try {
+      const end = new Date(endDate).getTime();
+      const now = Date.now();
+      return Math.ceil((end - now) / 86400000);
+    } catch (e) { return null; }
+  }
+
+  function getSubStatus(endDate) {
+    const days = getDaysRemaining(endDate);
+    if (days === null) return { label: 'غير محدد', cls: 'sub-expired', key: 'expired' };
+    if (days < 0) return { label: 'منتهي', cls: 'sub-expired', key: 'expired' };
+    if (days <= SOON_DAYS) return { label: 'ينتهي قريبًا', cls: 'sub-soon', key: 'soon' };
+    return { label: 'نشط', cls: 'sub-active', key: 'active' };
+  }
+
+  function getDaysClass(days) {
+    if (days === null) return 'days-expired';
+    if (days < 0) return 'days-expired';
+    if (days <= SOON_DAYS) return 'days-soon';
+    return 'days-active';
+  }
+
   /* ============================================
      SVG ICONS
      ============================================ */
   const ICONS = {
+    user: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    x: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
     eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
     key: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>',
     refresh: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>',
-    user: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-    users: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-    check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"/></svg>',
-    clock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-    phone: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
-    calendar: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
-    briefcase: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
-    x: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    download: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+    print: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
+    search: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+    close: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
     chevronLeft: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>',
     chevronRight: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>',
-    alert: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-    file: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
-    info: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
-    award: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>'
+    card: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>',
+    file: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
   };
 
   /* ============================================
-     AUTH
+     AUTH CHECK
      ============================================ */
   async function checkAuth() {
     try {
@@ -122,22 +176,33 @@
         .maybeSingle();
 
       userRole = userData?.role || 'committee';
+      window.currentUserRole = userRole;
+      window.currentUserName = userData?.full_name || currentUser.email || 'موظف';
+
+      const allowedRoles = ['head', 'vice_president', 'deputy', 'committee'];
+      if (!allowedRoles.includes(userRole)) {
+        alert('هذه الصفحة مخصصة للجنة العضويات والنقيب فقط');
+        window.location.href = 'login.html';
+        return false;
+      }
 
       if (userRole === 'head') {
         const adminLink = document.getElementById('adminLink');
         if (adminLink) adminLink.style.display = 'flex';
 
-        const headBtn = document.getElementById('headApprovalBtn');
-        if (headBtn) headBtn.style.display = 'inline-flex';
+        const headApprovalBtn = document.getElementById('headApprovalBtn');
+        if (headApprovalBtn) headApprovalBtn.style.display = 'inline-flex';
       }
 
-      const roleLabel = userRole === 'head' ? 'النقيب العام'
-                     : userRole === 'vice_president' ? 'نائب رئيس النقابة'
-                     : 'لجنة العضوية';
-
       document.querySelectorAll('[data-user-name]').forEach(el => {
-        el.textContent = userData?.full_name || currentUser.email;
+        el.textContent = window.currentUserName;
       });
+
+      const roleLabel = userRole === 'head' ? 'النقيب العام'
+                      : userRole === 'vice_president' ? 'نائب رئيس النقابة'
+                      : userRole === 'deputy' ? 'الوكيل'
+                      : 'لجنة العضوات';
+
       document.querySelectorAll('[data-user-role]').forEach(el => {
         el.textContent = roleLabel;
       });
@@ -151,70 +216,95 @@
   }
 
   /* ============================================
-     LOAD BRANCHES & TYPES
+     LOAD LOOKUPS
      ============================================ */
-  async function loadBranches() {
-    const { data } = await client
-      .from('branches')
-      .select('*')
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true });
+  async function loadLookups() {
+    try {
+      const [brRes, govRes, typesRes] = await Promise.all([
+        client.from('branches').select('*').eq('is_active', true).order('sort_order', { ascending: true }),
+        client.from('governorates').select('*').eq('is_active', true).order('sort_order', { ascending: true }),
+        client.from('membership_types').select('*').order('sort_order', { ascending: true })
+      ]);
 
-    branches = data || [];
+      branches = brRes.data || [];
+      governorates = govRes.data || [];
+      membershipTypes = typesRes.data || [];
 
-    const filter = document.getElementById('branchFilter');
-    if (filter) {
-      filter.innerHTML = '<option value="all">كل الشعب</option>';
-      branches.forEach(b => {
-        const opt = document.createElement('option');
-        opt.value = b.id;
-        opt.textContent = b.name;
-        filter.appendChild(opt);
-      });
-    }
+      const branchFilter = document.getElementById('branchFilter');
+      if (branchFilter) {
+        branchFilter.innerHTML = '<option value="all">كل الشعب</option>';
+        branches.forEach(b => {
+          const opt = document.createElement('option');
+          opt.value = b.id;
+          opt.textContent = b.name;
+          branchFilter.appendChild(opt);
+        });
+      }
 
-    // assign modal
-    const assignSelect = document.getElementById('assignBranch');
-    if (assignSelect) {
-      assignSelect.innerHTML = '<option value="">-- اختر الشعبة --</option>';
-      branches.forEach(b => {
-        const opt = document.createElement('option');
-        opt.value = b.id;
-        opt.textContent = b.name;
-        assignSelect.appendChild(opt);
-      });
-    }
-  }
+      const govFilter = document.getElementById('govFilter');
+      if (govFilter) {
+        govFilter.innerHTML = '<option value="all">كل المحافظات</option>';
+        governorates.forEach(g => {
+          const opt = document.createElement('option');
+          opt.value = g.name;
+          opt.textContent = g.name;
+          govFilter.appendChild(opt);
+        });
+      }
 
-  async function loadTypes() {
-    const { data } = await client
-      .from('membership_types')
-      .select('*')
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true });
+      const typeFilter = document.getElementById('typeFilter');
+      if (typeFilter) {
+        typeFilter.innerHTML = '<option value="all">كل الأنواع</option>';
+        membershipTypes.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t.id;
+          opt.textContent = t.name;
+          typeFilter.appendChild(opt);
+        });
+      }
 
-    membershipTypes = data || [];
-
-    const filter = document.getElementById('typeFilter');
-    if (filter) {
-      filter.innerHTML = '<option value="all">كل الأنواع</option>';
-      membershipTypes.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t.id;
-        opt.textContent = t.name;
-        filter.appendChild(opt);
-      });
+    } catch (err) {
+      console.error('[Members] Lookups error:', err);
     }
   }
 
-  function getBranchName(id) {
-    const b = branches.find(x => x.id === id);
-    return b?.name || '—';
-  }
+  /* ============================================
+     LOAD STATS
+     ============================================ */
+  async function loadStats() {
+    try {
+      const { data, error } = await client
+        .from('members')
+        .select('membership_end, has_health_care')
+        .eq('is_active', true);
 
-  function getTypeName(id) {
-    const t = membershipTypes.find(x => x.id === id);
-    return t?.name || '—';
+      if (error || !data) return;
+
+      let active = 0, soon = 0, expired = 0, hc = 0;
+
+      data.forEach(m => {
+        const st = getSubStatus(m.membership_end);
+        if (st.key === 'active') active++;
+        else if (st.key === 'soon') soon++;
+        else expired++;
+
+        if (m.has_health_care) hc++;
+      });
+
+      const set = (id, v) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = v;
+      };
+
+      set('statTotalMembers', data.length);
+      set('statActiveSubs', active);
+      set('statExpiringSoon', soon);
+      set('statExpired', expired);
+      set('statHealthCare', hc);
+
+    } catch (e) {
+      console.error('[Members] Stats error:', e);
+    }
   }
 
   /* ============================================
@@ -225,7 +315,7 @@
     if (tbody) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="8" style="text-align:center;padding:40px;color:var(--text-dim);">
+          <td colspan="9" style="text-align:center;padding:40px;color:var(--text-dim);">
             <div style="display:inline-flex;align-items:center;gap:10px;">
               <span class="spinner"></span>
               <span>جاري التحميل...</span>
@@ -236,140 +326,67 @@
     }
 
     try {
-      let query = client.from('members').select('*', { count: 'exact' });
+      let query = client
+        .from('members')
+        .select('*', { count: 'exact' })
+        .eq('is_active', true);
 
-      if (filters.branch !== 'all') {
-        query = query.eq('branch_id', parseInt(filters.branch));
-      }
-      if (filters.governorate !== 'all') {
+      if (filters.governorate && filters.governorate !== 'all') {
         query = query.eq('governorate', filters.governorate);
       }
-      if (filters.type !== 'all') {
+
+      if (filters.branch && filters.branch !== 'all') {
+        query = query.eq('branch_id', parseInt(filters.branch));
+      }
+
+      if (filters.type && filters.type !== 'all') {
         query = query.eq('membership_type_id', parseInt(filters.type));
       }
+
       if (filters.search) {
         const s = filters.search.trim();
         query = query.or(
-          `full_name.ilike.%${s}%,national_id.ilike.%${s}%,phone.ilike.%${s}%,membership_no.ilike.%${s}%`
+          `full_name.ilike.%${s}%,phone.ilike.%${s}%,national_id.ilike.%${s}%,membership_no.ilike.%${s}%`
         );
       }
 
       query = query.order('created_at', { ascending: false });
 
+      const from = (currentPage - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      query = query.range(from, to);
+
       const { data, error, count } = await query;
 
       if (error) throw error;
 
-      members = data || [];
-      totalCount = count || 0;
+      let list = data || [];
 
-      // Load subscriptions for each member
-      await loadSubscriptionsForMembers();
+      if (filters.subStatus && filters.subStatus !== 'all') {
+        list = list.filter(m => getSubStatus(m.membership_end).key === filters.subStatus);
+      }
 
-      // Apply subscription filter
-      applySubStatusFilter();
+      members = list;
+      totalCount = filters.subStatus !== 'all' ? list.length : (count || 0);
 
-      // Render
-      renderStats();
       renderTable();
       renderPagination();
+
+      const countEl = document.getElementById('tableCount');
+      if (countEl) countEl.textContent = `${members.length} عضو`;
 
     } catch (err) {
       console.error('[Members] Load error:', err);
       if (tbody) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="8" style="text-align:center;padding:40px;color:var(--danger);">
-              ${escapeHtml(err.message)}
+            <td colspan="9" style="text-align:center;padding:40px;color:var(--danger);">
+              حدث خطأ: ${escapeHtml(err.message)}
             </td>
           </tr>
         `;
       }
     }
-  }
-
-  async function loadSubscriptionsForMembers() {
-    if (!members.length) {
-      membersWithSubs = [];
-      return;
-    }
-
-    const memberIds = members.map(m => m.id);
-
-    const { data: subs, error } = await client
-      .from('membership_subscriptions')
-      .select('*')
-      .in('member_id', memberIds)
-      .order('end_date', { ascending: false });
-
-    if (error) {
-      console.warn('[Members] Subs load error:', error);
-      membersWithSubs = members.map(m => ({ ...m, subscription: null, daysRemaining: null, subStatus: 'expired' }));
-      return;
-    }
-
-    const subsMap = {};
-    (subs || []).forEach(s => {
-      if (!subsMap[s.member_id]) subsMap[s.member_id] = s;
-    });
-
-    const now = new Date();
-    membersWithSubs = members.map(m => {
-      const sub = subsMap[m.id] || null;
-      let daysRemaining = null;
-      let subStatus = 'expired';
-
-      if (sub && sub.end_date) {
-        const endDate = new Date(sub.end_date);
-        daysRemaining = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
-
-        if (daysRemaining < 0) subStatus = 'expired';
-        else if (daysRemaining <= SOON_DAYS) subStatus = 'soon';
-        else subStatus = 'active';
-      } else if (m.membership_end) {
-        const endDate = new Date(m.membership_end);
-        daysRemaining = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
-
-        if (daysRemaining < 0) subStatus = 'expired';
-        else if (daysRemaining <= SOON_DAYS) subStatus = 'soon';
-        else subStatus = 'active';
-      }
-
-      return {
-        ...m,
-        subscription: sub,
-        daysRemaining,
-        subStatus
-      };
-    });
-  }
-
-  function applySubStatusFilter() {
-    if (filters.subStatus === 'all') {
-      filteredMembers = membersWithSubs;
-    } else {
-      filteredMembers = membersWithSubs.filter(m => m.subStatus === filters.subStatus);
-    }
-  }
-
-  /* ============================================
-     STATS
-     ============================================ */
-  function renderStats() {
-    const total = membersWithSubs.length;
-    const active = membersWithSubs.filter(m => m.subStatus === 'active').length;
-    const soon = membersWithSubs.filter(m => m.subStatus === 'soon').length;
-    const expired = membersWithSubs.filter(m => m.subStatus === 'expired').length;
-
-    const setVal = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = val;
-    };
-
-    setVal('statTotalMembers', total);
-    setVal('statActiveSubs', active);
-    setVal('statExpiringSoon', soon);
-    setVal('statExpired', expired);
   }
 
   /* ============================================
@@ -379,19 +396,12 @@
     const tbody = document.getElementById('membersTableBody');
     if (!tbody) return;
 
-    const start = (currentPage - 1) * PAGE_SIZE;
-    const end = start + PAGE_SIZE;
-    const pageData = filteredMembers.slice(start, end);
-
-    const countEl = document.getElementById('tableCount');
-    if (countEl) countEl.textContent = `${filteredMembers.length} عضو`;
-
-    if (!pageData.length) {
+    if (!members.length) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="8" style="text-align:center;padding:60px 20px;">
+          <td colspan="9" style="text-align:center;padding:60px 20px;">
             <div style="display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--text-dim);">
-              <span style="width:48px;height:48px;display:inline-flex;">${ICONS.users}</span>
+              <span style="width:48px;height:48px;display:inline-flex;">${ICONS.user}</span>
               <div style="font-size:15px;">لا يوجد أعضاء مطابقين</div>
               <div style="font-size:13px;">جرب تغيير الفلاتر أو البحث</div>
             </div>
@@ -401,31 +411,13 @@
       return;
     }
 
-    tbody.innerHTML = pageData.map(m => {
-      const initials = window.getInitials ? window.getInitials(m.full_name) : '؟';
+    tbody.innerHTML = members.map(m => {
+      const st = getSubStatus(m.membership_end);
+      const days = getDaysRemaining(m.membership_end);
+      const daysText = days === null ? '—' : (days < 0 ? `منتهي (${Math.abs(days)} يوم)` : `${days} يوم`);
+      const initials = getInitials(m.full_name);
       const branchName = getBranchName(m.branch_id);
-      const mno = m.membership_no;
-
-      let subBadge = '';
-      if (m.subStatus === 'active') {
-        subBadge = `<span class="sub-status sub-active"><span class="dot"></span>نشط</span>`;
-      } else if (m.subStatus === 'soon') {
-        subBadge = `<span class="sub-status sub-soon"><span class="dot"></span>ينتهي قريبًا</span>`;
-      } else {
-        subBadge = `<span class="sub-status sub-expired"><span class="dot"></span>منتهي</span>`;
-      }
-
-      let daysText = '—';
-      if (m.daysRemaining !== null && m.daysRemaining !== undefined) {
-        if (m.daysRemaining < 0) {
-          daysText = `<span style="color:var(--danger);font-weight:700;">متأخر ${Math.abs(m.daysRemaining)} يوم</span>`;
-        } else if (m.daysRemaining === 0) {
-          daysText = `<span style="color:var(--warning);font-weight:700;">ينتهي اليوم</span>`;
-        } else {
-          const color = m.daysRemaining <= SOON_DAYS ? 'var(--warning)' : 'var(--success)';
-          daysText = `<span style="color:${color};font-weight:700;">${m.daysRemaining} يوم</span>`;
-        }
-      }
+      const hasHC = m.has_health_care === true;
 
       return `
         <tr data-id="${m.id}" style="cursor:pointer;transition:background 0.2s;border-bottom:1px solid var(--border-soft);">
@@ -434,65 +426,77 @@
               <div class="member-avatar">${escapeHtml(initials)}</div>
               <div class="member-info">
                 <div class="member-name">${escapeHtml(m.full_name)}</div>
-                <div class="member-nid">${escapeHtml(m.national_id || '—')}</div>
+                <div class="member-nid">${escapeHtml(m.national_id)}</div>
               </div>
             </div>
           </td>
           <td style="padding:14px 12px;">
-            ${mno
-              ? `<span class="mno-badge">${escapeHtml(mno)}</span>`
-              : `<span class="mno-pending">بانتظار الإصدار</span>`}
+            ${m.membership_no ? `
+              <span class="mno-badge">${escapeHtml(m.membership_no)}</span>
+            ` : `
+              <span class="mno-pending">بانتظار الإصدار</span>
+            `}
           </td>
           <td style="padding:14px 12px;">
             <span class="branch-cell">${escapeHtml(branchName)}</span>
           </td>
           <td style="padding:14px 12px;">
-            <span class="branch-cell">${escapeHtml(m.governorate || '—')}</span>
+            <span style="display:inline-block;padding:4px 10px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:100px;font-size:11.5px;color:#22c55e;font-weight:600;white-space:nowrap;">
+              ${escapeHtml(m.governorate || '—')}
+            </span>
           </td>
-          <td style="padding:14px 12px;">${subBadge}</td>
-          <td style="padding:14px 12px;">${daysText}</td>
+          <td style="padding:14px 12px;">
+            <span class="sub-status ${st.cls}">
+              <span class="dot"></span>
+              ${escapeHtml(st.label)}
+            </span>
+          </td>
+          <td style="padding:14px 12px;">
+            <span class="days-cell ${getDaysClass(days)}">${escapeHtml(daysText)}</span>
+          </td>
           <td style="padding:14px 12px;font-size:12.5px;color:var(--text-muted);direction:ltr;text-align:right;">
             <span dir="ltr">${escapeHtml(m.phone || '—')}</span>
+          </td>
+          <td style="padding:14px 12px;">
+            ${hasHC ? `
+              <span class="hc-badge">
+                ${ICONS.heart}
+                <span>نعم</span>
+              </span>
+            ` : `
+              <span style="font-size:12px;color:var(--text-dim);">لا</span>
+            `}
           </td>
           <td style="padding:14px 12px;">
             <div class="row-actions">
               <button class="row-btn view-btn" data-action="view" data-id="${m.id}" title="عرض التفاصيل">
                 ${ICONS.eye}
               </button>
-              ${!mno ? `
-                <button class="row-btn key-btn" data-action="assign" data-id="${m.id}" title="إصدار رقم العضوية">
-                  ${ICONS.key}
-                </button>
-              ` : `
-                <button class="row-btn refresh-btn" data-action="renew" data-id="${m.id}" title="تجديد الاشتراك">
-                  ${ICONS.refresh}
-                </button>
-              `}
+              <button class="row-btn key-btn" data-action="renew" data-id="${m.id}" title="تجديد">
+                ${ICONS.refresh}
+              </button>
             </div>
           </td>
         </tr>
       `;
     }).join('');
 
-    // Row click
     tbody.querySelectorAll('tr[data-id]').forEach(tr => {
       tr.addEventListener('click', (e) => {
         if (e.target.closest('.row-btn')) return;
-        openMemberDetail(tr.dataset.id);
+        openMemberModal(tr.dataset.id);
       });
       tr.addEventListener('mouseenter', () => { tr.style.background = 'rgba(var(--accent-rgb), 0.04)'; });
       tr.addEventListener('mouseleave', () => { tr.style.background = ''; });
     });
 
-    // Buttons
     tbody.querySelectorAll('.row-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const action = btn.dataset.action;
         const id = btn.dataset.id;
-        if (action === 'view') openMemberDetail(id);
-        else if (action === 'assign') openAssignModal(id);
-        else if (action === 'renew') renewSubscription(id);
+        if (action === 'view') openMemberModal(id);
+        else if (action === 'renew') openRenewModal(id);
       });
     });
   }
@@ -504,7 +508,7 @@
     const box = document.getElementById('paginationBox');
     if (!box) return;
 
-    const totalPages = Math.ceil(filteredMembers.length / PAGE_SIZE);
+    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
     if (totalPages <= 1) {
       box.innerHTML = '';
       return;
@@ -522,8 +526,9 @@
       opacity:${disabled ? 0.4 : 1};
     `;
 
-    let html = '';
-    html += `<button ${currentPage === 1 ? 'disabled' : ''} data-page="${currentPage - 1}" style="${btnStyle(false, currentPage === 1)}">
+    let pagesHTML = '';
+
+    pagesHTML += `<button ${currentPage === 1 ? 'disabled' : ''} data-page="${currentPage - 1}" style="${btnStyle(false, currentPage === 1)}">
       <span style="width:14px;height:14px;display:inline-flex;">${ICONS.chevronRight}</span>
     </button>`;
 
@@ -533,28 +538,34 @@
     let end = Math.min(totalPages, start + maxVisible - 1);
     if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
 
-    if (start > 1) { pages.push(1); if (start > 2) pages.push('...'); }
+    if (start > 1) {
+      pages.push(1);
+      if (start > 2) pages.push('...');
+    }
     for (let i = start; i <= end; i++) pages.push(i);
-    if (end < totalPages) { if (end < totalPages - 1) pages.push('...'); pages.push(totalPages); }
+    if (end < totalPages) {
+      if (end < totalPages - 1) pages.push('...');
+      pages.push(totalPages);
+    }
 
     pages.forEach(p => {
       if (p === '...') {
-        html += `<span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;color:var(--text-dim);">…</span>`;
+        pagesHTML += `<span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;color:var(--text-dim);">…</span>`;
       } else {
-        html += `<button data-page="${p}" style="${btnStyle(p === currentPage, false)}">${p}</button>`;
+        pagesHTML += `<button data-page="${p}" style="${btnStyle(p === currentPage, false)}">${p}</button>`;
       }
     });
 
-    html += `<button ${currentPage === totalPages ? 'disabled' : ''} data-page="${currentPage + 1}" style="${btnStyle(false, currentPage === totalPages)}">
+    pagesHTML += `<button ${currentPage === totalPages ? 'disabled' : ''} data-page="${currentPage + 1}" style="${btnStyle(false, currentPage === totalPages)}">
       <span style="width:14px;height:14px;display:inline-flex;">${ICONS.chevronLeft}</span>
     </button>`;
 
     box.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
         <div style="font-size:12.5px;color:var(--text-dim);">
-          صفحة ${currentPage} من ${totalPages} — إجمالي ${filteredMembers.length} عضو
+          صفحة ${currentPage} من ${totalPages} — إجمالي ${totalCount} عضو
         </div>
-        <div style="display:flex;gap:6px;align-items:center;">${html}</div>
+        <div style="display:flex;gap:6px;align-items:center;">${pagesHTML}</div>
       </div>
     `;
 
@@ -563,8 +574,7 @@
         const p = parseInt(btn.dataset.page);
         if (p >= 1 && p <= totalPages && p !== currentPage) {
           currentPage = p;
-          renderTable();
-          renderPagination();
+          loadMembers();
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
       });
@@ -572,121 +582,216 @@
   }
 
   /* ============================================
-     MEMBER DETAIL
+     MEMBER MODAL
      ============================================ */
-  function openMemberDetail(memberId) {
+  async function openMemberModal(memberId) {
     const modal = document.getElementById('memberModal');
     const content = document.getElementById('memberModalContent');
     if (!modal || !content) return;
 
-    const m = membersWithSubs.find(x => String(x.id) === String(memberId));
-    if (!m) return;
-
-    const branchName = getBranchName(m.branch_id);
-    const typeName = getTypeName(m.membership_type_id);
-    const sub = m.subscription;
-
     content.innerHTML = `
-      <div style="animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
-
-        <div class="modal-header-custom">
-          <div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent);margin-bottom:4px;">
-              ${m.membership_no ? escapeHtml(m.membership_no) : 'بانتظار الإصدار'}
-            </div>
-            <h3>${escapeHtml(m.full_name)}</h3>
-          </div>
-          <button type="button" class="close-btn" onclick="closeMemberModal()">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-
-        <div style="padding:24px;overflow-y:auto;max-height:calc(90vh - 200px);">
-
-          <h4 style="font-family:'Tajawal',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px;">
-            <span style="width:16px;height:16px;display:inline-flex;color:var(--accent);">${ICONS.user}</span>
-            البيانات الشخصية
-          </h4>
-          <div class="detail-grid" style="margin-bottom:24px;">
-            ${detailItem('الاسم', m.full_name)}
-            ${detailItem('الرقم القومي', m.national_id, true)}
-            ${detailItem('الموبايل', m.phone, true)}
-            ${detailItem('البريد', m.email || '—')}
-            ${detailItem('العنوان', m.address || '—')}
-            ${detailItem('المحافظة', m.governorate || '—')}
-          </div>
-
-          <h4 style="font-family:'Tajawal',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px;">
-            <span style="width:16px;height:16px;display:inline-flex;color:var(--accent);">${ICONS.briefcase}</span>
-            البيانات المهنية
-          </h4>
-          <div class="detail-grid" style="margin-bottom:24px;">
-            ${detailItem('نوع العضوية', typeName)}
-            ${detailItem('الشعبة', branchName)}
-            ${detailItem('المؤهل', m.qualification || '—')}
-            ${detailItem('سنة التخرج', m.graduation_year || '—')}
-            ${detailItem('التقدير', m.grade || '—')}
-            ${detailItem('جهة العمل', m.employer || '—')}
-            ${detailItem('المسمى الوظيفي', m.job_title || '—')}
-          </div>
-
-          <h4 style="font-family:'Tajawal',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px;">
-            <span style="width:16px;height:16px;display:inline-flex;color:var(--accent);">${ICONS.calendar}</span>
-            العضوية والاشتراك
-          </h4>
-          <div class="detail-grid" style="margin-bottom:24px;">
-            ${detailItem('رقم العضوية', m.membership_no || '—', true)}
-            ${detailItem('تاريخ البداية', formatDate(m.membership_start))}
-            ${detailItem('تاريخ الانتهاء', formatDate(m.membership_end))}
-            ${detailItem('الأيام المتبقية', m.daysRemaining !== null ? (m.daysRemaining < 0 ? `متأخر ${Math.abs(m.daysRemaining)} يوم` : `${m.daysRemaining} يوم`) : '—')}
-            ${detailItem('حالة الاشتراك',
-              m.subStatus === 'active' ? 'نشط' :
-              m.subStatus === 'soon' ? 'ينتهي قريبًا' : 'منتهي')}
-            ${detailItem('حالة الكارنية', m.card_status === 'delivered' ? 'تم التسليم' :
-              m.card_status === 'ready' ? 'جاهز' :
-              m.card_status === 'processing' ? 'جاري التجهيز' : 'لم يُصدر')}
-          </div>
-
-          ${sub ? `
-            <h4 style="font-family:'Tajawal',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px;">
-              <span style="width:16px;height:16px;display:inline-flex;color:var(--accent);">${ICONS.award}</span>
-              آخر اشتراك
-            </h4>
-            <div class="detail-grid">
-              ${detailItem('بداية الاشتراك', formatDate(sub.start_date))}
-              ${detailItem('نهاية الاشتراك', formatDate(sub.end_date))}
-              ${detailItem('المبلغ', sub.amount ? `${sub.amount} جنيه` : '—')}
-              ${detailItem('الحالة', sub.status === 'active' ? 'نشط' : sub.status === 'expired' ? 'منتهي' : sub.status)}
-            </div>
-          ` : ''}
-
-        </div>
-
-        <div class="modal-footer-custom">
-          ${!m.membership_no ? `
-            <button type="button" class="btn btn-primary" onclick="openAssignModal('${m.id}')">
-              ${ICONS.key}
-              <span>إصدار رقم العضوية</span>
-            </button>
-          ` : `
-            <button type="button" class="btn btn-primary" onclick="renewSubscription('${m.id}')">
-              ${ICONS.refresh}
-              <span>تجديد الاشتراك</span>
-            </button>
-          `}
-        </div>
-
+      <div style="padding:60px 20px;text-align:center;color:var(--text-muted);">
+        <span class="spinner"></span>
       </div>
     `;
 
     modal.classList.add('open');
     document.body.style.overflow = 'hidden';
+
+    try {
+      const { data: member, error } = await client
+        .from('members')
+        .select('*')
+        .eq('id', memberId)
+        .maybeSingle();
+
+      if (error || !member) throw new Error('لم يتم العثور على العضو');
+
+      currentMember = member;
+
+      const { data: payments } = await client
+        .from('payments')
+        .select('*')
+        .eq('member_id', memberId)
+        .order('created_at', { ascending: false });
+
+      const { data: subs } = await client
+        .from('membership_subscriptions')
+        .select('*')
+        .eq('member_id', memberId)
+        .order('start_date', { ascending: false });
+
+      renderMemberContent(member, payments || [], subs || []);
+
+    } catch (err) {
+      console.error('[Members] Detail error:', err);
+      content.innerHTML = `
+        <div style="padding:40px 20px;text-align:center;color:var(--danger);">
+          ${escapeHtml(err.message)}
+        </div>
+      `;
+    }
   }
 
-  function detailItem(label, value, isMono = false) {
+  function renderMemberContent(m, payments, subs) {
+    const content = document.getElementById('memberModalContent');
+    if (!content) return;
+
+    const st = getSubStatus(m.membership_end);
+    const typeName = getTypeName(m.membership_type_id);
+    const branchName = getBranchName(m.branch_id);
+    const hcStatus = m.has_health_care ? getSubStatus(m.health_care_end) : null;
+
+    const initialTab = m.membership_no ? 'info' : 'membership';
+    const canAssign = !m.membership_no || !m.membership_no.trim();
+
+    content.innerHTML = `
+      <div style="animation: fadeUp 0.4s;">
+
+        <!-- HEADER -->
+        <div style="padding:22px 24px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:linear-gradient(135deg, rgba(var(--accent-rgb), 0.04), transparent);">
+          <div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg, rgba(var(--accent-rgb),0.15), rgba(var(--accent-2-rgb),0.15));border:1px solid rgba(var(--accent-rgb),0.3);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;color:var(--accent);flex-shrink:0;">
+            ${escapeHtml(getInitials(m.full_name))}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-family:'Tajawal',sans-serif;font-size:20px;font-weight:800;color:var(--text);margin-bottom:6px;">
+              ${escapeHtml(m.full_name)}
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              ${m.membership_no ? `<span class="mno-badge">${escapeHtml(m.membership_no)}</span>` : `<span class="mno-pending">بانتظار الإصدار</span>`}
+              <span class="sub-status ${st.cls}">
+                <span class="dot"></span>
+                ${escapeHtml(st.label)}
+              </span>
+              ${m.has_health_care ? `<span class="hc-badge">${ICONS.heart}<span>رعاية صحية</span></span>` : ''}
+            </div>
+          </div>
+          <button type="button" onclick="closeMemberModal()" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <span style="width:16px;height:16px;display:inline-flex;">${ICONS.close}</span>
+          </button>
+        </div>
+
+        <!-- TABS -->
+        <div class="modal-tabs" style="margin:16px 24px 0;">
+          <button class="modal-tab-btn ${initialTab === 'info' ? 'active' : ''}" data-modal-tab="info">المعلومات</button>
+          <button class="modal-tab-btn ${initialTab === 'subs' ? 'active' : ''}" data-modal-tab="subs">الاشتراكات</button>
+          <button class="modal-tab-btn" data-modal-tab="payments">سجل المدفوعات</button>
+          ${canAssign ? `<button class="modal-tab-btn" data-modal-tab="membership">رقم العضوية</button>` : ''}
+        </div>
+
+        <!-- TAB: INFO -->
+        <div data-tab-panel="info" style="padding:24px;overflow-y:auto;max-height:calc(90vh - 260px);display:${initialTab === 'info' ? 'block' : 'none'};">
+
+          <h4 style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">البيانات الشخصية</h4>
+          <div class="detail-grid" style="margin-bottom:20px;">
+            ${renderDetailItem('الرقم القومي', m.national_id, true)}
+            ${renderDetailItem('تاريخ الميلاد', formatDate(m.birth_date))}
+            ${renderDetailItem('السن', m.age || '—')}
+            ${renderDetailItem('الموبايل', m.phone, true)}
+            ${renderDetailItem('البريد', m.email || '—')}
+            ${renderDetailItem('العنوان', m.address || '—')}
+            ${renderDetailItem('المحافظة', m.governorate || '—')}
+          </div>
+
+          <h4 style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">البيانات المهنية</h4>
+          <div class="detail-grid" style="margin-bottom:20px;">
+            ${renderDetailItem('نوع العضوية', typeName)}
+            ${renderDetailItem('الشعبة', branchName)}
+            ${renderDetailItem('المؤهل', m.qualification || '—')}
+            ${renderDetailItem('سنة التخرج', m.graduation_year || '—')}
+            ${renderDetailItem('جهة العمل', m.employer || '—')}
+            ${renderDetailItem('المسمى الوظيفي', m.job_title || '—')}
+          </div>
+
+          ${m.has_health_care ? `
+            <h4 style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;color:#ec4899;margin-bottom:12px;">الرعاية الصحية</h4>
+            <div class="detail-grid" style="margin-bottom:20px;">
+              ${renderDetailItem('بداية الرعاية', formatDate(m.health_care_start))}
+              ${renderDetailItem('نهاية الرعاية', formatDate(m.health_care_end))}
+              ${renderDetailItem('المبلغ', (parseFloat(m.health_care_amount) || 0).toLocaleString('ar-EG') + ' ج', true)}
+              ${renderDetailItem('الحالة', hcStatus?.label || '—')}
+            </div>
+          ` : ''}
+
+          <h4 style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">بيانات العضوية</h4>
+          <div class="detail-grid">
+            ${renderDetailItem('بداية العضوية', formatDate(m.membership_start))}
+            ${renderDetailItem('نهاية العضوية', formatDate(m.membership_end))}
+            ${renderDetailItem('إجمالي المدفوع', (parseFloat(m.total_paid) || 0).toLocaleString('ar-EG') + ' ج', true)}
+            ${renderDetailItem('حالة الكارنية', getCardStatusLabel(m.card_status))}
+          </div>
+
+        </div>
+
+        <!-- TAB: SUBS -->
+        <div data-tab-panel="subs" style="padding:24px;overflow-y:auto;max-height:calc(90vh - 260px);display:${initialTab === 'subs' ? 'block' : 'none'};">
+          ${renderSubsTab(subs, m)}
+        </div>
+
+        <!-- TAB: PAYMENTS -->
+        <div data-tab-panel="payments" style="padding:24px;overflow-y:auto;max-height:calc(90vh - 260px);display:none;">
+          ${renderPaymentsTab(payments)}
+        </div>
+
+        ${canAssign ? `
+          <div data-tab-panel="membership" style="padding:24px;overflow-y:auto;max-height:calc(90vh - 260px);display:none;">
+            <div style="padding:20px;background:rgba(var(--warning-rgb),0.06);border:1.5px solid rgba(var(--warning-rgb),0.3);border-radius:12px;margin-bottom:20px;">
+              <div style="font-size:14px;font-weight:700;color:var(--warning);margin-bottom:8px;">بانتظار إصدار رقم العضوية</div>
+              <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">
+                هذا العضو ليس لديه رقم عضوية حتى الآن. اضغط الزر أدناه لإصدار رقم عضوية جديد.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="quickBranch">الشعبة <span style="color:var(--danger);">*</span></label>
+              <select id="quickBranch">
+                <option value="">-- اختر الشعبة --</option>
+                ${branches.map(b => `<option value="${b.id}" ${String(b.id) === String(m.branch_id) ? 'selected' : ''}>${escapeHtml(b.name)}</option>`).join('')}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="quickMembershipNo">رقم العضوية</label>
+              <input type="text" id="quickMembershipNo" placeholder="MEM-2026-00001" dir="ltr" style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;" />
+              <span class="form-hint">سيتم توليده تلقائيًا لو تركته فاضيًا</span>
+            </div>
+
+            <div class="form-group">
+              <label for="quickDuration">مدة العضوية (شهور)</label>
+              <input type="number" id="quickDuration" value="12" min="1" max="120" />
+            </div>
+
+            <button type="button" class="btn btn-success btn-block" id="quickAssignBtn" style="margin-top:16px;">
+              ${ICONS.check}
+              <span>اعتماد رقم العضوية</span>
+            </button>
+          </div>
+        ` : ''}
+
+      </div>
+    `;
+
+    // Tabs listeners
+    content.querySelectorAll('[data-modal-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.modalTab;
+        content.querySelectorAll('[data-modal-tab]').forEach(b => {
+          b.classList.toggle('active', b === btn);
+        });
+        content.querySelectorAll('[data-tab-panel]').forEach(p => {
+          p.style.display = p.dataset.tabPanel === tab ? 'block' : 'none';
+        });
+      });
+    });
+
+    // Quick assign
+    const assignBtn = document.getElementById('quickAssignBtn');
+    if (assignBtn) {
+      assignBtn.addEventListener('click', () => quickAssignMembershipNo(m));
+    }
+  }
+
+  function renderDetailItem(label, value, isMono = false) {
     return `
       <div class="detail-item">
         <div class="detail-item-label">${escapeHtml(label)}</div>
@@ -697,146 +802,179 @@
     `;
   }
 
+  function renderSubsTab(subs, m) {
+    if (!subs.length && !m.membership_start) {
+      return '<div class="empty-payment">لا يوجد سجل اشتراكات بعد</div>';
+    }
+
+    const list = subs.length ? subs : [{
+      id: 'current',
+      start_date: m.membership_start,
+      end_date: m.membership_end,
+      amount: m.total_paid,
+      is_active: true
+    }];
+
+    return list.map(s => {
+      const st = getSubStatus(s.end_date);
+      const days = getDaysRemaining(s.end_date);
+      const daysText = days === null ? '—' : (days < 0 ? `منتهي (${Math.abs(days)} يوم)` : `${days} يوم`);
+      return `
+        <div style="padding:16px;background:rgba(0,0,0,0.3);border:1px solid var(--border-soft);border-radius:12px;margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
+            <div style="font-size:14px;font-weight:700;color:var(--text);">${escapeHtml(formatDate(s.start_date))} — ${escapeHtml(formatDate(s.end_date))}</div>
+            <span class="sub-status ${st.cls}">
+              <span class="dot"></span>
+              ${escapeHtml(st.label)}
+            </span>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;">
+            <span style="color:var(--text-muted);">المبلغ: <strong style="color:var(--success);font-family:'JetBrains Mono',monospace;">${(parseFloat(s.amount) || 0).toLocaleString('ar-EG')} ج</strong></span>
+            <span class="days-cell ${getDaysClass(days)}">${escapeHtml(daysText)}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderPaymentsTab(payments) {
+    if (!payments.length) {
+      return '<div class="empty-payment">لا يوجد سجل مدفوعات بعد</div>';
+    }
+
+    return payments.map(p => {
+      const status = p.status === 'confirmed'
+        ? { label: 'مؤكد', cls: 'status-confirmed' }
+        : p.status === 'pending'
+        ? { label: 'معلق', cls: 'status-pending' }
+        : { label: 'مرفوض', cls: 'status-rejected' };
+
+      return `
+        <div class="payment-history-item">
+          <div class="ph-info">
+            <div class="ph-date">${escapeHtml(formatDate(p.created_at))}</div>
+            <div class="ph-amount">${(parseFloat(p.amount) || 0).toLocaleString('ar-EG')} ج</div>
+            <div class="ph-type">${escapeHtml(p.payment_method || '—')}</div>
+          </div>
+          <div class="ph-actions">
+            <span class="status-badge ${status.cls}">${status.label}</span>
+            ${p.receipt_url ? `
+              <button class="ph-btn view" data-action="view-receipt" data-path="${escapeHtml(p.receipt_url)}" title="عرض الإيصال">
+                ${ICONS.eye}
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function getCardStatusLabel(status) {
+    const map = {
+      'not_issued': 'لم يتم الإصدار',
+      'processing': 'جاري التجهيز',
+      'ready': 'جاهز',
+      'delivered': 'تم الاستلام'
+    };
+    return map[status] || 'غير محدد';
+  }
+
   window.closeMemberModal = function () {
     const modal = document.getElementById('memberModal');
     if (modal) modal.classList.remove('open');
     document.body.style.overflow = '';
+    currentMember = null;
+    currentMemberDetail = null;
   };
 
   /* ============================================
-     ASSIGN MEMBERSHIP NO
+     QUICK ASSIGN MEMBERSHIP NO
      ============================================ */
-  window.openAssignModal = function (memberId) {
-    const m = membersWithSubs.find(x => String(x.id) === String(memberId));
-    if (!m) return;
-
-    currentMemberForAssign = m;
-
-    const modal = document.getElementById('assignNoModal');
-    if (!modal) return;
-
-    // Close member modal first
-    window.closeMemberModal();
-
-    document.getElementById('assignAppId').value = m.id;
-    document.getElementById('assignMemberName').value = m.full_name;
-    document.getElementById('assignBranch').value = m.branch_id || '';
-    document.getElementById('assignDuration').value = 12;
-
-    // Auto-generate membership no
-    generateMembershipNo();
-
-    modal.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  };
-
-  window.closeAssignModal = function () {
-    const modal = document.getElementById('assignNoModal');
-    if (modal) modal.classList.remove('open');
-    document.body.style.overflow = '';
-    currentMemberForAssign = null;
-  };
-
-  async function generateMembershipNo() {
-    const prefix = 'MEM';
-    const year = new Date().getFullYear();
-
-    try {
-      const { data } = await client
-        .from('members')
-        .select('membership_no')
-        .like('membership_no', `${prefix}-${year}-%`)
-        .order('membership_no', { ascending: false })
-        .limit(1);
-
-      let nextNum = 1;
-      if (data && data.length > 0 && data[0].membership_no) {
-        const parts = data[0].membership_no.split('-');
-        const lastNum = parseInt(parts[2]) || 0;
-        nextNum = lastNum + 1;
-      }
-
-      const newNo = `${prefix}-${year}-${String(nextNum).padStart(5, '0')}`;
-      document.getElementById('assignNo').value = newNo;
-    } catch (e) {
-      const fallback = `${prefix}-${year}-00001`;
-      document.getElementById('assignNo').value = fallback;
-    }
-  }
-
-  async function confirmAssign() {
-    const appId = document.getElementById('assignAppId').value;
-    const branchId = document.getElementById('assignBranch').value;
-    const mno = document.getElementById('assignNo').value.trim();
-    const duration = parseInt(document.getElementById('assignDuration').value) || 12;
-
-    if (!appId) return;
-
-    const m = membersWithSubs.find(x => String(x.id) === String(appId));
-    if (!m) return;
-
-    if (!mno) {
-      showToast('رقم العضوية مطلوب', 'warning');
-      return;
-    }
+  async function quickAssignMembershipNo(m) {
+    const branchId = document.getElementById('quickBranch')?.value;
+    const membershipNo = document.getElementById('quickMembershipNo')?.value.trim();
+    const duration = parseInt(document.getElementById('quickDuration')?.value) || 12;
 
     if (!branchId) {
-      showToast('اختر الشعبة', 'warning');
+      showToast('اختر الشعبة أولًا', 'warning');
       return;
     }
 
-    const btn = document.getElementById('confirmAssignBtn');
+    const btn = document.getElementById('quickAssignBtn');
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '<span>جاري الحفظ...</span><span class="spinner"></span>';
+      btn.innerHTML = '<span>جاري الاعتماد...</span><span class="spinner"></span>';
     }
 
     try {
-      const startDate = new Date();
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + duration);
+      const now = new Date();
+      const startDate = now.toISOString().slice(0, 10);
+      const endDate = new Date(now.getFullYear(), now.getMonth() + duration, now.getDate())
+        .toISOString().slice(0, 10);
 
-      // Update member
-      const { error: memErr } = await client
-        .from('members')
-        .update({
-          membership_no: mno,
-          branch_id: parseInt(branchId),
-          membership_start: startDate.toISOString().split('T')[0],
-          membership_end: endDate.toISOString().split('T')[0],
-          card_status: 'processing',
-          is_active: true
-        })
-        .eq('id', appId);
+      // Generate membership no if empty
+      let finalMembershipNo = membershipNo;
+      if (!finalMembershipNo) {
+        const year = now.getFullYear();
+        const prefix = 'MEM';
+        const br = branches.find(b => String(b.id) === String(branchId));
+        const branchCode = br?.code ? `-${br.code}` : '';
 
-      if (memErr) throw memErr;
+        const { count } = await client
+          .from('members')
+          .select('id', { count: 'exact', head: true })
+          .like('membership_no', `${prefix}-${year}${branchCode}-%`);
 
-      // Create subscription
-      const { error: subErr } = await client
-        .from('membership_subscriptions')
-        .insert([{
-          member_id: appId,
-          membership_type_id: m.membership_type_id,
-          start_date: startDate.toISOString().split('T')[0],
-          end_date: endDate.toISOString().split('T')[0],
-          status: 'active',
-          amount: m.membership_type_id ? (membershipTypes.find(t => t.id === m.membership_type_id)?.fee || 0) : 0
-        }]);
-
-      if (subErr) console.warn('Sub creation failed:', subErr);
-
-      // Log action
-      if (window.logUserAction) {
-        await window.logUserAction('assign_membership_no', 'member', appId, `رقم: ${mno}, شعبة: ${branchId}`);
+        const nextNum = (count || 0) + 1;
+        const padded = String(nextNum).padStart(5, '0');
+        finalMembershipNo = `${prefix}-${year}${branchCode}-${padded}`;
       }
 
-      showToast('تم إصدار رقم العضوية بنجاح', 'success');
+      const { error } = await client
+        .from('members')
+        .update({
+          membership_no: finalMembershipNo,
+          branch_id: parseInt(branchId),
+          membership_start: startDate,
+          membership_end: endDate,
+          is_active: true
+        })
+        .eq('id', m.id);
 
-      closeAssignModal();
+      if (error) throw error;
+
+      // Update linked application if exists
+      if (m.application_id) {
+        try {
+          await client
+            .from('applications')
+            .update({
+              membership_no: finalMembershipNo,
+              status: 'membership_no_assigned',
+              branch_id: parseInt(branchId)
+            })
+            .eq('id', m.application_id);
+
+          await client.from('status_history').insert([{
+            application_id: m.application_id,
+            old_status: 'paid',
+            new_status: 'membership_no_assigned',
+            notes: `تم إصدار رقم العضوية: ${finalMembershipNo}`,
+            changed_by: currentUser.id,
+            changed_by_name: window.currentUserName,
+            is_auto: false
+          }]);
+        } catch (e) {}
+      }
+
+      showToast(`تم اعتماد رقم العضوية: ${finalMembershipNo}`, 'success');
+
+      closeMemberModal();
       await loadMembers();
+      await loadStats();
 
     } catch (err) {
-      console.error('[Assign] Error:', err);
+      console.error('[Members] Assign error:', err);
       showToast('فشل: ' + err.message, 'error');
     } finally {
       if (btn) {
@@ -847,69 +985,136 @@
   }
 
   /* ============================================
-     RENEW SUBSCRIPTION
+     RENEW MODAL
      ============================================ */
-  async function renewSubscription(memberId) {
-    const m = membersWithSubs.find(x => String(x.id) === String(memberId));
-    if (!m) return;
+  window.openRenewModal = function (memberId) {
+    const modal = document.getElementById('renewModal');
+    if (!modal) return;
 
-    const months = prompt('عدد شهور التجديد؟', '12');
-    if (!months) return;
+    const member = members.find(m => String(m.id) === String(memberId));
+    if (!member) return;
 
-    const duration = parseInt(months);
-    if (isNaN(duration) || duration < 1) {
-      showToast('رقم غير صالح', 'error');
+    currentMember = member;
+
+    document.getElementById('renewMemberId').value = member.id;
+    document.getElementById('renewMemberName').value = member.full_name || '';
+    document.getElementById('renewMonths').value = '12';
+    document.getElementById('renewStartDate').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('renewAmount').value = '';
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeRenewModal = function () {
+    const modal = document.getElementById('renewModal');
+    if (modal) modal.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  async function confirmRenew() {
+    if (!currentMember) return;
+
+    const memberId = document.getElementById('renewMemberId').value;
+    const months = parseInt(document.getElementById('renewMonths').value) || 12;
+    const startDate = document.getElementById('renewStartDate').value;
+    const amount = parseFloat(document.getElementById('renewAmount').value) || 0;
+
+    if (!startDate) {
+      showToast('اختر تاريخ البداية', 'warning');
       return;
     }
 
-    try {
-      const startDate = new Date();
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + duration);
+    const btn = document.getElementById('confirmRenewBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>جاري التجديد...</span><span class="spinner"></span>';
+    }
 
-      // Update member
-      await client
+    try {
+      const start = new Date(startDate);
+      const end = new Date(start.getFullYear(), start.getMonth() + months, start.getDate());
+      const endDate = end.toISOString().slice(0, 10);
+
+      const { error } = await client
         .from('members')
         .update({
-          membership_start: startDate.toISOString().split('T')[0],
-          membership_end: endDate.toISOString().split('T')[0]
+          membership_start: startDate,
+          membership_end: endDate,
+          total_paid: (parseFloat(currentMember.total_paid) || 0) + amount
         })
         .eq('id', memberId);
 
-      // Create new subscription
-      const { error } = await client
-        .from('membership_subscriptions')
-        .insert([{
-          member_id: memberId,
-          membership_type_id: m.membership_type_id,
-          start_date: startDate.toISOString().split('T')[0],
-          end_date: endDate.toISOString().split('T')[0],
-          status: 'active',
-          amount: m.membership_type_id ? (membershipTypes.find(t => t.id === m.membership_type_id)?.fee || 0) : 0
-        }]);
-
       if (error) throw error;
 
-      if (window.logUserAction) {
-        await window.logUserAction('renew_subscription', 'member', memberId, `تجديد ${duration} شهر`);
+      // Add subscription record
+      try {
+        await client.from('membership_subscriptions').insert([{
+          member_id: memberId,
+          start_date: startDate,
+          end_date: endDate,
+          amount: amount,
+          is_active: true,
+          created_by: currentUser.id
+        }]);
+      } catch (e) {}
+
+      // Add payment record
+      if (amount > 0) {
+        try {
+          await client.from('payments').insert([{
+            member_id: memberId,
+            amount: amount,
+            payment_method: 'cash',
+            status: 'confirmed',
+            notes: `تجديد لمدة ${months} شهر`,
+            created_by: currentUser.id
+          }]);
+        } catch (e) {}
       }
 
       showToast('تم التجديد بنجاح', 'success');
+
+      closeRenewModal();
       await loadMembers();
+      await loadStats();
+
+      if (window.Realtime) {
+        window.Realtime.sendBroadcast('member-renewed', { memberId });
+      }
 
     } catch (err) {
-      console.error('[Renew] Error:', err);
+      console.error('[Members] Renew error:', err);
       showToast('فشل: ' + err.message, 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `${ICONS.check}<span>تجديد</span>`;
+      }
     }
   }
 
-  window.renewSubscription = renewSubscription;
+  /* ============================================
+     VIEW RECEIPT
+     ============================================ */
+  async function viewReceipt(path) {
+    try {
+      const { data, error } = await client.storage
+        .from(ATTACHMENTS_BUCKET)
+        .createSignedUrl(path, 3600);
+
+      if (error) throw error;
+      window.open(data.signedUrl, '_blank');
+    } catch (err) {
+      showToast('فشل فتح الإيصال: ' + err.message, 'error');
+    }
+  }
 
   /* ============================================
      EXPORT CSV
      ============================================ */
   function exportCSV() {
-    if (!filteredMembers.length) {
+    if (!members.length) {
       showToast('لا توجد بيانات للتصدير', 'warning');
       return;
     }
@@ -917,24 +1122,28 @@
     const headers = [
       'رقم العضوية', 'الاسم', 'الرقم القومي', 'الموبايل',
       'البريد', 'الشعبة', 'المحافظة', 'نوع العضوية',
-      'تاريخ البداية', 'تاريخ الانتهاء', 'الأيام المتبقية', 'حالة الاشتراك'
+      'بداية الاشتراك', 'نهاية الاشتراك', 'حالة الاشتراك',
+      'الرعاية الصحية', 'إجمالي المدفوع'
     ];
 
-    const rows = filteredMembers.map(m => [
-      m.membership_no || '',
-      m.full_name || '',
-      m.national_id || '',
-      m.phone || '',
-      m.email || '',
-      getBranchName(m.branch_id),
-      m.governorate || '',
-      getTypeName(m.membership_type_id),
-      formatDate(m.membership_start),
-      formatDate(m.membership_end),
-      m.daysRemaining !== null ? m.daysRemaining : '',
-      m.subStatus === 'active' ? 'نشط' :
-      m.subStatus === 'soon' ? 'ينتهي قريبًا' : 'منتهي'
-    ]);
+    const rows = members.map(m => {
+      const st = getSubStatus(m.membership_end);
+      return [
+        m.membership_no || '',
+        m.full_name,
+        m.national_id,
+        m.phone,
+        m.email || '',
+        getBranchName(m.branch_id),
+        m.governorate || '',
+        getTypeName(m.membership_type_id),
+        formatDate(m.membership_start),
+        formatDate(m.membership_end),
+        st.label,
+        m.has_health_care ? 'نعم' : 'لا',
+        parseFloat(m.total_paid) || 0
+      ];
+    });
 
     const csvContent = '\uFEFF' + [
       headers.join(','),
@@ -961,29 +1170,19 @@
     if (!window.Realtime) return;
 
     unsubscribeRealtime = window.Realtime.watchManyAndReload(
-      ['members', 'membership_subscriptions'],
+      ['members', 'membership_subscriptions', 'payments'],
       async () => {
         await loadMembers();
+        await loadStats();
       },
       { debounceMs: 500, immediate: false }
     );
   }
 
   /* ============================================
-     FILTERS
+     SETUP LISTENERS
      ============================================ */
-  function setupFilters() {
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-      const debounced = window.debounce ? window.debounce(() => {
-        filters.search = searchInput.value;
-        currentPage = 1;
-        loadMembers();
-      }, 400) : () => {};
-
-      searchInput.addEventListener('input', debounced);
-    }
-
+  function setupListeners() {
     const branchFilter = document.getElementById('branchFilter');
     if (branchFilter) {
       branchFilter.addEventListener('change', (e) => {
@@ -1016,18 +1215,29 @@
       subFilter.addEventListener('change', (e) => {
         filters.subStatus = e.target.value;
         currentPage = 1;
-        applySubStatusFilter();
-        renderTable();
-        renderPagination();
+        loadMembers();
       });
     }
 
-    // Actions
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      let t = null;
+      searchInput.addEventListener('input', () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+          filters.search = searchInput.value;
+          currentPage = 1;
+          loadMembers();
+        }, 400);
+      });
+    }
+
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) {
       refreshBtn.addEventListener('click', async () => {
         refreshBtn.disabled = true;
         await loadMembers();
+        await loadStats();
         refreshBtn.disabled = false;
         showToast('تم التحديث', 'success', 1500);
       });
@@ -1037,41 +1247,8 @@
     if (exportCsvBtn) exportCsvBtn.addEventListener('click', exportCSV);
 
     const exportPdfBtn = document.getElementById('exportPdfBtn');
-    if (exportPdfBtn) {
-      exportPdfBtn.addEventListener('click', () => {
-        window.print();
-      });
-    }
+    if (exportPdfBtn) exportPdfBtn.addEventListener('click', () => window.print());
 
-    const pendingApprovalBtn = document.getElementById('pendingApprovalBtn');
-    if (pendingApprovalBtn) {
-      pendingApprovalBtn.addEventListener('click', async () => {
-        try {
-          const { data, error } = await client
-            .from('applications')
-            .select('*')
-            .eq('status', 'awaiting_membership_no')
-            .order('created_at', { ascending: true });
-
-          if (error) throw error;
-
-          if (!data || !data.length) {
-            showToast('لا توجد طلبات بانتظار رقم العضوية', 'info');
-            return;
-          }
-
-          const list = data.map(a =>
-            `• ${a.tracking_no} — ${a.full_name}`
-          ).join('\n');
-
-          alert(`الطلبات بانتظار رقم العضوية (${data.length}):\n\n${list}\n\nاذهب إلى لوحة النقيب → اعتماد النقيب`);
-        } catch (err) {
-          showToast('فشل: ' + err.message, 'error');
-        }
-      });
-    }
-
-    // Head approval
     const headApprovalBtn = document.getElementById('headApprovalBtn');
     if (headApprovalBtn) {
       headApprovalBtn.addEventListener('click', () => {
@@ -1079,32 +1256,42 @@
       });
     }
 
-    // Logout
+    const pendingApprovalBtn = document.getElementById('pendingApprovalBtn');
+    if (pendingApprovalBtn) {
+      pendingApprovalBtn.addEventListener('click', () => {
+        window.location.href = 'head-approval.html';
+      });
+    }
+
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
-        if (confirm('تسجيل الخروج؟')) {
+        if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
           if (window.signOut) window.signOut('login.html');
         }
       });
     }
 
-    // Confirm assign
-    const confirmBtn = document.getElementById('confirmAssignBtn');
-    if (confirmBtn) confirmBtn.addEventListener('click', confirmAssign);
-  }
+    const confirmRenewBtn = document.getElementById('confirmRenewBtn');
+    if (confirmRenewBtn) confirmRenewBtn.addEventListener('click', confirmRenew);
 
-  /* ============================================
-     MODAL BACKDROPS
-     ============================================ */
-  function setupModalBackdrops() {
-    ['memberModal', 'assignNoModal'].forEach(id => {
+    // View receipt buttons
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-action="view-receipt"]');
+      if (btn) {
+        e.preventDefault();
+        viewReceipt(btn.dataset.path);
+      }
+    });
+
+    // Modal backdrops
+    ['memberModal', 'renewModal'].forEach(id => {
       const modal = document.getElementById(id);
       if (!modal) return;
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
           if (id === 'memberModal') window.closeMemberModal();
-          else window.closeAssignModal();
+          else if (id === 'renewModal') window.closeRenewModal();
         }
       });
     });
@@ -1112,7 +1299,7 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         window.closeMemberModal();
-        window.closeAssignModal();
+        window.closeRenewModal();
       }
     });
   }
@@ -1132,12 +1319,11 @@
       const ok = await checkAuth();
       if (!ok) return;
 
-      await loadBranches();
-      await loadTypes();
+      await loadLookups();
 
-      setupFilters();
-      setupModalBackdrops();
+      setupListeners();
 
+      await loadStats();
       await loadMembers();
 
       setupRealtime();
