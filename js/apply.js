@@ -1,5 +1,17 @@
 /* =====================================================
-   IT SYNDICATE — Apply Form Logic
+   IT SYNDICATE — APPLY FORM LOGIC
+   Version: 3.0.0
+   =====================================================
+   يحتوي على:
+   - تحميل أنواع العضوية + المحافظات
+   - كاميرا مباشرة (فتح + تبديل + التقاط)
+   - فحص AI بـ Tesseract.js
+   - رفع الملفات لـ Supabase Storage
+   - حساب السن تلقائيًا
+   - رعاية صحية + فاتورة تفصيلية
+   - حفظ المسودة تلقائيًا
+   - منع التكرار بالرقم القومي
+   - إرسال الطلب + إيصال
    ===================================================== */
 
 (function () {
@@ -8,11 +20,11 @@
   /* ============================================
      CONSTANTS
      ============================================ */
-  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB (بعد التعديل)
-  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-  const ALLOWED_DOC_TYPES = [...ALLOWED_IMAGE_TYPES, 'application/pdf'];
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
   const MIN_IMAGE_WIDTH = 400;
   const MIN_IMAGE_HEIGHT = 250;
+  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  const ALLOWED_DOC_TYPES = [...ALLOWED_IMAGE_TYPES, 'application/pdf'];
   const RECEIPT_STORAGE_KEY = 'its_receipt_data';
   const DRAFT_STORAGE_KEY = 'its_apply_draft';
   const TESSERACT_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
@@ -21,15 +33,15 @@
      REQUIRED & OPTIONAL DOCS
      ============================================ */
   const REQUIRED_DOCS = [
-    { field: 'id_front',      docType: 'id_front',      label: 'بطاقة الرقم القومي (وجه)',  keywords: ['جمهورية مصر العربية', 'بطاقة تحقيق الشخصية'] },
-    { field: 'id_back',       docType: 'id_back',       label: 'بطاقة الرقم القومي (ظهر)',  keywords: [] },
-    { field: 'certificate',   docType: 'certificate',   label: 'الشهادة الدراسية',          keywords: ['شهادة', 'بكالوريوس', 'ليسانس', 'دبلوم', 'ثانوية', 'التقدير'] },
-    { field: 'photo',         docType: 'photo',         label: 'الصورة الشخصية',            keywords: [] }
+    { field: 'id_front', docType: 'id_front', label: 'بطاقة الرقم القومي (وجه)', keywords: ['جمهورية مصر العربية', 'بطاقة تحقيق الشخصية'] },
+    { field: 'id_back', docType: 'id_back', label: 'بطاقة الرقم القومي (ظهر)', keywords: [] },
+    { field: 'certificate', docType: 'certificate', label: 'الشهادة الدراسية', keywords: ['شهادة', 'بكالوريوس', 'ليسانس', 'دبلوم'] },
+    { field: 'photo', docType: 'photo', label: 'الصورة الشخصية', keywords: [] }
   ];
 
   const OPTIONAL_DOCS = [
     { field: 'work_certificate', docType: 'work_certificate', label: 'شهادة إثبات عمل', keywords: ['شهادة', 'خبرة', 'عمل'] },
-    { field: 'criminal_record',  docType: 'criminal_record',  label: 'فيش وتشبيه',      keywords: ['فيش', 'تشبيه', 'حسن سيرة', 'وزارة الداخلية'] }
+    { field: 'criminal_record', docType: 'criminal_record', label: 'فيش وتشبيه', keywords: ['فيش', 'تشبيه', 'حسن سيرة'] }
   ];
 
   /* ============================================
@@ -37,21 +49,22 @@
      ============================================ */
   let client = null;
   let membershipTypes = [];
+  let governorates = [];
+  let settings = {};
   let selectedFiles = {};
   let fileCheckResults = {};
   let aiAnalysisResults = {};
   let isSubmitting = false;
   let draftSaveTimer = null;
 
-  /* Camera state */
+  // Camera state
   let cameraStream = null;
   let cameraFacing = 'environment';
   let cameraTarget = null;
   let capturedBlob = null;
 
-  /* Tesseract state */
+  // Tesseract
   let tesseractLoaded = false;
-  let tesseractWorker = null;
 
   /* ============================================
      DOM HELPERS
@@ -198,7 +211,6 @@
 
   window.retakePhoto = function () {
     closeAIOverlay();
-    // اعادة فتح الكاميرا على نفس الهدف
     if (cameraTarget) {
       setTimeout(() => openCamera(cameraTarget), 300);
     }
@@ -210,11 +222,9 @@
       return;
     }
 
-    // حوّل الـ Blob لـ File
     const file = new File([capturedBlob], `capture_${Date.now()}.jpg`, { type: 'image/jpeg' });
     const field = cameraTarget;
 
-    // ضع الملف في الـ input
     const input = document.querySelector(`input[name="${field}"]`);
     if (input) {
       try {
@@ -226,11 +236,9 @@
       }
     }
 
-    // خزنه في selectedFiles
     selectedFiles[field] = file;
     fileCheckResults[field] = { ok: true, status: 'pass' };
 
-    // UI
     const wrapper = document.getElementById('upload-' + field);
     if (wrapper) {
       wrapper.classList.add('has-file');
@@ -270,7 +278,6 @@
     cameraTarget = field;
     capturedBlob = null;
 
-    // عنوان حسب النوع
     const titles = {
       id_front: 'تصوير بطاقة الرقم القومي (وجه)',
       id_back: 'تصوير بطاقة الرقم القومي (ظهر)',
@@ -281,7 +288,6 @@
     };
     if (title) title.textContent = titles[field] || 'التقاط صورة';
 
-    // تلميح
     const hints = {
       id_front: 'ضع البطاقة داخل الإطار بحيث تظهر كل البيانات',
       id_back: 'ضع البطاقة داخل الإطار بحيث تظهر كل البيانات',
@@ -309,7 +315,6 @@
     const video = document.getElementById('cameraVideo');
     if (!video) return;
 
-    // اقفل الكاميرا القديمة
     if (cameraStream) {
       cameraStream.getTracks().forEach(t => t.stop());
       cameraStream = null;
@@ -356,7 +361,6 @@
     const video = document.getElementById('cameraVideo');
     if (!video || !cameraStream) return;
 
-    // اعمل canvas للصورة
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -364,17 +368,15 @@
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // حوّل لـ Blob
     canvas.toBlob(async (blob) => {
       if (!blob) return;
 
       capturedBlob = blob;
+      const target = cameraTarget;
 
-      // اقفل الكاميرا
       closeCamera();
 
-      // شغّل الفحص الذكي
-      await analyzeCapturedPhoto(blob, cameraTarget);
+      await analyzeCapturedPhoto(blob, target);
     }, 'image/jpeg', 0.92);
   };
 
@@ -392,16 +394,13 @@
     updateAIStatus('تحضير محرك الفحص...');
 
     try {
-      // حمّل Tesseract
       await loadTesseract();
 
       updateAIProgress(25);
       updateAIStatus('قراءة النص من الصورة...');
 
-      // حوّل الـ Blob لـ Image
       const img = await blobToImage(blob);
 
-      // ابدأ الفحص
       const result = await window.Tesseract.recognize(
         img,
         'ara+eng',
@@ -426,14 +425,13 @@
       const text = result?.data?.text || '';
       const confidence = result?.data?.confidence || 0;
 
-      // تحقق من المحتوى
       const validation = validateDocument(field, text, confidence);
 
       updateAIProgress(100);
 
       if (validation.ok) {
         showAIResult('success', `
-          <strong>✓ تم الفحص بنجاح</strong><br>
+          <strong>تم الفحص بنجاح</strong><br>
           <span style="font-size:12.5px;opacity:0.9;">
             ${validation.message}<br>
             نسبة الثقة: ${Math.round(confidence)}%
@@ -441,7 +439,6 @@
         `);
         updateAIStatus('المستند صالح');
 
-        // خزّن النتيجة
         aiAnalysisResults[field] = {
           ok: true,
           confidence: confidence,
@@ -449,13 +446,12 @@
           timestamp: new Date().toISOString()
         };
 
-        // اعرض زر القبول
         setTimeout(() => {
           showAIActions();
         }, 600);
       } else {
         showAIResult('error', `
-          <strong>✗ مشكلة في المستند</strong><br>
+          <strong>مشكلة في المستند</strong><br>
           <span style="font-size:12.5px;opacity:0.9;">
             ${validation.message}
           </span>
@@ -467,7 +463,7 @@
     } catch (err) {
       console.error('[AI Analysis] Error:', err);
       showAIResult('warning', `
-        <strong>⚠ تعذّر الفحص التلقائي</strong><br>
+        <strong>تعذّر الفحص التلقائي</strong><br>
         <span style="font-size:12.5px;opacity:0.9;">
           يمكنك استخدام الصورة على أي حال، وسيتم فحصها من قبل اللجنة.
         </span>
@@ -513,7 +509,6 @@
       return { ok: true, message: 'تم قبول المستند' };
     }
 
-    // تحقق من الكلمات المفتاحية
     const keywords = docInfo.keywords || [];
     if (keywords.length > 0) {
       const normalizedText = text.replace(/\s+/g, ' ').trim();
@@ -527,7 +522,6 @@
       }
     }
 
-    // للبطاقة: تأكد إن فيه أرقام (رقم قومي)
     if (field === 'id_front') {
       const digits = (text.match(/\d+/g) || []).join('');
       if (digits.length < 14) {
@@ -545,7 +539,7 @@
   }
 
   /* ============================================
-     FILE UPLOADS (Drag & Drop + Click)
+     FILE UPLOADS
      ============================================ */
   function setupFileUploads() {
     const wrappers = $$('.file-upload');
@@ -556,13 +550,11 @@
 
       const fieldName = input.name;
 
-      // Click (بس لو مش على زر الكاميرا)
       wrapper.addEventListener('click', (e) => {
         if (e.target.closest('.upload-actions')) return;
         input.click();
       });
 
-      // File change
       input.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) {
@@ -572,7 +564,6 @@
         await handleFileSelected(wrapper, fieldName, file);
       });
 
-      // Drag & drop
       wrapper.addEventListener('dragover', (e) => {
         e.preventDefault();
         wrapper.style.borderColor = 'var(--accent)';
@@ -618,7 +609,6 @@
     const filename = wrapper.querySelector('.filename');
     if (filename) filename.textContent = '';
 
-    // حجم
     if (file.size > MAX_FILE_SIZE) {
       updateCheckUI(fieldName, {
         status: 'fail',
@@ -628,7 +618,6 @@
       return;
     }
 
-    // نوع
     const isOptionalDoc = OPTIONAL_DOCS.some(d => d.field === fieldName);
     const isCert = fieldName === 'certificate' || isOptionalDoc;
     const allowed = isCert ? ALLOWED_DOC_TYPES : ALLOWED_IMAGE_TYPES;
@@ -644,7 +633,6 @@
 
     updateCheckUI(fieldName, { status: 'checking', message: 'جاري فحص الملف...' });
 
-    // لو صورة → تحقق من الأبعاد + الفحص الذكي
     if (file.type.startsWith('image/')) {
       const dimCheck = await validateImageDimensions(file);
       if (!dimCheck.ok) {
@@ -653,14 +641,12 @@
         return;
       }
 
-      // خزّن الملف
       selectedFiles[fieldName] = file;
       wrapper.classList.add('has-file');
       if (filename) {
         filename.textContent = `${file.name} (${window.formatFileSize ? window.formatFileSize(file.size) : ''})`;
       }
 
-      // ابدأ الفحص الذكي
       setTimeout(() => {
         analyzeUploadedFile(file, fieldName);
       }, 300);
@@ -671,7 +657,6 @@
       });
 
     } else {
-      // PDF → اقبل مباشرة
       selectedFiles[fieldName] = file;
       wrapper.classList.add('has-file');
       if (filename) {
@@ -765,7 +750,7 @@
 
       if (validation.ok) {
         showAIResult('success', `
-          <strong>✓ تم الفحص بنجاح</strong><br>
+          <strong>تم الفحص بنجاح</strong><br>
           <span style="font-size:12.5px;opacity:0.9;">
             ${validation.message}<br>
             نسبة الثقة: ${Math.round(confidence)}%
@@ -782,18 +767,17 @@
 
         fileCheckResults[field] = { ok: true, status: 'pass' };
 
-        // اقفل تلقائيًا بعد ثانيتين لو تمام
         setTimeout(() => {
           closeAIOverlay();
           updateCheckUI(field, {
             status: 'pass',
-            message: 'تم الفحص ✓ المستند صالح'
+            message: 'تم الفحص — المستند صالح'
           });
         }, 1800);
 
       } else {
         showAIResult('error', `
-          <strong>✗ مشكلة في المستند</strong><br>
+          <strong>مشكلة في المستند</strong><br>
           <span style="font-size:12.5px;opacity:0.9;">
             ${validation.message}
           </span>
@@ -812,7 +796,7 @@
     } catch (err) {
       console.error('[AI] Error:', err);
       showAIResult('warning', `
-        <strong>⚠ تعذّر الفحص التلقائي</strong><br>
+        <strong>تعذّر الفحص التلقائي</strong><br>
         <span style="font-size:12.5px;opacity:0.9;">
           سيتم فحص المستند من قبل اللجنة يدويًا.
         </span>
@@ -820,7 +804,6 @@
       updateAIStatus('خطأ في الفحص');
       showAIActions();
 
-      // نعتبره "تحذير مش فشل" عشان مايمنعش الإرسال
       fileCheckResults[field] = { ok: true, status: 'warning' };
 
       updateCheckUI(field, {
@@ -889,10 +872,10 @@
       opt.textContent = `${t.name} — ${t.fee} جنيه`;
       opt.dataset.fee = t.fee;
       opt.dataset.name = t.name;
+      opt.dataset.duration = t.duration_months || 12;
       select.appendChild(opt);
     });
 
-    // Preselect من URL
     try {
       const params = new URLSearchParams(window.location.search);
       const typeId = params.get('type');
@@ -903,6 +886,85 @@
     select.addEventListener('change', updatePriceDisplay);
   }
 
+  /* ============================================
+     LOAD GOVERNORATES
+     ============================================ */
+  async function loadGovernorates() {
+    const select = document.getElementById('governorate');
+    if (!select || !client) return;
+
+    const { data, error } = await client
+      .from('governorates')
+      .select('*')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true });
+
+    if (error) return;
+
+    governorates = data || [];
+    select.innerHTML = '<option value="">-- اختر المحافظة --</option>';
+
+    governorates.forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g.name;
+      opt.textContent = g.name;
+      opt.dataset.govId = g.id;
+      select.appendChild(opt);
+    });
+  }
+
+  /* ============================================
+     LOAD SETTINGS (Health Care)
+     ============================================ */
+  async function loadSettings() {
+    if (!client) return;
+
+    try {
+      const { data } = await client
+        .from('settings')
+        .select('key, value');
+
+      if (!data) return;
+
+      settings = {};
+      data.forEach(row => {
+        settings[row.key] = row.value;
+      });
+
+      applyHealthCareSettings();
+      applyTermsText();
+
+    } catch (e) {
+      console.warn('[Apply] Settings load failed:', e.message);
+    }
+  }
+
+  function applyHealthCareSettings() {
+    const enabled = settings.health_care_enabled === 'true';
+    const price = parseFloat(settings.health_care_price) || 150;
+    const label = settings.health_care_label || 'رعاية صحية على الكارنية';
+
+    const section = document.getElementById('healthCareSection');
+    const priceEl = document.getElementById('healthCarePrice');
+    const labelEl = document.getElementById('healthCareLabel');
+
+    if (section) section.style.display = enabled ? 'block' : 'none';
+    if (priceEl) priceEl.textContent = price;
+    if (labelEl) labelEl.textContent = label;
+  }
+
+  function applyTermsText() {
+    const terms = settings.terms_text;
+    if (terms) {
+      document.querySelectorAll('[data-terms-text]').forEach(el => {
+        el.textContent = terms;
+      });
+    }
+  }
+
+  /* ============================================
+     PRICE + INVOICE
+     ============================================ */
   function updatePriceDisplay() {
     const select = document.getElementById('membershipType');
     const priceEl = document.getElementById('priceDisplay');
@@ -913,6 +975,7 @@
 
     if (!fee) {
       priceEl.style.display = 'none';
+      updateInvoicePreview();
       return;
     }
 
@@ -925,6 +988,115 @@
         </span>
       </div>
     `;
+
+    updateInvoicePreview();
+  }
+
+  window.updateInvoicePreview = function () {
+    const select = document.getElementById('membershipType');
+    const preview = document.getElementById('invoicePreview');
+    const membershipEl = document.getElementById('previewMembershipFee');
+    const healthEl = document.getElementById('previewHealthFee');
+    const healthRow = document.getElementById('previewHealthRow');
+    const totalEl = document.getElementById('previewTotal');
+
+    if (!select || !preview) return;
+
+    const opt = select.selectedOptions[0];
+    const membershipFee = parseFloat(opt?.dataset?.fee) || 0;
+
+    if (!membershipFee) {
+      preview.style.display = 'none';
+      return;
+    }
+
+    preview.style.display = 'block';
+    if (membershipEl) membershipEl.textContent = `${membershipFee} جنيه`;
+
+    const wantsHC = document.getElementById('wantsHealthCare')?.checked;
+    const hcPrice = parseFloat(settings.health_care_price) || 150;
+
+    let total = membershipFee;
+
+    if (wantsHC) {
+      if (healthRow) healthRow.style.display = 'flex';
+      if (healthEl) healthEl.textContent = `${hcPrice} جنيه`;
+      total += hcPrice;
+    } else {
+      if (healthRow) healthRow.style.display = 'none';
+    }
+
+    if (totalEl) totalEl.textContent = `${total} جنيه`;
+
+    return { membershipFee, hcPrice: wantsHC ? hcPrice : 0, total };
+  };
+
+  /* ============================================
+     HEALTH CARE TOGGLE
+     ============================================ */
+  window.toggleHealthCare = function () {
+    const checkbox = document.getElementById('wantsHealthCare');
+    const box = document.getElementById('healthCareBox');
+    if (!checkbox || !box) return;
+
+    checkbox.checked = !checkbox.checked;
+    box.classList.toggle('checked', checkbox.checked);
+
+    if (typeof window.updateInvoicePreview === 'function') {
+      window.updateInvoicePreview();
+    }
+  };
+
+  /* ============================================
+     AGE CALCULATION
+     ============================================ */
+  function setupAgeCalculation() {
+    const birthInput = document.getElementById('birth_date');
+    const ageInput = document.getElementById('age');
+    const hint = document.getElementById('ageHint');
+
+    if (!birthInput || !ageInput) return;
+
+    birthInput.addEventListener('change', () => {
+      const val = birthInput.value;
+      if (!val) {
+        ageInput.value = '';
+        if (hint) hint.textContent = '';
+        return;
+      }
+
+      const birthDate = new Date(val);
+      const today = new Date();
+
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+
+      ageInput.value = age;
+      ageInput.dataset.age = age;
+
+      if (age < 18) {
+        if (hint) {
+          hint.textContent = 'يجب أن يكون العمر 18 سنة على الأقل';
+          hint.style.color = 'var(--danger)';
+        }
+        ageInput.style.color = 'var(--danger)';
+      } else if (age > 80) {
+        if (hint) {
+          hint.textContent = 'تأكد من تاريخ الميلاد';
+          hint.style.color = 'var(--warning)';
+        }
+        ageInput.style.color = 'var(--warning)';
+      } else {
+        if (hint) {
+          hint.textContent = `${age} سنة`;
+          hint.style.color = 'var(--success)';
+        }
+        ageInput.style.color = 'var(--success)';
+      }
+    });
   }
 
   /* ============================================
@@ -941,15 +1113,23 @@
     const nationalId = getVal('national_id');
     const phone = getVal('phone');
     const email = getVal('email');
+    const birthDate = getVal('birth_date');
     const membershipType = getVal('membership_type_id');
 
     if (!fullName || fullName.length < 6) errors.push('الاسم الرباعي مطلوب (6 أحرف على الأقل)');
     if (!/^\d{14}$/.test(nationalId)) errors.push('الرقم القومي يجب أن يكون 14 رقم');
     if (!/^01[0125]\d{8}$/.test(phone)) errors.push('رقم الموبايل غير صحيح');
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('البريد الإلكتروني غير صحيح');
+    if (!birthDate) errors.push('تاريخ الميلاد مطلوب');
     if (!membershipType) errors.push('اختر نوع العضوية');
 
-    // لو مقيد في نقابة أخرى → لازم اسم النقابة
+    // Age check
+    const age = parseInt(document.getElementById('age')?.value) || 0;
+    if (birthDate && age < 18) {
+      errors.push('يجب أن يكون العمر 18 سنة على الأقل');
+    }
+
+    // Other syndicate
     const isOtherSyndicate = form.querySelector('input[name="is_other_syndicate"]:checked')?.value === 'yes';
     if (isOtherSyndicate) {
       const otherName = getVal('other_syndicate');
@@ -958,7 +1138,7 @@
       }
     }
 
-    // الملفات المطلوبة
+    // Required files
     const requiredFiles = ['id_front', 'id_back', 'certificate', 'photo'];
     const fileLabels = {
       id_front: 'بطاقة الرقم القومي (وجه)',
@@ -975,7 +1155,7 @@
       }
     });
 
-    // الإقرار
+    // Terms
     const agree = document.getElementById('agreeTerms');
     if (agree && !agree.checked) errors.push('يجب الموافقة على الإقرار');
 
@@ -1030,21 +1210,34 @@
 
       const nationalId = getVal('national_id');
 
-      // 1) فحص التكرار
+      // 1) Duplicate check
       setAlert('info', 'جاري التحقق من البيانات...');
       const duplicate = await checkDuplicate(nationalId);
       if (duplicate) {
         throw new Error(`يوجد طلب مسبق بنفس الرقم القومي — رقم التتبع: ${duplicate.tracking_no}`);
       }
 
-      // 2) أنشئ الطلب
+      // 2) Create application
       setAlert('info', 'جاري إنشاء الطلب...');
 
       const isOtherSyndicate = form.querySelector('input[name="is_other_syndicate"]:checked')?.value === 'yes';
+      const wantsHC = document.getElementById('wantsHealthCare')?.checked || false;
+      const hcPrice = wantsHC ? (parseFloat(settings.health_care_price) || 150) : 0;
+
+      const selectedTypeOpt = form.querySelector(`[name="membership_type_id"]`)?.selectedOptions[0];
+      const membershipFee = parseFloat(selectedTypeOpt?.dataset?.fee) || 0;
+      const membershipName = selectedTypeOpt?.dataset?.name || '';
+
+      const govSelect = form.querySelector('[name="governorate"]');
+      const govId = govSelect?.selectedOptions[0]?.dataset?.govId || null;
+
+      const age = parseInt(document.getElementById('age')?.value) || null;
 
       const payload = {
         full_name: getVal('full_name'),
         national_id: nationalId,
+        birth_date: getVal('birth_date') || null,
+        age: age,
         phone: getVal('phone'),
         email: getVal('email') || null,
         address: getVal('address') || null,
@@ -1054,9 +1247,14 @@
         employer: getVal('employer') || null,
         job_title: getVal('job_title') || null,
         governorate: getVal('governorate') || null,
+        governorate_id: govId ? parseInt(govId) : null,
         membership_type_id: parseInt(getVal('membership_type_id')),
         is_other_syndicate: isOtherSyndicate,
         other_syndicate: isOtherSyndicate ? getVal('other_syndicate') : null,
+        wants_health_care: wantsHC,
+        health_care_amount: hcPrice,
+        membership_fee: membershipFee,
+        total_amount: membershipFee + hcPrice,
         status: 'pending',
         ai_score: 0
       };
@@ -1072,7 +1270,7 @@
       const applicationId = appData.id;
       const trackingNo = appData.tracking_no;
 
-      // 3) ارفع الملفات
+      // 3) Upload files
       setAlert('info', 'جاري رفع المرفقات...');
 
       const allDocs = REQUIRED_DOCS.concat(OPTIONAL_DOCS);
@@ -1113,7 +1311,7 @@
         }]);
       }
 
-      // 4) احسب متوسط الـ AI Score
+      // 4) Calculate average AI score
       const scores = Object.values(aiAnalysisResults).filter(r => r?.ok).map(r => r.confidence);
       if (scores.length > 0) {
         const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
@@ -1127,10 +1325,7 @@
           .eq('id', applicationId);
       }
 
-      // 5) بيانات الإيصال
-      const selectedTypeOpt = form.querySelector(`[name="membership_type_id"]`)?.selectedOptions[0];
-      const membershipName = selectedTypeOpt?.dataset?.name || '';
-
+      // 5) Receipt data
       const receiptData = {
         tracking_no: trackingNo,
         application_id: applicationId,
@@ -1139,6 +1334,8 @@
         phone: appData.phone,
         membership_type: membershipName,
         membership_type_id: appData.membership_type_id,
+        total_amount: appData.total_amount,
+        has_health_care: appData.wants_health_care,
         status: 'ai_review',
         created_at: appData.created_at
       };
@@ -1180,7 +1377,6 @@
           data[el.name] = el.value;
         });
 
-        // راديو نقابة أخرى
         const otherRadio = form.querySelector('input[name="is_other_syndicate"]:checked');
         if (otherRadio) data.is_other_syndicate = otherRadio.value;
 
@@ -1189,7 +1385,6 @@
           savedAt: new Date().toISOString()
         }));
 
-        // مؤشر الحفظ
         const indicator = document.getElementById('draftIndicator');
         if (indicator) {
           indicator.style.opacity = '1';
@@ -1210,7 +1405,6 @@
       const parsed = JSON.parse(raw);
       if (!parsed?.data) return;
 
-      // تحقق من العمر (24 ساعة)
       const savedAt = new Date(parsed.savedAt).getTime();
       if (Date.now() - savedAt > 24 * 60 * 60 * 1000) return;
 
@@ -1232,12 +1426,9 @@
         }
       });
 
-      const params = new URLSearchParams(window.location.search);
-      const typeId = params.get('type');
-      if (typeId) {
-        const select = document.getElementById('membershipType');
-        if (select) select.value = typeId;
-        updatePriceDisplay();
+      const birthInput = document.getElementById('birth_date');
+      if (birthInput && birthInput.value) {
+        birthInput.dispatchEvent(new Event('change'));
       }
     } catch (e) {}
   }
@@ -1254,6 +1445,48 @@
   }
 
   /* ============================================
+     OTHER SYNDICATE TOGGLE
+     ============================================ */
+  function setupOtherSyndicate() {
+    const radios = document.querySelectorAll('input[name="is_other_syndicate"]');
+    const field = document.getElementById('otherSyndicateField');
+    const input = document.getElementById('other_syndicate');
+
+    radios.forEach(r => {
+      r.addEventListener('change', () => {
+        if (r.value === 'yes' && r.checked) {
+          field.style.display = 'block';
+          input.required = true;
+        } else if (r.value === 'no' && r.checked) {
+          field.style.display = 'none';
+          input.required = false;
+          input.value = '';
+        }
+      });
+    });
+  }
+
+  /* ============================================
+     NUMERIC INPUTS
+     ============================================ */
+  function setupNumericInputs() {
+    const nationalId = document.getElementById('national_id');
+    const phone = document.getElementById('phone');
+
+    if (nationalId) {
+      nationalId.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 14);
+      });
+    }
+
+    if (phone) {
+      phone.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 11);
+      });
+    }
+  }
+
+  /* ============================================
      INIT
      ============================================ */
   function init() {
@@ -1265,18 +1498,27 @@
     window.onSupabaseReady(async (c) => {
       client = c;
 
+      await loadSettings();
       await loadMembershipTypes();
+      await loadGovernorates();
+
       setupFileUploads();
+      setupNumericInputs();
+      setupOtherSyndicate();
+      setupAgeCalculation();
+
       restoreDraft();
       setupDraftAutosave();
 
       const form = document.getElementById('applyForm');
       if (form) form.addEventListener('submit', submitForm);
 
-      // Realtime
       if (window.Realtime) {
         window.Realtime.watch('membership_types', () => loadMembershipTypes());
+        window.Realtime.watch('settings', () => loadSettings());
       }
+
+      console.log('[Apply] Ready');
     });
   }
 
