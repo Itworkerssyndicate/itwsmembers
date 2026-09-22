@@ -182,6 +182,26 @@
   #recentBox { margin-bottom: 20px; }
   #resultBox { margin-top: 20px; }
 
+  /* Recent chips */
+  .recent-chip {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    padding: 7px 14px;
+    border-radius: var(--radius-full);
+    font-size: 12.5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .recent-chip:hover {
+    background: rgba(var(--accent-rgb), 0.1);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+
   /* Result wrapper */
   .result-wrap {
     animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -463,9 +483,7 @@
     stroke-linejoin: round;
   }
 
-  .missing-doc-input {
-    display: none;
-  }
+  .missing-doc-input { display: none; }
 
   .missing-doc-status {
     font-size: 12px;
@@ -475,6 +493,241 @@
   }
 
   .missing-doc-status.show { display: inline; }
+
+  /* Payment Section */
+  .payment-section {
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.06), rgba(var(--accent-2-rgb), 0.04));
+    border: 1.5px solid rgba(var(--accent-rgb), 0.3);
+    border-radius: var(--radius-lg);
+    margin-bottom: 20px;
+  }
+
+  .payment-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+
+  .payment-title svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .invoice-table {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 18px;
+  }
+
+  .invoice-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .invoice-row:last-child { border-bottom: none; }
+
+  .invoice-row.total {
+    padding-top: 14px;
+    margin-top: 6px;
+    border-top: 2px dashed rgba(var(--accent-rgb), 0.3);
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  .invoice-row .label { color: var(--text-muted); }
+  .invoice-row .value { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+  .invoice-row.total .value {
+    color: var(--accent);
+    font-size: 20px;
+    text-shadow: var(--glow-accent);
+  }
+
+  .payment-methods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .payment-method-card {
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .payment-method-card:hover {
+    border-color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.06);
+  }
+
+  .payment-method-card .pm-icon {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    background: rgba(var(--accent-rgb), 0.1);
+    border: 1.5px solid rgba(var(--accent-rgb), 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .payment-method-card .pm-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--accent);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .payment-method-card .pm-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .payment-method-card .pm-desc {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* Upload receipt box */
+  .upload-receipt-box {
+    padding: 18px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px dashed rgba(var(--accent-rgb), 0.4);
+    border-radius: var(--radius-md);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .upload-receipt-box:hover {
+    border-color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.06);
+  }
+
+  .upload-receipt-box.has-file {
+    border-style: solid;
+    border-color: var(--success);
+    background: rgba(var(--success-rgb), 0.06);
+  }
+
+  .upload-receipt-box input[type="file"] {
+    display: none;
+  }
+
+  .upload-receipt-box .up-icon {
+    width: 44px;
+    height: 44px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    background: rgba(var(--accent-rgb), 0.1);
+    border: 1.5px solid rgba(var(--accent-rgb), 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .upload-receipt-box .up-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--accent);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .upload-receipt-box .up-text {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .upload-receipt-box .up-hint {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .upload-receipt-box .filename {
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--success);
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    word-break: break-all;
+  }
+
+  .receipt-preview {
+    margin-top: 16px;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-soft);
+  }
+
+  .receipt-preview img {
+    max-width: 100%;
+    max-height: 320px;
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto;
+  }
+
+  .receipt-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 700;
+    border: 1.5px solid;
+    margin-top: 12px;
+  }
+
+  .receipt-status-badge.pending {
+    background: rgba(var(--warning-rgb), 0.1);
+    border-color: var(--warning);
+    color: var(--warning);
+  }
+
+  .receipt-status-badge.confirmed {
+    background: rgba(var(--success-rgb), 0.1);
+    border-color: var(--success);
+    color: var(--success);
+  }
+
+  .receipt-status-badge.rejected {
+    background: rgba(var(--danger-rgb), 0.1);
+    border-color: var(--danger);
+    color: var(--danger);
+  }
 
   /* Details grid */
   .details-grid {
@@ -532,6 +785,67 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  /* Card Image Section */
+  .card-section {
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(var(--success-rgb), 0.06), rgba(var(--accent-rgb), 0.04));
+    border: 2px solid var(--success);
+    border-radius: var(--radius-lg);
+    margin-bottom: 20px;
+    text-align: center;
+    animation: successPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes successPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(var(--success-rgb), 0.3); }
+    50%      { box-shadow: 0 0 40px rgba(var(--success-rgb), 0.5); }
+  }
+
+  .card-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--success);
+    margin-bottom: 16px;
+  }
+
+  .card-title svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .card-image-wrap {
+    max-width: 500px;
+    margin: 0 auto 16px;
+    padding: 12px;
+    background: #ffffff;
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 40px rgba(var(--success-rgb), 0.3);
+  }
+
+  .card-image-wrap img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
   /* Timeline */
@@ -801,9 +1115,12 @@
 
     .navbar, .footer, .search-card, .result-actions,
     .upload-missing-btn, .bg-grid, .bg-glow, .bg-layer,
-    .track-hero { display: none !important; }
+    .track-hero, .upload-receipt-box, .payment-methods {
+      display: none !important;
+    }
 
-    .timeline-card, .result-header, .detail-card, .missing-docs-banner {
+    .timeline-card, .result-header, .detail-card, .missing-docs-banner,
+    .payment-section, .card-section {
       background: white !important;
       border: 1px solid #999 !important;
       box-shadow: none !important;
@@ -834,6 +1151,7 @@
     .qr-box { align-self: center; }
     .timeline-card { padding: 20px 16px; }
     .result-actions { flex-direction: column; }
+    .payment-methods { grid-template-columns: 1fr; }
   }
 
   @media (max-width: 480px) {
@@ -1097,7 +1415,7 @@
     });
   })();
 
-  /* Toast helper (يعرضه track.js) */
+  /* Toast helper */
   window.showTrackToast = function (msg, type) {
     const toast = document.getElementById('toastMini');
     if (!toast) return;
