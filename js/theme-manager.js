@@ -1,488 +1,597 @@
 /* =====================================================
-   IT SYNDICATE — Theme Manager
+   IT SYNDICATE — THEME MANAGER
+   Version: 3.0.0
+   =====================================================
+   يحتوي على:
+   - 8 ثيمات كاملة
+   - تطبيق الثيم + تخزين في localStorage
+   - Theme Picker (بناء تلقائي)
+   - مزامنة مع settings (default_theme)
+   - Auto-detect (prefers-color-scheme)
+   - Theme Toggle (light/dark)
+   - Events + Broadcast
    ===================================================== */
 
 (function () {
   'use strict';
 
   /* ============================================
-     THEMES DEFINITION
+     CONSTANTS
+     ============================================ */
+  const STORAGE_KEY = 'its_theme';
+  const DEFAULT_THEME_KEY = 'its_global_default_theme';
+  const LEGACY_KEY = 'its_theme_preference';
+
+  /* ============================================
+     THEMES LIBRARY
      ============================================ */
   const THEMES = {
     'neon-dark': {
-      name: 'نيون داكن',
-      description: 'الثيم الافتراضي',
-      accent: '#00f0ff',
-      accent2: '#b026ff',
-      accentRgb: '0, 240, 255',
-      accent2Rgb: '176, 38, 255',
-      bg: '#000000',
-      bg2: '#0a0c14',
-      text: '#ffffff',
-      textMuted: 'rgba(255, 255, 255, 0.55)',
-      isDark: true
+      name: 'Neon Dark',
+      nameAr: 'نيون داكن',
+      description: 'سماوي وبنفسجي — الوضع الافتراضي',
+      type: 'dark',
+      colors: {
+        accent: '#00f0ff',
+        accent2: '#b026ff',
+        bg: '#0a0c14'
+      }
     },
-    'cyber-blue': {
-      name: 'سيبر أزرق',
-      description: 'أزرق سيبراني',
-      accent: '#38bdf8',
-      accent2: '#0284c7',
-      accentRgb: '56, 189, 248',
-      accent2Rgb: '2, 132, 199',
-      bg: '#0a0f1e',
-      bg2: '#0f172a',
-      text: '#ffffff',
-      textMuted: 'rgba(255, 255, 255, 0.55)',
-      isDark: true
+    'neon-light': {
+      name: 'Neon Light',
+      nameAr: 'نيون فاتح',
+      description: 'أزرق وبنفسجي — وضع فاتح',
+      type: 'light',
+      colors: {
+        accent: '#0099ff',
+        accent2: '#a020f0',
+        bg: '#f5f7fb'
+      }
     },
-    'matrix-green': {
-      name: 'ماتريكس',
-      description: 'أخضر ماتريكس',
-      accent: '#22c55e',
-      accent2: '#16a34a',
-      accentRgb: '34, 197, 94',
-      accent2Rgb: '22, 163, 74',
-      bg: '#000000',
-      bg2: '#0a1a0f',
-      text: '#ffffff',
-      textMuted: 'rgba(255, 255, 255, 0.55)',
-      isDark: true
+    'cyberpunk': {
+      name: 'Cyberpunk',
+      nameAr: 'سايبربانك',
+      description: 'ماجنتا وأصفر — كريتيف',
+      type: 'dark',
+      colors: {
+        accent: '#ff0080',
+        accent2: '#ffcc00',
+        bg: '#0d0619'
+      }
     },
-    'sunset': {
-      name: 'غروب',
-      description: 'برتقالي ووردي',
-      accent: '#f97316',
-      accent2: '#ec4899',
-      accentRgb: '249, 115, 22',
-      accent2Rgb: '236, 72, 153',
-      bg: '#1a0a0a',
-      bg2: '#2a1010',
-      text: '#ffffff',
-      textMuted: 'rgba(255, 255, 255, 0.55)',
-      isDark: true
+    'emerald': {
+      name: 'Emerald',
+      nameAr: 'زمردي',
+      description: 'أخضر وذهبي — هادئ',
+      type: 'dark',
+      colors: {
+        accent: '#10b981',
+        accent2: '#fbbf24',
+        bg: '#071410'
+      }
     },
-    'royal-purple': {
-      name: 'بنفسجي ملكي',
-      description: 'بنفسجي فاخر',
-      accent: '#a855f7',
-      accent2: '#d946ef',
-      accentRgb: '168, 85, 247',
-      accent2Rgb: '217, 70, 239',
-      bg: '#0f0524',
-      bg2: '#1a0a35',
-      text: '#ffffff',
-      textMuted: 'rgba(255, 255, 255, 0.55)',
-      isDark: true
+    'royal': {
+      name: 'Royal',
+      nameAr: 'ملكي',
+      description: 'بنفسجي وسماوي — فخم',
+      type: 'dark',
+      colors: {
+        accent: '#8b5cf6',
+        accent2: '#06b6d4',
+        bg: '#0a0618'
+      }
     },
-    'light-pro': {
-      name: 'فاتح احترافي',
-      description: 'خلفية بيضاء',
-      accent: '#2563eb',
-      accent2: '#7c3aed',
-      accentRgb: '37, 99, 235',
-      accent2Rgb: '124, 58, 237',
-      bg: '#f8fafc',
-      bg2: '#ffffff',
-      text: '#0f172a',
-      textMuted: 'rgba(15, 23, 42, 0.65)',
-      isDark: false
+    'patriot': {
+      name: 'Patriot Red',
+      nameAr: 'وطني أحمر',
+      description: 'أحمر وأسود — هوية النقابة',
+      type: 'dark',
+      colors: {
+        accent: '#e62e2e',
+        accent2: '#1a1a1a',
+        bg: '#0a0a0a'
+      }
     },
-    'midnight': {
-      name: 'منتصف الليل',
-      description: 'أزرق داكن هادئ',
-      accent: '#60a5fa',
-      accent2: '#818cf8',
-      accentRgb: '96, 165, 250',
-      accent2Rgb: '129, 140, 248',
-      bg: '#050814',
-      bg2: '#0a1024',
-      text: '#ffffff',
-      textMuted: 'rgba(255, 255, 255, 0.55)',
-      isDark: true
+    'tech-cairo': {
+      name: 'Tech Cairo',
+      nameAr: 'تك كايرو',
+      description: 'أحمر وذهبي — فخم مصري',
+      type: 'dark',
+      colors: {
+        accent: '#e62e2e',
+        accent2: '#d4af37',
+        bg: '#1a0a0a'
+      }
+    },
+    'minimal': {
+      name: 'Modern Minimal',
+      nameAr: 'مينيمال',
+      description: 'أحمر وأسود — فاتح احترافي',
+      type: 'light',
+      colors: {
+        accent: '#e62e2e',
+        accent2: '#1a1a1a',
+        bg: '#ffffff'
+      }
     }
   };
 
   /* ============================================
-     CONSTANTS
-     ============================================ */
-  const STORAGE_KEY = 'its_theme';
-  const GLOBAL_THEME_CACHE_KEY = 'its_global_default_theme';
-  const DEFAULT_THEME = 'neon-dark';
-
-  /* ============================================
      STATE
      ============================================ */
-  let currentThemeId = null;
-  let client = null;
-
-  const themeChangeListeners = [];
+  let currentTheme = null;
+  let globalDefaultTheme = null;
 
   /* ============================================
-     GET USER THEME
+     VALIDATION
      ============================================ */
-  function getUserTheme() {
+  function isValidTheme(theme) {
+    return typeof theme === 'string' && THEMES[theme] !== undefined;
+  }
+
+  /* ============================================
+     READ STORED THEME
+     ============================================ */
+  function getStoredTheme() {
     try {
-      const userTheme = localStorage.getItem(STORAGE_KEY);
-      if (userTheme && THEMES[userTheme]) return userTheme;
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (isValidTheme(stored)) return stored;
 
-      const globalDefault = localStorage.getItem(GLOBAL_THEME_CACHE_KEY);
-      if (globalDefault && THEMES[globalDefault]) return globalDefault;
+      // Legacy migration
+      const legacy = localStorage.getItem(LEGACY_KEY);
+      if (isValidTheme(legacy)) {
+        localStorage.setItem(STORAGE_KEY, legacy);
+        localStorage.removeItem(LEGACY_KEY);
+        return legacy;
+      }
 
-      return DEFAULT_THEME;
+      return null;
     } catch (e) {
-      return DEFAULT_THEME;
+      return null;
     }
+  }
+
+  function getGlobalDefault() {
+    try {
+      const stored = localStorage.getItem(DEFAULT_THEME_KEY);
+      if (isValidTheme(stored)) return stored;
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function detectSystemPreference() {
+    try {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        return 'neon-light';
+      }
+    } catch (e) {}
+    return 'neon-dark';
+  }
+
+  function resolveInitialTheme() {
+    // Priority: stored user theme > global default > system preference
+    return getStoredTheme() || getGlobalDefault() || detectSystemPreference();
   }
 
   /* ============================================
      APPLY THEME
      ============================================ */
-  function applyTheme(themeId, options = {}) {
-    const theme = THEMES[themeId] || THEMES[DEFAULT_THEME];
-    const root = document.documentElement;
+  function applyTheme(theme, options) {
+    const opts = options || {};
 
-    root.setAttribute('data-theme', themeId);
-    root.setAttribute('data-theme-mode', theme.isDark ? 'dark' : 'light');
-
-    // CSS Variables
-    root.style.setProperty('--accent', theme.accent);
-    root.style.setProperty('--accent-2', theme.accent2);
-    root.style.setProperty('--accent-rgb', theme.accentRgb);
-    root.style.setProperty('--accent-2-rgb', theme.accent2Rgb);
-    root.style.setProperty('--bg', theme.bg);
-    root.style.setProperty('--bg-2', theme.bg2);
-    root.style.setProperty('--text', theme.text);
-    root.style.setProperty('--text-muted', theme.textMuted);
-
-    // Meta theme-color
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) metaThemeColor.setAttribute('content', theme.bg);
-
-    // Body background
-    document.body.style.background = theme.bg;
-
-    // Update swatches
-    updateActiveSwatches(themeId);
-
-    // Track
-    const previousTheme = currentThemeId;
-    currentThemeId = themeId;
-
-    // Dispatch
-    if (!options.silent) {
-      window.dispatchEvent(new CustomEvent('theme-changed', {
-        detail: { themeId, theme, previousTheme }
-      }));
-
-      themeChangeListeners.forEach(cb => {
-        try { cb(themeId, theme); } catch (e) {}
-      });
-    }
-  }
-
-  /* ============================================
-     SET USER THEME
-     ============================================ */
-  function setUserTheme(themeId, options = {}) {
-    if (!THEMES[themeId]) {
-      console.warn('[Theme] Unknown theme:', themeId);
-      return false;
+    if (!isValidTheme(theme)) {
+      console.warn(`[ThemeManager] Invalid theme: ${theme}. Falling back to neon-dark.`);
+      theme = 'neon-dark';
     }
 
-    try {
-      localStorage.setItem(STORAGE_KEY, themeId);
-    } catch (e) {}
-
-    applyTheme(themeId);
-
-    // Sync to server (fire & forget)
-    if (options.sync !== false) {
-      syncUserThemeToServer(themeId);
+    // Add transition class temporarily
+    if (opts.animate !== false) {
+      document.documentElement.classList.add('theme-transition');
     }
 
-    return true;
+    // Set data-theme attribute
+    document.documentElement.setAttribute('data-theme', theme);
+
+    // Update meta theme-color
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta && THEMES[theme].colors.bg) {
+      meta.setAttribute('content', THEMES[theme].colors.bg);
+    }
+
+    currentTheme = theme;
+
+    // Remove transition class after animation
+    if (opts.animate !== false) {
+      setTimeout(() => {
+        document.documentElement.classList.remove('theme-transition');
+      }, 350);
+    }
+
+    // Dispatch event
+    window.dispatchEvent(new CustomEvent('theme-changed', {
+      detail: { theme, info: THEMES[theme] }
+    }));
+
+    return theme;
   }
 
   /* ============================================
-     SYNC TO SUPABASE
+     SET THEME
      ============================================ */
-  async function syncUserThemeToServer(themeId) {
-    if (!window.supabaseClient) return;
-    try {
-      const { data: sessionData } = await window.supabaseClient.auth.getSession();
-      const user = sessionData?.session?.user;
-      if (!user) return;
+  function setTheme(theme, options) {
+    const opts = options || {};
 
-      await window.supabaseClient
-        .from('user_preferences')
-        .upsert({
-          user_id: user.id,
-          theme: themeId,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' });
-    } catch (e) {}
-  }
+    if (!isValidTheme(theme)) return currentTheme;
 
-  /* ============================================
-     LOAD USER THEME FROM SERVER
-     ============================================ */
-  async function loadUserThemeFromServer() {
-    if (!window.supabaseClient) return null;
-    try {
-      const { data: sessionData } = await window.supabaseClient.auth.getSession();
-      const user = sessionData?.session?.user;
-      if (!user) return null;
+    applyTheme(theme, opts);
 
-      const { data, error } = await window.supabaseClient
-        .from('user_preferences')
-        .select('theme')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) return null;
-
-      if (data && data.theme && THEMES[data.theme]) {
-        try { localStorage.setItem(STORAGE_KEY, data.theme); } catch (e) {}
-        applyTheme(data.theme);
-        return data.theme;
-      }
-    } catch (e) {}
-    return null;
-  }
-
-  /* ============================================
-     LOAD GLOBAL DEFAULT
-     ============================================ */
-  async function loadGlobalDefaultTheme() {
-    if (!window.supabaseClient) {
+    // Save to localStorage (unless it's just a preview)
+    if (opts.persist !== false) {
       try {
-        const cached = localStorage.getItem(GLOBAL_THEME_CACHE_KEY);
-        if (cached && THEMES[cached]) {
-          if (!localStorage.getItem(STORAGE_KEY)) {
-            applyTheme(cached);
-          }
-        }
+        localStorage.setItem(STORAGE_KEY, theme);
       } catch (e) {}
+    }
+
+    return theme;
+  }
+
+  function setGlobalDefault(theme) {
+    if (!isValidTheme(theme)) return null;
+    globalDefaultTheme = theme;
+    try {
+      localStorage.setItem(DEFAULT_THEME_KEY, theme);
+    } catch (e) {}
+    return theme;
+  }
+
+  function resetTheme() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(LEGACY_KEY);
+    } catch (e) {}
+
+    const fallback = globalDefaultTheme || detectSystemPreference();
+    applyTheme(fallback);
+    return fallback;
+  }
+
+  /* ============================================
+     GETTERS
+     ============================================ */
+  function getTheme() {
+    return currentTheme;
+  }
+
+  function getThemes() {
+    return THEMES;
+  }
+
+  function getThemeInfo(theme) {
+    const key = theme || currentTheme;
+    return THEMES[key] || null;
+  }
+
+  function isDark(theme) {
+    const key = theme || currentTheme;
+    return THEMES[key]?.type === 'dark';
+  }
+
+  function isLight(theme) {
+    const key = theme || currentTheme;
+    return THEMES[key]?.type === 'light';
+  }
+
+  /* ============================================
+     TOGGLE (Light/Dark)
+     ============================================ */
+  function toggleTheme() {
+    const current = currentTheme;
+    const currentInfo = THEMES[current];
+
+    if (!currentInfo) {
+      setTheme('neon-dark');
       return;
     }
 
-    try {
-      const { data, error } = await window.supabaseClient
-        .from('settings')
-        .select('value')
-        .eq('key', 'default_theme')
-        .maybeSingle();
-
-      if (error || !data) return;
-
-      const globalTheme = data.value;
-      if (globalTheme && THEMES[globalTheme]) {
-        try { localStorage.setItem(GLOBAL_THEME_CACHE_KEY, globalTheme); } catch (e) {}
-
-        const userTheme = localStorage.getItem(STORAGE_KEY);
-        if (!userTheme) {
-          applyTheme(globalTheme);
-        }
-      }
-    } catch (e) {}
-  }
-
-  /* ============================================
-     RESET
-     ============================================ */
-  function resetTheme() {
-    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-
-    let themeToApply = DEFAULT_THEME;
-    try {
-      const globalDefault = localStorage.getItem(GLOBAL_THEME_CACHE_KEY);
-      if (globalDefault && THEMES[globalDefault]) {
-        themeToApply = globalDefault;
-      }
-    } catch (e) {}
-
-    applyTheme(themeToApply);
-
-    // Clear server preference
-    (async function () {
-      if (!window.supabaseClient) return;
-      try {
-        const { data: sessionData } = await window.supabaseClient.auth.getSession();
-        const user = sessionData?.session?.user;
-        if (!user) return;
-        await window.supabaseClient
-          .from('user_preferences')
-          .delete()
-          .eq('user_id', user.id);
-      } catch (e) {}
-    })();
-
-    if (typeof window.showToast === 'function') {
-      window.showToast('تم إعادة تعيين الثيم', 'success', 2000);
+    if (currentInfo.type === 'dark') {
+      // Switch to matching light theme
+      const lightPairs = {
+        'neon-dark': 'neon-light',
+        'patriot': 'minimal',
+        'tech-cairo': 'minimal',
+        'cyberpunk': 'neon-light',
+        'emerald': 'neon-light',
+        'royal': 'neon-light'
+      };
+      setTheme(lightPairs[current] || 'neon-light');
+    } else {
+      // Switch to matching dark theme
+      const darkPairs = {
+        'neon-light': 'neon-dark',
+        'minimal': 'patriot'
+      };
+      setTheme(darkPairs[current] || 'neon-dark');
     }
   }
 
   /* ============================================
-     BUILD THEME GRID
+     BUILD THEME PICKER
      ============================================ */
-  function buildThemeGrid() {
-    const grid = document.getElementById('themeGrid');
-    if (!grid) return;
+  function buildThemePicker(containerId, options) {
+    const opts = options || {};
+    const container = document.getElementById(containerId);
+    if (!container) return;
 
-    const current = getUserTheme();
-    grid.innerHTML = '';
+    container.innerHTML = '';
 
-    Object.entries(THEMES).forEach(([id, theme]) => {
-      const el = document.createElement('div');
-      el.className = 'theme-item' + (id === current ? ' active' : '');
-      el.dataset.theme = id;
-      el.setAttribute('role', 'button');
-      el.setAttribute('tabindex', '0');
+    Object.entries(THEMES).forEach(([key, info]) => {
+      const isActive = key === currentTheme;
 
-      el.innerHTML = `
-        <div class="theme-swatch">
-          <span style="background:${theme.accent}"></span>
-          <span style="background:${theme.accent2}"></span>
-          <span style="background:${theme.bg}"></span>
-        </div>
-        <div class="theme-item-name">${theme.name}</div>
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'theme-option' + (isActive ? ' active' : '');
+      card.dataset.theme = key;
+      card.title = info.description || info.nameAr || info.name;
+
+      card.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 10px;
+        background: ${isActive ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.3)'};
+        border: 1.5px solid ${isActive ? info.colors.accent : 'rgba(255,255,255,0.08)'};
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.25s;
+        font-family: inherit;
+        text-align: right;
+        position: relative;
+        overflow: hidden;
       `;
 
-      el.addEventListener('click', () => setUserTheme(id));
-      el.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          setUserTheme(id);
+      if (isActive) {
+        card.style.boxShadow = `0 0 20px ${info.colors.accent}55`;
+      }
+
+      card.innerHTML = `
+        <div style="
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 6px;
+        ">
+          <span style="
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: ${info.colors.accent};
+            border: 2px solid rgba(255,255,255,0.2);
+            box-shadow: 0 0 10px ${info.colors.accent}88;
+            flex-shrink: 0;
+          "></span>
+          <span style="
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: ${info.colors.accent2};
+            border: 2px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
+            margin-right: -8px;
+          "></span>
+          <span style="
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, ${info.colors.accent}, ${info.colors.accent2});
+            opacity: 0.5;
+          "></span>
+        </div>
+        <div style="
+          font-size: 12px;
+          font-weight: 700;
+          color: ${isActive ? info.colors.accent : 'rgba(255,255,255,0.85)'};
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          line-height: 1.3;
+        ">${info.nameAr || info.name}</div>
+        <div style="
+          font-size: 10px;
+          color: rgba(255,255,255,0.4);
+          line-height: 1.3;
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+        ">${info.description || ''}</div>
+      `;
+
+      card.addEventListener('mouseenter', () => {
+        if (!isActive) {
+          card.style.borderColor = info.colors.accent + '77';
+          card.style.transform = 'translateY(-2px)';
+        }
+      });
+      card.addEventListener('mouseleave', () => {
+        if (!isActive) {
+          card.style.borderColor = 'rgba(255,255,255,0.08)';
+          card.style.transform = '';
         }
       });
 
-      grid.appendChild(el);
+      card.addEventListener('click', () => {
+        setTheme(key);
+        buildThemePicker(containerId, options);
+      });
+
+      container.appendChild(card);
     });
   }
 
   /* ============================================
-     UPDATE ACTIVE SWATCHES
-     ============================================ */
-  function updateActiveSwatches(activeId) {
-    document.querySelectorAll('.theme-item').forEach(item => {
-      item.classList.toggle('active', item.dataset.theme === activeId);
-    });
-  }
-
-  /* ============================================
-     GET THEME
-     ============================================ */
-  function getTheme(themeId) {
-    return THEMES[themeId || getUserTheme()];
-  }
-
-  function getAllThemes() {
-    return Object.entries(THEMES).map(([id, theme]) => ({
-      id,
-      ...theme
-    }));
-  }
-
-  function getCurrentThemeId() {
-    return currentThemeId || getUserTheme();
-  }
-
-  /* ============================================
-     BUILD THEME SELECT (admin)
+     BUILD THEME SELECT (Dropdown)
      ============================================ */
   function buildThemeSelect(selectId, currentValue) {
     const select = document.getElementById(selectId);
     if (!select) return;
 
+    const value = currentValue || currentTheme || 'neon-dark';
     select.innerHTML = '';
-    Object.entries(THEMES).forEach(([id, theme]) => {
+
+    Object.entries(THEMES).forEach(([key, info]) => {
       const opt = document.createElement('option');
-      opt.value = id;
-      opt.textContent = theme.name;
-      if (id === currentValue) opt.selected = true;
+      opt.value = key;
+      opt.textContent = `${info.nameAr || info.name} — ${info.description || ''}`;
+      if (key === value) opt.selected = true;
       select.appendChild(opt);
+    });
+
+    return select;
+  }
+
+  /* ============================================
+     SYNC WITH SETTINGS
+     ============================================ */
+  async function syncWithSettings() {
+    try {
+      // 1) Try localStorage first
+      const cached = localStorage.getItem('its_site_settings');
+      if (cached) {
+        try {
+          const settings = JSON.parse(cached);
+          if (settings.default_theme && isValidTheme(settings.default_theme)) {
+            setGlobalDefault(settings.default_theme);
+          }
+        } catch (e) {}
+      }
+
+      // 2) Try Supabase
+      if (window.supabaseClient) {
+        const { data } = await window.supabaseClient
+          .from('settings')
+          .select('value')
+          .eq('key', 'default_theme')
+          .maybeSingle();
+
+        if (data?.value && isValidTheme(data.value)) {
+          setGlobalDefault(data.value);
+        }
+      }
+    } catch (e) {
+      console.warn('[ThemeManager] Settings sync failed:', e.message);
+    }
+  }
+
+  /* ============================================
+     LISTEN FOR EXTERNAL CHANGES
+     ============================================ */
+  function setupListeners() {
+    // Listen for theme changes from other tabs
+    window.addEventListener('storage', (e) => {
+      if (e.key === STORAGE_KEY && e.newValue && isValidTheme(e.newValue)) {
+        applyTheme(e.newValue);
+      }
+      if (e.key === DEFAULT_THEME_KEY && e.newValue && isValidTheme(e.newValue)) {
+        setGlobalDefault(e.newValue);
+      }
+    });
+
+    // Listen for system preference changes
+    try {
+      const mq = window.matchMedia('(prefers-color-scheme: light)');
+      if (mq && mq.addEventListener) {
+        mq.addEventListener('change', (e) => {
+          // Only auto-switch if user hasn't explicitly chosen
+          if (!getStoredTheme()) {
+            applyTheme(e.matches ? 'neon-light' : 'neon-dark');
+          }
+        });
+      }
+    } catch (e) {}
+
+    // Listen for settings-updated broadcast
+    window.addEventListener('settings-updated', () => {
+      syncWithSettings();
     });
   }
 
   /* ============================================
-     LISTENERS
+     AUTO-INIT
      ============================================ */
-  function onThemeChange(callback) {
-    if (typeof callback !== 'function') return () => {};
-    themeChangeListeners.push(callback);
-    return function unsubscribe() {
-      const idx = themeChangeListeners.indexOf(callback);
-      if (idx > -1) themeChangeListeners.splice(idx, 1);
-    };
+  function autoInit() {
+    // Apply initial theme immediately (before paint)
+    const initial = resolveInitialTheme();
+    applyTheme(initial, { animate: false });
+
+    // Setup listeners
+    setupListeners();
+
+    // Sync with settings (async)
+    syncWithSettings();
   }
 
   /* ============================================
-     LEGACY GLOBAL
-     ============================================ */
-  window.resetTheme = resetTheme;
-  window.toggleThemePanel = window.toggleThemePanel || function () {
-    const panel = document.getElementById('themePanel');
-    if (panel) panel.classList.toggle('open');
-  };
-
-  /* ============================================
-     EXPOSE PUBLIC API
+     PUBLIC API
      ============================================ */
   window.ThemeManager = {
-    THEMES,
-    DEFAULT_THEME,
-    STORAGE_KEY,
+    // Theme actions
+    apply: applyTheme,
+    set: setTheme,
+    reset: resetTheme,
+    toggle: toggleTheme,
 
-    applyTheme,
-    setUserTheme,
-    getUserTheme,
-    getCurrentThemeId,
-    resetTheme,
-    getTheme,
-    getAllThemes,
+    // Getters
+    get: getTheme,
+    getAll: getThemes,
+    getInfo: getThemeInfo,
+    isDark,
+    isLight,
+    isValid: isValidTheme,
 
-    buildThemeGrid,
-    buildThemeSelect,
-    updateActiveSwatches,
+    // Global default
+    setGlobalDefault,
+    getGlobalDefault,
 
-    loadUserThemeFromServer,
-    loadGlobalDefaultTheme,
-    syncUserThemeToServer,
+    // UI builders
+    buildPicker: buildThemePicker,
+    buildSelect: buildThemeSelect,
 
-    onThemeChange
+    // Sync
+    sync: syncWithSettings,
+
+    // Internals (for debugging)
+    _themes: THEMES,
+    _storageKey: STORAGE_KEY
   };
 
   /* ============================================
-     INIT
+     START
      ============================================ */
-  function init() {
-    // Apply cached theme immediately (no flash)
-    applyTheme(getUserTheme(), { silent: true });
+  if (document.readyState === 'loading') {
+    // Apply theme ASAP (before DOM ready to avoid flash)
+    try {
+      const initial = resolveInitialTheme();
+      document.documentElement.setAttribute('data-theme', initial);
+      currentTheme = initial;
+    } catch (e) {}
 
-    // Build grid if present
-    if (document.getElementById('themeGrid')) {
-      buildThemeGrid();
-    }
-
-    // Wait for Supabase → load global default + user theme
-    if (typeof window.onSupabaseReady === 'function') {
-      window.onSupabaseReady(async (c) => {
-        client = c;
-        await loadGlobalDefaultTheme();
-        await loadUserThemeFromServer();
-
-        // Dispatch ready
-        window.dispatchEvent(new CustomEvent('theme-ready', {
-          detail: { themeId: getCurrentThemeId() }
-        }));
-      });
-    }
+    document.addEventListener('DOMContentLoaded', autoInit);
+  } else {
+    autoInit();
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+  // If Supabase becomes ready, sync settings
+  if (typeof window.onSupabaseReady === 'function') {
+    window.onSupabaseReady(() => {
+      syncWithSettings();
+    });
   } else {
-    init();
+    window.addEventListener('supabase-ready', () => {
+      syncWithSettings();
+    });
   }
 
 })();
