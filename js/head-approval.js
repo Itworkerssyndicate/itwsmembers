@@ -1,5 +1,16 @@
 /* =====================================================
-   IT SYNDICATE — Head Approval Logic
+   IT SYNDICATE — HEAD APPROVAL LOGIC
+   Version: 3.0.0
+   =====================================================
+   يحتوي على:
+   - Auth + Role check (head / vp / deputy)
+   - 6 كروت إحصائية
+   - جدول الطلبات المعتمدة (paid → delivered)
+   - Assign Modal (إصدار رقم العضوية)
+   - Card Upload Modal (رفع صورة الكارنية)
+   - Detail Modal
+   - Export CSV + Print
+   - Realtime
    ===================================================== */
 
 (function () {
@@ -132,7 +143,9 @@
     clock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
     chevronLeft: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>',
     chevronRight: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>',
-    inbox: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>'
+    inbox: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>',
+    close: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"/></svg>'
   };
 
   /* ============================================
@@ -159,7 +172,6 @@
       window.currentUserRole = userRole;
       window.currentUserName = userData?.full_name || currentUser.email || 'موظف';
 
-      // الأدوار المسموح لها بالدخول
       const allowedRoles = ['head', 'vice_president', 'deputy'];
       if (!allowedRoles.includes(userRole)) {
         alert('هذه الصفحة مخصصة للنقيب العام ونوابه فقط');
@@ -167,7 +179,6 @@
         return false;
       }
 
-      // Show admin link if head
       if (userRole === 'head') {
         const adminLink = document.getElementById('adminLink');
         if (adminLink) adminLink.style.display = 'flex';
@@ -200,7 +211,6 @@
       branches = branchesRes.data || [];
       governorates = govRes.data || [];
 
-      // Fill branch filter
       const branchSelect = document.getElementById('assignBranch');
       if (branchSelect) {
         branchSelect.innerHTML = '<option value="">-- اختر الشعبة --</option>';
@@ -212,7 +222,6 @@
         });
       }
 
-      // Fill gov filter
       const govFilter = document.getElementById('govFilter');
       if (govFilter) {
         govFilter.innerHTML = '<option value="all">كل المحافظات</option>';
@@ -313,17 +322,14 @@
           'delivered'
         ]);
 
-      // Status filter
       if (filters.status && filters.status !== 'all') {
         query = query.eq('status', filters.status);
       }
 
-      // Governorate filter
       if (filters.governorate && filters.governorate !== 'all') {
         query = query.eq('governorate', filters.governorate);
       }
 
-      // Search
       if (filters.search) {
         const s = filters.search.trim();
         query = query.or(
@@ -331,12 +337,10 @@
         );
       }
 
-      // Sort
       if (sortBy === 'newest') query = query.order('created_at', { ascending: false });
       else if (sortBy === 'oldest') query = query.order('created_at', { ascending: true });
       else if (sortBy === 'name') query = query.order('full_name', { ascending: true });
 
-      // Pagination
       const from = (currentPage - 1) * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
       query = query.range(from, to);
@@ -395,10 +399,8 @@
       const typeName = getTypeName(app.membership_type_id);
       const initials = getInitials(app.full_name);
       const hasHC = app.wants_health_care === true;
-      const membershipNo = app.membership_no || '—';
       const totalAmount = (parseFloat(app.membership_fee) || 0) + (parseFloat(app.health_care_amount) || 0);
 
-      // Buttons based on status
       const canAssign = app.status === 'paid' || app.status === 'awaiting_membership_no';
       const canUploadCard = app.status === 'membership_no_assigned' || app.status === 'card_processing';
 
@@ -483,7 +485,6 @@
       `;
     }).join('');
 
-    // Row click
     tbody.querySelectorAll('tr[data-id]').forEach(tr => {
       tr.addEventListener('click', (e) => {
         if (e.target.closest('.row-btn')) return;
@@ -493,7 +494,6 @@
       tr.addEventListener('mouseleave', () => { tr.style.background = ''; });
     });
 
-    // Buttons
     tbody.querySelectorAll('.row-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -591,7 +591,6 @@
      ============================================ */
   async function generateMembershipNo(branchId) {
     try {
-      // Get prefix from settings
       let prefix = 'MEM';
       if (window.SettingsManager) {
         prefix = window.SettingsManager.get('membership_no_prefix', 'MEM');
@@ -599,20 +598,16 @@
 
       const year = new Date().getFullYear();
 
-      // Get branch code
       let branchCode = '';
       if (branchId) {
         const br = branches.find(b => String(b.id) === String(branchId));
         if (br?.code) branchCode = '-' + br.code;
       }
 
-      // Count existing in this branch this year
-      let query = client
+      const { count } = await client
         .from('members')
         .select('id', { count: 'exact', head: true })
         .like('membership_no', `${prefix}-${year}${branchCode}-%`);
-
-      const { count } = await query;
 
       const nextNum = (count || 0) + 1;
       const padded = String(nextNum).padStart(5, '0');
@@ -647,7 +642,6 @@
     document.getElementById('assignDuration').value = 12;
     document.getElementById('assignHealthCare').checked = app.wants_health_care === true;
 
-    // Auto-generate membership no
     const autoNo = await generateMembershipNo(app.branch_id);
     document.getElementById('assignNo').value = autoNo;
 
@@ -693,7 +687,6 @@
       const endDate = new Date(now.getFullYear(), now.getMonth() + duration, now.getDate())
         .toISOString().slice(0, 10);
 
-      // 1) Create member record
       const memberPayload = {
         membership_no: membershipNo,
         application_id: app.id,
@@ -733,7 +726,6 @@
 
       if (memberErr) throw new Error('فشل إنشاء العضو: ' + memberErr.message);
 
-      // 2) Update application
       const { error: appErr } = await client
         .from('applications')
         .update({
@@ -748,7 +740,6 @@
 
       if (appErr) throw new Error('فشل تحديث الطلب: ' + appErr.message);
 
-      // 3) Log status history
       try {
         await client.from('status_history').insert([{
           application_id: app.id,
@@ -773,7 +764,7 @@
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"/></svg><span>اعتماد رقم العضوية</span>';
+        btn.innerHTML = `${ICONS.check}<span>اعتماد رقم العضوية</span>`;
       }
     }
   }
@@ -845,7 +836,6 @@
       document.getElementById('cardFileName').textContent =
         `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
 
-      // Preview
       const reader = new FileReader();
       reader.onload = (ev) => {
         const img = document.getElementById('cardPreviewImg');
@@ -873,7 +863,6 @@
       const ext = (currentCardFile.name.split('.').pop() || 'jpg').toLowerCase();
       const path = `${app.id}/card_${Date.now()}.${ext}`;
 
-      // 1) Upload to storage
       const { error: upErr } = await client.storage
         .from(CARD_BUCKET)
         .upload(path, currentCardFile, {
@@ -884,14 +873,12 @@
 
       if (upErr) throw new Error('فشل الرفع: ' + upErr.message);
 
-      // 2) Get public URL
       const { data: urlData } = client.storage
         .from(CARD_BUCKET)
         .getPublicUrl(path);
 
       const publicUrl = urlData.publicUrl;
 
-      // 3) Update application
       const { error: appErr } = await client
         .from('applications')
         .update({
@@ -903,7 +890,6 @@
 
       if (appErr) throw new Error('فشل تحديث الطلب: ' + appErr.message);
 
-      // 4) Update member
       if (app.member_id) {
         try {
           await client
@@ -917,7 +903,6 @@
         } catch (e) {}
       }
 
-      // 5) Log history
       try {
         await client.from('status_history').insert([{
           application_id: app.id,
@@ -942,35 +927,99 @@
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"/></svg><span>حفظ واعتماد الكارنية</span>';
+        btn.innerHTML = `${ICONS.check}<span>حفظ واعتماد الكارنية</span>`;
       }
     }
   }
 
   /* ============================================
-     DETAIL MODAL (Simple - view only)
+     DETAIL MODAL
      ============================================ */
   async function openDetailModal(appId) {
-    // Basic implementation: show a modal with details
-    // For now, redirect to dashboard with the app id? Or show simple alert
+    const modal = document.getElementById('detailModal');
+    if (!modal) return;
+
     const app = applications.find(a => String(a.id) === String(appId));
     if (!app) return;
 
-    // Build a simple detail modal (reuse dashboard's approach)
-    const info = [
-      `الاسم: ${app.full_name}`,
-      `الرقم القومي: ${app.national_id}`,
-      `رقم التتبع: ${app.tracking_no}`,
-      `رقم العضوية: ${app.membership_no || '—'}`,
-      `الموبايل: ${app.phone}`,
-      `نوع العضوية: ${getTypeName(app.membership_type_id)}`,
-      `المحافظة: ${app.governorate || '—'}`,
-      `الرعاية الصحية: ${app.wants_health_care ? 'نعم' : 'لا'}`,
-      `الحالة: ${getStatusInfo(app.status).label}`
-    ].join('\n');
+    const status = getStatusInfo(app.status);
+    const typeName = getTypeName(app.membership_type_id);
+    const totalAmount = (parseFloat(app.membership_fee) || 0) + (parseFloat(app.health_care_amount) || 0);
 
-    alert(info);
+    const content = document.getElementById('detailContent');
+    if (!content) return;
+
+    content.innerHTML = `
+      <div style="padding:20px 24px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;background:linear-gradient(135deg, rgba(var(--accent-rgb), 0.04), transparent);">
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--accent);margin-bottom:4px;">${escapeHtml(app.tracking_no)}</div>
+          <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:rgba(var(--accent-rgb),0.1);border:1.5px solid var(--accent);border-radius:100px;font-size:12px;color:var(--accent);font-weight:700;">
+            ${escapeHtml(status.label)}
+          </div>
+        </div>
+        <button onclick="closeDetailModal()" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          <span style="width:16px;height:16px;display:inline-flex;">${ICONS.close}</span>
+        </button>
+      </div>
+
+      <div style="padding:24px;overflow-y:auto;max-height:calc(90vh - 200px);">
+        <h4 style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;">البيانات الشخصية</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:24px;">
+          ${renderDetailItem('الاسم', app.full_name)}
+          ${renderDetailItem('الرقم القومي', app.national_id, true)}
+          ${renderDetailItem('الموبايل', app.phone, true)}
+          ${renderDetailItem('البريد', app.email || '—')}
+          ${renderDetailItem('المحافظة', app.governorate || '—')}
+          ${renderDetailItem('العنوان', app.address || '—')}
+        </div>
+
+        <h4 style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;">البيانات المهنية</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:24px;">
+          ${renderDetailItem('نوع العضوية', typeName)}
+          ${renderDetailItem('المؤهل', app.qualification || '—')}
+          ${renderDetailItem('سنة التخرج', app.graduation_year || '—')}
+          ${renderDetailItem('جهة العمل', app.employer || '—')}
+          ${renderDetailItem('المسمى الوظيفي', app.job_title || '—')}
+          ${renderDetailItem('تاريخ التقديم', formatDate(app.created_at))}
+        </div>
+
+        <h4 style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;">بيانات الدفع</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:24px;">
+          ${renderDetailItem('رسوم العضوية', formatMoney(app.membership_fee), true)}
+          ${renderDetailItem('الرعاية الصحية', app.wants_health_care ? formatMoney(app.health_care_amount) : 'لا', true)}
+          ${renderDetailItem('الإجمالي', formatMoney(totalAmount), true)}
+          ${renderDetailItem('رقم العضوية', app.membership_no || '—', true)}
+        </div>
+
+        ${app.card_image_url ? `
+          <h4 style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;">صورة الكارنية</h4>
+          <div style="padding:16px;background:rgba(0,0,0,0.3);border-radius:12px;text-align:center;">
+            <img src="${escapeHtml(app.card_image_url)}" alt="الكارنية" style="max-width:100%;max-height:300px;border-radius:8px;" />
+          </div>
+        ` : ''}
+      </div>
+    `;
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
   }
+
+  function renderDetailItem(label, value, isMono = false) {
+    return `
+      <div style="padding:12px 14px;background:rgba(10, 12, 20, 0.5);border:1px solid var(--border-soft);border-radius:10px;">
+        <div style="font-size:11.5px;color:var(--text-dim);margin-bottom:4px;">${escapeHtml(label)}</div>
+        <div style="font-size:13.5px;font-weight:600;color:var(--text);${isMono ? "font-family:'JetBrains Mono',monospace;direction:ltr;text-align:right;" : ''}word-break:break-word;">
+          ${escapeHtml(value || '—')}
+        </div>
+      </div>
+    `;
+  }
+
+  window.closeDetailModal = function () {
+    const modal = document.getElementById('detailModal');
+    if (modal) modal.classList.remove('open');
+    document.body.style.overflow = '';
+  };
 
   /* ============================================
      EXPORT CSV
@@ -1041,7 +1090,6 @@
      SETUP LISTENERS
      ============================================ */
   function setupListeners() {
-    // Stats cards click
     document.querySelectorAll('[data-filter]').forEach(card => {
       card.addEventListener('click', () => {
         const filter = card.dataset.filter;
@@ -1055,7 +1103,6 @@
       });
     });
 
-    // Status filter
     const statusFilter = document.getElementById('statusFilter');
     if (statusFilter) {
       statusFilter.addEventListener('change', (e) => {
@@ -1065,7 +1112,6 @@
       });
     }
 
-    // Gov filter
     const govFilter = document.getElementById('govFilter');
     if (govFilter) {
       govFilter.addEventListener('change', (e) => {
@@ -1075,25 +1121,19 @@
       });
     }
 
-    // Search
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
-      const debounced = window.debounce ? window.debounce(() => {
-        filters.search = searchInput.value;
-        currentPage = 1;
-        loadApplications();
-      }, 400) : (() => {
-        clearTimeout(window.__haSearchT);
-        window.__haSearchT = setTimeout(() => {
+      let t = null;
+      searchInput.addEventListener('input', () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
           filters.search = searchInput.value;
           currentPage = 1;
           loadApplications();
         }, 400);
       });
-      searchInput.addEventListener('input', debounced);
     }
 
-    // Sort
     const sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {
       sortSelect.addEventListener('change', (e) => {
@@ -1103,7 +1143,6 @@
       });
     }
 
-    // Refresh
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) {
       refreshBtn.addEventListener('click', async () => {
@@ -1115,19 +1154,15 @@
       });
     }
 
-    // Export
     const exportBtn = document.getElementById('exportBtn');
     if (exportBtn) exportBtn.addEventListener('click', exportCSV);
 
-    // Assign confirm
     const confirmAssignBtn = document.getElementById('confirmAssignBtn');
     if (confirmAssignBtn) confirmAssignBtn.addEventListener('click', confirmAssign);
 
-    // Card confirm
     const confirmCardBtn = document.getElementById('confirmCardBtn');
     if (confirmCardBtn) confirmCardBtn.addEventListener('click', confirmCard);
 
-    // Logout
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
@@ -1137,14 +1172,14 @@
       });
     }
 
-    // Modal backdrops
-    ['assignModal', 'cardModal'].forEach(id => {
+    ['assignModal', 'cardModal', 'detailModal'].forEach(id => {
       const modal = document.getElementById(id);
       if (!modal) return;
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
           if (id === 'assignModal') window.closeAssignModal();
           else if (id === 'cardModal') window.closeCardModal();
+          else if (id === 'detailModal') window.closeDetailModal();
         }
       });
     });
@@ -1153,6 +1188,7 @@
       if (e.key === 'Escape') {
         window.closeAssignModal();
         window.closeCardModal();
+        window.closeDetailModal();
       }
     });
   }
