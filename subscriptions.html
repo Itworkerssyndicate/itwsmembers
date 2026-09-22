@@ -102,13 +102,9 @@
     box-shadow: var(--glow-accent);
   }
   .tab-btn svg {
-    width: 16px;
-    height: 16px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    width: 16px; height: 16px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
     flex-shrink: 0;
   }
   .tab-btn .tab-count {
@@ -127,96 +123,6 @@
   .tab-btn.active .tab-count {
     background: var(--accent);
     color: #000;
-  }
-
-  /* Tab content */
-  [data-tab-content] {
-    animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Filters */
-  .filters-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    padding: 20px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    margin-bottom: 20px;
-  }
-  .filters-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 16px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--border-soft);
-  }
-  .filters-header svg {
-    width: 18px;
-    height: 18px;
-    stroke: var(--accent);
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-  .filters-header-title {
-    font-family: 'Tajawal', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text);
-    flex: 1;
-  }
-
-  .filters-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 12px;
-    align-items: end;
-  }
-  .filters-grid .form-group { margin: 0; }
-  .filters-grid .form-group label {
-    font-size: 12px;
-    margin-bottom: 6px;
-  }
-  .filters-grid input,
-  .filters-grid select {
-    padding: 10px 14px;
-    font-size: 13.5px;
-  }
-
-  .search-input-wrap { position: relative; }
-  .search-input-wrap input { padding-right: 42px; }
-  .search-input-wrap .search-icon {
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    pointer-events: none;
-  }
-  .search-input-wrap .search-icon svg {
-    width: 100%;
-    height: 100%;
-    stroke: var(--text-dim);
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  /* Actions */
-  .actions-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
   }
 
   /* Summary cards */
@@ -274,6 +180,78 @@
     color: var(--text-muted);
   }
 
+  /* Filters */
+  .filters-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    margin-bottom: 20px;
+  }
+  .filters-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .filters-header svg {
+    width: 18px; height: 18px;
+    stroke: var(--accent); fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .filters-header-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .filters-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 12px;
+    align-items: end;
+  }
+  .filters-grid .form-group { margin: 0; }
+  .filters-grid .form-group label {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+  .filters-grid input,
+  .filters-grid select {
+    padding: 10px 14px;
+    font-size: 13.5px;
+  }
+
+  .search-input-wrap { position: relative; }
+  .search-input-wrap input { padding-right: 42px; }
+  .search-input-wrap .search-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px; height: 16px;
+    pointer-events: none;
+  }
+  .search-input-wrap .search-icon svg {
+    width: 100%; height: 100%;
+    stroke: var(--text-dim); fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  /* Actions row */
+  .actions-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
   /* Table */
   .table-card {
     background: var(--card-bg);
@@ -302,13 +280,9 @@
     gap: 10px;
   }
   .table-card-title svg {
-    width: 18px;
-    height: 18px;
-    stroke: var(--accent);
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    width: 18px; height: 18px;
+    stroke: var(--accent); fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
   .table-card-count {
     font-size: 12.5px;
@@ -334,14 +308,11 @@
     gap: 10px;
   }
   .member-avatar {
-    width: 38px;
-    height: 38px;
+    width: 38px; height: 38px;
     border-radius: var(--radius-sm);
     background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-2-rgb), 0.15));
     border: 1px solid rgba(var(--accent-rgb), 0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
     font-size: 11px;
@@ -402,8 +373,7 @@
     white-space: nowrap;
   }
   .status-badge .dot {
-    width: 6px;
-    height: 6px;
+    width: 6px; height: 6px;
     border-radius: 50%;
     background: currentColor;
   }
@@ -430,24 +400,17 @@
     justify-content: center;
   }
   .row-btn {
-    width: 32px;
-    height: 32px;
+    width: 32px; height: 32px;
     border-radius: var(--radius-sm);
     border: 1px solid;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
   }
   .row-btn svg {
-    width: 14px;
-    height: 14px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    width: 14px; height: 14px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
   .row-btn.renew-btn {
     background: rgba(var(--success-rgb), 0.08);
@@ -475,8 +438,7 @@
     color: var(--text-dim);
   }
   .empty-state svg {
-    width: 48px;
-    height: 48px;
+    width: 48px; height: 48px;
     stroke: var(--text-dim);
     fill: none;
     stroke-width: 1.5;
@@ -496,7 +458,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.04), transparent);
+    background: linear-gradient(135deg, rgba(var(--success-rgb), 0.06), transparent);
   }
   .modal-header-custom h3 {
     font-family: 'Tajawal', sans-serif;
@@ -513,16 +475,13 @@
     flex-wrap: wrap;
   }
   .close-btn {
-    width: 32px;
-    height: 32px;
+    width: 32px; height: 32px;
     border-radius: var(--radius-sm);
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-muted);
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     transition: all 0.2s;
   }
   .close-btn:hover {
@@ -531,12 +490,15 @@
     color: var(--danger);
   }
   .close-btn svg {
-    width: 14px;
-    height: 14px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
+    width: 14px; height: 14px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round;
+  }
+
+  /* Pagination */
+  #paginationBox {
+    padding: 16px 22px;
+    border-top: 1px solid var(--border-soft);
   }
 
   /* Responsive */
@@ -855,7 +817,6 @@
             <th>رقم العضوية</th>
             <th>الشعبة</th>
             <th>المحافظة</th>
-            <th>الموبايل</th>
             <th>بداية الاشتراك</th>
             <th>نهاية الاشتراك</th>
             <th>المتبقي</th>
@@ -865,13 +826,15 @@
         </thead>
         <tbody id="subsTableBody">
           <tr>
-            <td colspan="10" style="text-align:center;padding:40px;color:var(--text-dim);">
+            <td colspan="9" style="text-align:center;padding:40px;color:var(--text-dim);">
               جاري التحميل...
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <div id="paginationBox"></div>
   </div>
 
 </div>
@@ -881,7 +844,6 @@
      ============================================ -->
 <div id="renewModal" class="modal modal-sm">
   <div class="modal-content">
-
     <div class="modal-header-custom">
       <h3>تجديد الاشتراك</h3>
       <button type="button" class="close-btn" onclick="closeRenewModal()">
@@ -931,7 +893,54 @@
         <span>تجديد</span>
       </button>
     </div>
+  </div>
+</div>
 
+<!-- ============================================
+     BULK RENEW MODAL
+     ============================================ -->
+<div id="bulkRenewModal" class="modal modal-sm">
+  <div class="modal-content">
+    <div class="modal-header-custom">
+      <h3>تجديد جماعي</h3>
+      <button type="button" class="close-btn" onclick="closeBulkRenewModal()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div id="bulkRenewInfo" style="padding:14px 16px;background:rgba(var(--accent-rgb),0.06);border:1px solid rgba(var(--accent-rgb),0.25);border-radius:12px;margin-bottom:16px;font-size:13px;color:var(--text-muted);line-height:1.7;">
+        سيتم تجديد كل الأعضاء الظاهرين حاليًا في الجدول (حسب الفلتر المطبّق).
+      </div>
+
+      <div class="form-group">
+        <label for="bulkRenewMonths">عدد شهور التجديد</label>
+        <select id="bulkRenewMonths">
+          <option value="12" selected>سنة (12 شهر)</option>
+          <option value="6">6 شهور</option>
+          <option value="3">3 شهور</option>
+          <option value="24">سنتان (24 شهر)</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom:0;">
+        <label for="bulkRenewAmount">المبلغ لكل عضو (جنيه)</label>
+        <input type="number" id="bulkRenewAmount" placeholder="0" min="0" step="10" />
+      </div>
+    </div>
+
+    <div class="modal-footer-custom">
+      <button type="button" class="btn btn-ghost" onclick="closeBulkRenewModal()">إلغاء</button>
+      <button type="button" class="btn btn-primary" id="confirmBulkRenewBtn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        <span>تجديد الجميع</span>
+      </button>
+    </div>
   </div>
 </div>
 
