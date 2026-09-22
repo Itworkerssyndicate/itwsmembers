@@ -144,7 +144,7 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* Settings section */
+  /* Settings */
   .settings-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -229,7 +229,7 @@
     margin-bottom: 4px;
   }
 
-  /* Toggle switch */
+  /* Toggle */
   .toggle-row {
     display: flex;
     align-items: center;
@@ -256,13 +256,9 @@
     width: 50px; height: 28px;
     flex-shrink: 0;
   }
-  .toggle-switch input {
-    opacity: 0;
-    width: 0; height: 0;
-  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
   .toggle-slider {
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     background: rgba(255, 255, 255, 0.1);
     border: 1.5px solid rgba(255, 255, 255, 0.15);
     border-radius: 100px;
@@ -326,7 +322,7 @@
     flex-wrap: wrap;
   }
 
-  /* Table card */
+  /* Table */
   .table-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -405,7 +401,7 @@
     gap: 6px;
     padding: 4px 12px;
     border-radius: var(--radius-full);
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 700;
     border: 1.5px solid;
     white-space: nowrap;
@@ -415,19 +411,40 @@
     border-color: #f59e0b;
     color: #f59e0b;
   }
-  .role-badge.vice_president {
+  .role-badge.vice_president,
+  .role-badge.deputy {
     background: rgba(139, 92, 246, 0.12);
     border-color: #8b5cf6;
     color: #8b5cf6;
   }
-  .role-badge.committee {
+  .role-badge.committee,
+  .role-badge.committees_manager_head,
+  .role-badge.committees_manager_vice {
     background: rgba(var(--accent-rgb), 0.1);
     border-color: var(--accent);
     color: var(--accent);
   }
+  .role-badge.branches_manager,
+  .role-badge.governorate_head,
+  .role-badge.governorate_board {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: #22c55e;
+    color: #22c55e;
+  }
+  .role-badge.social_committee_head,
+  .role-badge.social_committee_vice {
+    background: rgba(236, 72, 153, 0.1);
+    border-color: #ec4899;
+    color: #ec4899;
+  }
+  .role-badge.public_relations_head,
+  .role-badge.public_relations_vice {
+    background: rgba(249, 115, 22, 0.1);
+    border-color: #f97316;
+    color: #f97316;
+  }
   .role-badge .dot {
-    width: 6px;
-    height: 6px;
+    width: 6px; height: 6px;
     border-radius: 50%;
     background: currentColor;
   }
@@ -582,6 +599,10 @@
     background: var(--success);
     animation: pulseDot 1.5s ease-in-out infinite;
   }
+  @keyframes pulseDot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.4); opacity: 0.6; }
+  }
 
   /* Modal */
   .modal-content { max-height: 90vh; }
@@ -629,11 +650,24 @@
     stroke-width: 2; stroke-linecap: round;
   }
 
+  /* Select optgroup */
+  select optgroup {
+    background: var(--bg-2);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 12px;
+    padding: 4px;
+  }
+  select option {
+    background: var(--bg-2);
+    color: var(--text);
+    padding: 4px 8px;
+  }
+
   /* Responsive */
   @media (max-width: 1024px) {
     .settings-section { grid-template-columns: 1fr; }
   }
-
   @media (max-width: 768px) {
     body { padding: 90px 0 30px; }
     .admin-wrap { padding: 0 16px; }
@@ -712,7 +746,7 @@
   <div class="page-header">
     <div class="page-header-info">
       <div class="page-header-title">لوحة النقيب العام</div>
-      <div class="page-header-sub">إدارة الإعدادات، المستخدمين، الأنواع، الشعب، والمميزات</div>
+      <div class="page-header-sub">إدارة الإعدادات، المستخدمين، الأنواع، الشعب، واللجان</div>
     </div>
 
     <div class="user-badge">
@@ -757,6 +791,14 @@
       <span class="tab-label">المستخدمون</span>
     </button>
 
+    <button type="button" class="tab-btn" data-tab-btn="governorates">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+      <span class="tab-label">المحافظات</span>
+    </button>
+
     <button type="button" class="tab-btn" data-tab-btn="types">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <rect x="2" y="7" width="20" height="14" rx="2" />
@@ -794,10 +836,9 @@
   </div>
 
   <!-- ============================================
-       TAB 1: SETTINGS (BRANDING + CONTACT + SYSTEM)
+       TAB 1: SETTINGS
        ============================================ -->
   <div data-tab-content="settings">
-
     <div class="settings-section">
 
       <!-- BRANDING -->
@@ -1049,6 +1090,83 @@
         </div>
       </div>
 
+      <!-- HEALTH CARE -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="settings-card-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+          </div>
+          <div>
+            <div class="settings-card-title">الرعاية الصحية</div>
+            <div class="settings-card-sub">بند اختياري على الكارنية</div>
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-row-info">
+            <div class="toggle-row-label">تفعيل الرعاية الصحية</div>
+            <div class="toggle-row-desc">سيظهر للعضو كخيار في الفورم</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting_health_care_enabled" data-setting="health_care_enabled" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="form-group" style="margin-top:18px;">
+          <label for="setting_health_care_label">الاسم الظاهر للعضو</label>
+          <input type="text" id="setting_health_care_label" data-setting="health_care_label" placeholder="رعاية صحية على الكارنية" />
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="setting_health_care_price">الرسوم (جنيه / سنة)</label>
+          <input type="number" id="setting_health_care_price" data-setting="health_care_price" placeholder="150" min="0" step="10" />
+        </div>
+      </div>
+
+      <!-- PAYMENT -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="settings-card-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <line x1="12" y1="1" x2="12" y2="23" />
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+          </div>
+          <div>
+            <div class="settings-card-title">بيانات الدفع</div>
+            <div class="settings-card-sub">تظهر للعضو في شاشة التتبع</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="setting_payment_bank_name">اسم البنك</label>
+          <input type="text" id="setting_payment_bank_name" data-setting="payment_bank_name" placeholder="البنك الأهلي المصري" />
+        </div>
+
+        <div class="form-group">
+          <label for="setting_payment_account_name">اسم صاحب الحساب</label>
+          <input type="text" id="setting_payment_account_name" data-setting="payment_account_name" placeholder="نقابة تكنولوجيا المعلومات" />
+        </div>
+
+        <div class="form-group">
+          <label for="setting_payment_account_number">رقم الحساب / IBAN</label>
+          <input type="text" id="setting_payment_account_number" data-setting="payment_account_number" placeholder="" dir="ltr" style="text-align:right;" />
+        </div>
+
+        <div class="form-group">
+          <label for="setting_payment_instapay">إنستاباي</label>
+          <input type="text" id="setting_payment_instapay" data-setting="payment_instapay" placeholder="" dir="ltr" style="text-align:right;" />
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="setting_payment_notes">ملاحظات الدفع</label>
+          <textarea id="setting_payment_notes" data-setting="payment_notes" rows="2" placeholder="يرجى تحويل المبلغ على الحساب أعلاه ورفع صورة الإيصال"></textarea>
+        </div>
+      </div>
+
       <!-- TEXTS -->
       <div class="settings-card full-width">
         <div class="settings-card-header">
@@ -1136,18 +1254,45 @@
         </div>
 
         <div class="form-group">
+          <label for="setting_hero_badge">Badge (الشارة العلوية)</label>
+          <input type="text" id="setting_hero_badge" data-setting="hero_badge" placeholder="منظومة رقمية متكاملة" />
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group" style="margin:0;">
+            <label for="setting_hero_title_1">العنوان - السطر الأول</label>
+            <input type="text" id="setting_hero_title_1" data-setting="hero_title_1" placeholder="انضم إلى نقابتك" />
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label for="setting_hero_title_2">العنوان - السطر الثاني</label>
+            <input type="text" id="setting_hero_title_2" data-setting="hero_title_2" placeholder="بخطوات رقمية" />
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:14px;">
           <label for="setting_hero_description">الوصف الرئيسي</label>
           <textarea id="setting_hero_description" data-setting="hero_description" rows="3" placeholder="قدّم طلب عضويتك إلكترونيًا..."></textarea>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
           <div class="form-group" style="margin:0;">
-            <label for="setting_cta_title">عنوان CTA</label>
-            <input type="text" id="setting_cta_title" data-setting="cta_title" placeholder="جاهز تبدأ رحلتك مع نقابتك؟" />
+            <label for="setting_hero_btn1_text">الزر الأول - النص</label>
+            <input type="text" id="setting_hero_btn1_text" data-setting="hero_btn1_text" placeholder="ابدأ التقديم" />
           </div>
           <div class="form-group" style="margin:0;">
-            <label for="setting_cta_subtitle">وصف CTA</label>
-            <input type="text" id="setting_cta_subtitle" data-setting="cta_subtitle" placeholder="سجّل عضويتك الآن..." />
+            <label for="setting_hero_btn1_url">الزر الأول - الرابط</label>
+            <input type="text" id="setting_hero_btn1_url" data-setting="hero_btn1_url" placeholder="apply.html" dir="ltr" style="text-align:right;" />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+          <div class="form-group" style="margin:0;">
+            <label for="setting_hero_btn2_text">الزر الثاني - النص</label>
+            <input type="text" id="setting_hero_btn2_text" data-setting="hero_btn2_text" placeholder="تتبع طلبك" />
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label for="setting_hero_btn2_url">الزر الثاني - الرابط</label>
+            <input type="text" id="setting_hero_btn2_url" data-setting="hero_btn2_url" placeholder="track.html" dir="ltr" style="text-align:right;" />
           </div>
         </div>
       </div>
@@ -1297,6 +1442,54 @@
             <input type="text" id="setting_types_subtitle" data-setting="types_subtitle" placeholder="اختر النوع المناسب..." />
           </div>
         </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+          <div class="form-group" style="margin:0;">
+            <label for="setting_steps_title">عنوان قسم الخطوات</label>
+            <input type="text" id="setting_steps_title" data-setting="steps_title" placeholder="كيف تقدم؟" />
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label for="setting_steps_subtitle">وصف قسم الخطوات</label>
+            <input type="text" id="setting_steps_subtitle" data-setting="steps_subtitle" placeholder="4 خطوات بسيطة..." />
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="settings-card full-width">
+        <div class="settings-card-header">
+          <div class="settings-card-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+          </div>
+          <div>
+            <div class="settings-card-title">قسم الدعوة (CTA)</div>
+            <div class="settings-card-sub">النداء الأخير في الصفحة الرئيسية</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group" style="margin:0;">
+            <label for="setting_cta_title">العنوان</label>
+            <input type="text" id="setting_cta_title" data-setting="cta_title" placeholder="جاهز تبدأ رحلتك مع نقابتك؟" />
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label for="setting_cta_subtitle">الوصف</label>
+            <input type="text" id="setting_cta_subtitle" data-setting="cta_subtitle" placeholder="سجّل عضويتك الآن..." />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+          <div class="form-group" style="margin:0;">
+            <label for="setting_cta_btn_text">نص الزر</label>
+            <input type="text" id="setting_cta_btn_text" data-setting="cta_btn_text" placeholder="قدّم عضويتك الآن" />
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label for="setting_cta_btn_url">رابط الزر</label>
+            <input type="text" id="setting_cta_btn_url" data-setting="cta_btn_url" placeholder="apply.html" dir="ltr" style="text-align:right;" />
+          </div>
+        </div>
       </div>
 
     </div>
@@ -1358,12 +1551,60 @@
               <th>الاسم</th>
               <th>البريد</th>
               <th>الدور</th>
+              <th>الصفة</th>
               <th>آخر تسجيل دخول</th>
               <th>الحالة</th>
               <th style="text-align:center;">إجراءات</th>
             </tr>
           </thead>
           <tbody id="usersTableBody">
+            <tr>
+              <td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">
+                جاري التحميل...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       TAB 4: GOVERNORATES
+       ============================================ -->
+  <div data-tab-content="governorates" style="display:none;">
+    <div class="table-card">
+      <div class="table-card-header">
+        <div class="table-card-title">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          <span>المحافظات</span>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-sm" id="addGovBtn">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span>إضافة محافظة</span>
+        </button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>الكود</th>
+              <th>اسم المحافظة</th>
+              <th>نوع الهيكل</th>
+              <th>الترتيب</th>
+              <th>الحالة</th>
+              <th style="text-align:center;">إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="govTableBody">
             <tr>
               <td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">
                 جاري التحميل...
@@ -1376,7 +1617,7 @@
   </div>
 
   <!-- ============================================
-       TAB 4: TYPES
+       TAB 5: TYPES
        ============================================ -->
   <div data-tab-content="types" style="display:none;">
     <div class="table-card">
@@ -1424,7 +1665,7 @@
   </div>
 
   <!-- ============================================
-       TAB 5: BRANCHES
+       TAB 6: BRANCHES
        ============================================ -->
   <div data-tab-content="branches" style="display:none;">
     <div class="table-card">
@@ -1472,7 +1713,7 @@
   </div>
 
   <!-- ============================================
-       TAB 6: SESSIONS (ACTIVITY LOG)
+       TAB 7: SESSIONS
        ============================================ -->
   <div data-tab-content="sessions" style="display:none;">
     <div class="table-card">
@@ -1502,7 +1743,7 @@
               <th>الدور</th>
               <th>آخر دخول</th>
               <th>مدة الجلسة</th>
-              <th>الإجراءات</th>
+              <th>الجهاز</th>
             </tr>
           </thead>
           <tbody id="sessionsTableBody">
@@ -1552,7 +1793,7 @@
   </div>
 
   <!-- ============================================
-       TAB 7: AUDIT LOG
+       TAB 8: AUDIT LOG
        ============================================ -->
   <div data-tab-content="audit" style="display:none;">
     <div class="table-card">
@@ -1635,16 +1876,46 @@
       <div class="form-group">
         <label for="userRole">الدور</label>
         <select id="userRole">
-          <option value="committee">لجنة العضويات</option>
-          <option value="vice_president">نائب رئيس النقابة</option>
-          <option value="head">النقيب العام</option>
+          <option value="">-- اختر الدور --</option>
+          <optgroup label="الأدوار الأساسية">
+            <option value="head">النقيب العام</option>
+            <option value="vice_president">نائب رئيس النقابة</option>
+            <option value="deputy">الوكيل</option>
+            <option value="committee">لجنة العضوية</option>
+          </optgroup>
+          <optgroup label="المحافظات والفروع">
+            <option value="governorate_head">نقيب محافظة</option>
+            <option value="governorate_board">مجلس محافظة</option>
+            <option value="branches_manager">مدير الفروع</option>
+          </optgroup>
+          <optgroup label="اللجان">
+            <option value="social_committee_head">رئيس اللجنة الاجتماعية</option>
+            <option value="social_committee_vice">نائب اللجنة الاجتماعية</option>
+            <option value="public_relations_head">رئيس العلاقات العامة</option>
+            <option value="public_relations_vice">نائب العلاقات العامة</option>
+            <option value="committees_manager_head">مدير اللجان</option>
+            <option value="committees_manager_vice">نائب مدير اللجان</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="form-group" id="userPositionField">
+        <label for="userPosition">الصفة (اختياري)</label>
+        <input type="text" id="userPosition" placeholder="مثال: أمين عام محافظة القاهرة" />
+        <span class="form-hint">نص حر يظهر بجانب اسم المستخدم</span>
+      </div>
+
+      <div class="form-group" id="userGovernorateField" style="display:none;">
+        <label for="userGovernorate">المحافظة</label>
+        <select id="userGovernorate">
+          <option value="">-- اختر المحافظة --</option>
         </select>
       </div>
 
       <div class="form-group" id="passwordField">
         <label for="userPassword">كلمة المرور</label>
         <input type="password" id="userPassword" placeholder="6 أحرف على الأقل" />
-        <span class="form-hint">سيصله إيميل تأكيد على البريد المسجل</span>
+        <span class="form-hint">سيتم تنشيط الحساب فورًا</span>
       </div>
 
       <div class="form-group" style="margin-bottom:0;">
@@ -1787,6 +2058,70 @@
     <div class="modal-footer-custom">
       <button type="button" class="btn btn-ghost" onclick="closeBranchModal()">إلغاء</button>
       <button type="button" class="btn btn-primary" id="saveBranchBtn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        <span>حفظ</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     GOVERNORATE MODAL
+     ============================================ -->
+<div id="govModal" class="modal modal-sm">
+  <div class="modal-content">
+    <div class="modal-header-custom">
+      <h3 id="govModalTitle">إضافة محافظة</h3>
+      <button type="button" class="close-btn" onclick="closeGovModal()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" id="govId" />
+
+      <div class="form-group">
+        <label for="govName">اسم المحافظة</label>
+        <input type="text" id="govName" placeholder="مثال: القاهرة" />
+      </div>
+
+      <div class="form-group">
+        <label for="govCode">الكود</label>
+        <input type="text" id="govCode" placeholder="CAI" dir="ltr" style="text-align:right;text-transform:uppercase;" />
+      </div>
+
+      <div class="form-group">
+        <label for="govStructureType">نوع الهيكل التنظيمي</label>
+        <select id="govStructureType">
+          <option value="council">مجلس كامل (7 مناصب)</option>
+          <option value="simple">وكيل + مساعدين</option>
+        </select>
+        <span class="form-hint">مجلس: نقيب + نائب أول + نائب ثاني + أمين عام + مساعد + أمين صندوق + مساعد</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label for="govSortOrder">الترتيب</label>
+          <input type="number" id="govSortOrder" placeholder="1" min="0" />
+        </div>
+        <div class="form-group">
+          <label style="display:block;margin-bottom:6px;">الحالة</label>
+          <label class="form-check" style="padding:11px 14px;background:rgba(0,0,0,0.3);border:1px solid var(--border-soft);border-radius:10px;font-size:13px;">
+            <input type="checkbox" id="govActive" checked />
+            <span>مفعّلة</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer-custom">
+      <button type="button" class="btn btn-ghost" onclick="closeGovModal()">إلغاء</button>
+      <button type="button" class="btn btn-primary" id="saveGovBtn">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <polyline points="20 6 9 17 4 12" />
         </svg>
