@@ -957,7 +957,7 @@
       </div>
       <div class="logo-text">
         <div class="logo-main" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
-        <div class="logo-sub">IT WORKERS SYNDICATE</div>
+        <div class="logo-sub" data-setting="site_name_en">IT WORKERS SYNDICATE</div>
       </div>
     </a>
 
@@ -1273,7 +1273,7 @@
           </div>
           <div>
             <div class="footer-logo-main" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
-            <div class="footer-logo-sub">IT WORKERS SYNDICATE</div>
+            <div class="footer-logo-sub" data-setting="site_name_en">IT WORKERS SYNDICATE</div>
           </div>
         </div>
         <p class="footer-desc" data-setting="footer_description">
@@ -1518,6 +1518,26 @@
       .replace(/'/g, '&#39;');
   }
 
+  /* ⚡ هاش لمنع إعادة الرسم لو مفيش تغيير */
+  let lastSettingsHash = '';
+
+  function hashSettings(s) {
+    if (!s) return '';
+    try {
+      return JSON.stringify({
+        features: s.features_cards,
+        site: s.site_name + '|' + s.site_name_en,
+        head: s.head_name + '|' + s.head_title + '|' + s.head_photo_url + '|' + s.head_message,
+        about: s.about_card_enabled + '|' + s.about_card_title + '|' + s.about_card_logo + '|' + s.about_card_text,
+        code: s.code_card_content + '|' + s.code_card_name + '|' + s.code_card_status,
+        footer: s.footer_button_name + '|' + s.footer_button_url,
+        hero: s.hero_btn1_url + '|' + s.hero_btn2_url + '|' + s.cta_btn_url
+      });
+    } catch (e) {
+      return String(Date.now());
+    }
+  }
+
   /* FEATURES */
   function renderFeatures(cards) {
     const grid = document.getElementById('featuresGrid');
@@ -1562,9 +1582,12 @@
     const fbEl = document.getElementById('aboutLogoFallback');
 
     if (logo && imgEl && fbEl) {
-      imgEl.onload = () => { imgEl.style.display = 'block'; fbEl.style.display = 'none'; };
-      imgEl.onerror = () => { imgEl.style.display = 'none'; fbEl.style.display = 'block'; };
-      imgEl.src = logo;
+      if (imgEl.dataset.currentSrc !== logo) {
+        imgEl.dataset.currentSrc = logo;
+        imgEl.onload = () => { imgEl.style.display = 'block'; fbEl.style.display = 'none'; };
+        imgEl.onerror = () => { imgEl.style.display = 'none'; fbEl.style.display = 'block'; };
+        imgEl.src = logo;
+      }
     } else if (imgEl && fbEl) {
       imgEl.style.display = 'none';
       fbEl.style.display = 'block';
@@ -1584,20 +1607,23 @@
     const headMessage = settings.head_message;
 
     document.querySelectorAll('[data-head-name]').forEach(el => {
-      el.textContent = headName;
+      if (el.textContent !== headName) el.textContent = headName;
     });
 
     document.querySelectorAll('[data-head-title]').forEach(el => {
-      el.textContent = headTitle;
+      if (el.textContent !== headTitle) el.textContent = headTitle;
     });
 
     const imgEl = document.getElementById('headPhotoImg');
     const fbEl = document.getElementById('headPhotoFallback');
 
     if (headPhoto && imgEl && fbEl) {
-      imgEl.onload = () => { imgEl.style.display = 'block'; fbEl.style.display = 'none'; };
-      imgEl.onerror = () => { imgEl.style.display = 'none'; fbEl.style.display = 'block'; };
-      imgEl.src = headPhoto;
+      if (imgEl.dataset.currentSrc !== headPhoto) {
+        imgEl.dataset.currentSrc = headPhoto;
+        imgEl.onload = () => { imgEl.style.display = 'block'; fbEl.style.display = 'none'; };
+        imgEl.onerror = () => { imgEl.style.display = 'none'; fbEl.style.display = 'block'; };
+        imgEl.src = headPhoto;
+      }
     } else if (imgEl && fbEl) {
       imgEl.style.display = 'none';
       fbEl.style.display = 'block';
@@ -1606,7 +1632,7 @@
     const msgEl = document.getElementById('headMessage');
     if (msgEl) {
       if (headMessage && headMessage.trim()) {
-        msgEl.textContent = headMessage;
+        if (msgEl.textContent !== headMessage) msgEl.textContent = headMessage;
         msgEl.style.display = 'block';
       } else {
         msgEl.style.display = 'none';
@@ -1621,7 +1647,7 @@
     const body = document.getElementById('codeCardBody');
     if (!body) return;
     const content = settings.code_card_content;
-    if (content) {
+    if (content && body.textContent !== content) {
       body.textContent = content;
     }
   }
@@ -1635,8 +1661,8 @@
     const url = settings.footer_button_url;
 
     if (name && url) {
-      btn.textContent = name;
-      btn.href = url;
+      if (btn.textContent.trim() !== name) btn.textContent = name;
+      if (btn.href !== url) btn.href = url;
       btn.style.display = 'inline-flex';
     } else {
       btn.style.display = 'none';
@@ -1649,14 +1675,29 @@
     const btn2 = document.getElementById('heroBtn2');
     const ctaBtn = document.getElementById('ctaBtn');
 
-    if (btn1 && settings.hero_btn1_url) btn1.href = settings.hero_btn1_url;
-    if (btn2 && settings.hero_btn2_url) btn2.href = settings.hero_btn2_url;
-    if (ctaBtn && settings.cta_btn_url) ctaBtn.href = settings.cta_btn_url;
+    if (btn1 && settings.hero_btn1_url && btn1.href !== settings.hero_btn1_url) btn1.href = settings.hero_btn1_url;
+    if (btn2 && settings.hero_btn2_url && btn2.href !== settings.hero_btn2_url) btn2.href = settings.hero_btn2_url;
+    if (ctaBtn && settings.cta_btn_url && ctaBtn.href !== settings.cta_btn_url) ctaBtn.href = settings.cta_btn_url;
   }
 
-  /* APPLY ALL */
+  /* ⚡ SITE NAME EN — يشتغل مع النافبار والفوتر */
+  function renderSiteNameEn(settings) {
+    const val = settings.site_name_en;
+    if (!val) return;
+    document.querySelectorAll('[data-setting="site_name_en"]').forEach(el => {
+      if (el.textContent.trim() !== val) el.textContent = val;
+    });
+  }
+
+  /* APPLY ALL — مع hash check */
   function applyCustomSettings(settings) {
     if (!settings) return;
+
+    const newHash = hashSettings(settings);
+    if (newHash === lastSettingsHash) {
+      return;
+    }
+    lastSettingsHash = newHash;
 
     let cards = [];
     try {
@@ -1675,38 +1716,58 @@
     renderCodeCard(settings);
     renderFooterButton(settings);
     renderHeroButtons(settings);
+    renderSiteNameEn(settings);
+  }
+
+  /* ⚡ تطبيق الثيم الافتراضي */
+  function applyDefaultTheme(settings) {
+    if (!settings || !settings.default_theme) return;
+    if (!window.ThemeManager) return;
+
+    if (typeof window.ThemeManager.applyDefault === 'function') {
+      window.ThemeManager.applyDefault(settings.default_theme);
+    }
   }
 
   /* INIT */
   function init() {
     renderFeatures([]);
 
+    /* ⚡ المصدر الأساسي: settings-ready */
     window.addEventListener('settings-ready', (e) => {
-      const s = e.detail?.settings || null;
-      applyCustomSettings(s || (window.SettingsManager?.getAll?.() || null));
+      const s = e.detail?.settings || window.SettingsManager?.getAll?.() || null;
+      if (!s) return;
+      applyDefaultTheme(s);
+      applyCustomSettings(s);
     });
 
+    /* ⚡ Fallback فوري — لو الإعدادات موجودة في الكاش */
     if (window.SettingsManager && typeof window.SettingsManager.getAll === 'function') {
-      setTimeout(() => {
-        const s = window.SettingsManager.getAll();
-        if (s && (s.features_cards || s.site_name)) {
-          applyCustomSettings(s);
-        }
-      }, 500);
+      const s = window.SettingsManager.getAll();
+      if (s && (s.features_cards || s.site_name)) {
+        applyDefaultTheme(s);
+        applyCustomSettings(s);
+      }
     }
 
+    /* ⚡ Broadcast من تاب تاني */
     window.addEventListener('broadcast-settings', () => {
-      if (window.SettingsManager) {
-        applyCustomSettings(window.SettingsManager.getAll());
+      const s = window.SettingsManager?.getAll?.() || null;
+      if (s) {
+        applyDefaultTheme(s);
+        applyCustomSettings(s);
       }
     });
 
+    /* ⚡ Realtime — تحديث خفيف من غير fetch */
     if (window.Realtime) {
       window.Realtime.watch('settings', () => {
-        if (window.SettingsManager) {
-          window.SettingsManager.load(true);
+        const s = window.SettingsManager?.getAll?.() || null;
+        if (s) {
+          applyDefaultTheme(s);
+          applyCustomSettings(s);
         }
-      }, { debounceMs: 600 });
+      }, { debounceMs: 1200 });
     }
   }
 
@@ -1799,7 +1860,7 @@
       await load();
 
       if (window.Realtime) {
-        window.Realtime.watch('membership_types', () => load());
+        window.Realtime.watch('membership_types', () => load(), { debounceMs: 800 });
       }
     });
   }
