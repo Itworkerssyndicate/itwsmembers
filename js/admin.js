@@ -1,63 +1,35 @@
-/* ============================================
-   ADMIN.JS — لوحة النقيب العام
-   IT Workers Syndicate — v3.0.0
-   ============================================ */
+/* =====================================================
+   IT SYNDICATE — ADMIN LOGIC
+   Version: 3.0.0
+   Path: js/admin.js
+   =====================================================
+   يحتوي على:
+   - Auth + Role check (head / vp / deputy)
+   - Tab management (10 tabs)
+   - Settings: تحميل + حفظ + شعار + صورة النقيب + backup
+   - Home: تحميل + حفظ إعدادات الرئيسية
+   - Users: CRUD + فلاتر + تفعيل/تعطيل/رفض + تغيير باسورد
+   - Governorates: CRUD
+   - Committees: مجالس المحافظات
+   - Types: CRUD أنواع العضوية
+   - Branches: CRUD الشعب
+   - Expense Categories: CRUD
+   - Sessions: سجل النشاط + آخر الإجراءات
+   - Audit: سجل التدقيق
+   - Realtime على 6 جداول
+   ===================================================== */
 
 (function () {
   'use strict';
 
   /* ============================================
-     1. STATE
+     CONSTANTS
      ============================================ */
-  const state = {
-    user: null,
-    currentTab: 'settings',
-    users: [],
-    usersFilter: 'all',
-    governorates: [],
-    types: [],
-    branches: [],
-    expenseCategories: [],
-    settings: {},
-    committees: {}, // { govId: [positions] }
-    editingUserId: null,
-    editingTypeId: null,
-    editingBranchId: null,
-    editingGovId: null,
-    editingExpCatId: null,
-    realtimeChannels: []
-  };
-
-  /* ============================================
-     2. HELPERS
-     ============================================ */
-  const $  = (sel, root = document) => root.querySelector(sel);
-  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-
-  function toast(msg, type = 'info') {
-    if (typeof window.toast === 'function') return window.toast(msg, type);
-    console.log(`[${type}] ${msg}`);
-  }
-
-  function esc(str) {
-    if (str == null) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  function fmtDate(d) {
-    if (!d) return '—';
-    try {
-      return new Date(d).toLocaleString('ar-EG', {
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit'
-      });
-    } catch { return '—'; }
-  }
+  const BRANDING_BUCKET = 'branding';
+  const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2 MB
+  const ALLOWED_LOGO_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml', 'image/webp'];
+  const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  const PAGE_SIZE = 50;
 
   const ROLE_LABELS = {
     head: 'النقيب العام',
@@ -74,6 +46,107 @@
     committees_manager_head: 'مدير اللجان',
     committees_manager_vice: 'نائب مدير اللجان'
   };
+
+  const COUNCIL_POSITIONS = [
+    { key: 'head',              label: 'النقيب' },
+    { key: 'vice1',             label: 'النائب الأول' },
+    { key: 'vice2',             label: 'النائب الثاني' },
+    { key: 'secretary',         label: 'الأمين العام' },
+    { key: 'secretary_assist',  label: 'مساعد الأمين' },
+    { key: 'treasurer',         label: 'أمين الصندوق' },
+    { key: 'treasurer_assist',  label: 'مساعد أمين الصندوق' }
+  ];
+
+  const SIMPLE_POSITIONS = [
+    { key: 'agent',    label: 'الوكيل' },
+    { key: 'assist1',  label: 'مساعد أول' },
+    { key: 'assist2',  label: 'مساعد ثاني' }
+  ];
+
+  /* ============================================
+     STATE
+     ============================================ */
+  let client = null;
+  let currentUser = null;
+  let userRole = null;
+  let activeTab = 'settings';
+
+  let settings = {};
+  let users = [];
+  let usersFilter = 'all';
+  let governorates = [];
+  let types = [];
+  let branches = [];
+  let expenseCategories = [];
+  let sessions = [];
+  let actions = [];
+  let auditLogs = [];
+
+  let editingUserId = null;
+  let editingGovId = null;
+  let editingTypeId = null;
+  let editingBranchId = null;
+  let editingExpCatId = null;
+  let currentCommitteeGovId = null;
+
+  let unsubscribeRealtime = null;
+
+  /* ============================================
+     HELPERS
+     ============================================ */
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '—';
+    try {
+      return new Date(dateStr).toLocaleString('ar-EG', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit'
+      });
+    } catch (e) { return '—'; }
+  }
+
+  function timeAgo(dateStr) {
+    if (!dateStr) return '';
+    try {
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const m = Math.floor(diff / 60000);
+      const h = Math.floor(diff / 3600000);
+      const d = Math.floor(diff / 86400000);
+      if (m < 1) return 'الآن';
+      if (m < 60) return `منذ ${m} دقيقة`;
+      if (h < 24) return `منذ ${h} ساعة`;
+      if (d < 30) return `منذ ${d} يوم`;
+      return formatDate(dateStr);
+    } catch (e) { return ''; }
+  }
+
+  function getInitials(name) {
+    if (!name) return '؟';
+    const parts = String(name).trim().split(/\s+/);
+    if (parts.length === 0) return '؟';
+    if (parts.length === 1) return parts[0].charAt(0);
+    return parts[0].charAt(0) + ' ' + parts[1].charAt(0);
+  }
+
+  function showToast(message, type = 'info') {
+    if (window.showToast) {
+      window.showToast(message, type);
+      return;
+    }
+    console.log(`[${type}] ${message}`);
+  }
 
   function roleLabel(r) { return ROLE_LABELS[r] || r || '—'; }
 
@@ -99,52 +172,71 @@
   function statusBadge(status) {
     const s = (status || '').toLowerCase();
     const map = {
-      active: { cls: 'active', label: 'نشط' },
-      pending: { cls: 'pending', label: 'بانتظار التفعيل' },
+      active:   { cls: 'active',   label: 'نشط' },
+      pending:  { cls: 'pending',  label: 'بانتظار التفعيل' },
       rejected: { cls: 'rejected', label: 'مرفوض' },
       disabled: { cls: 'disabled', label: 'معطّل' }
     };
     const info = map[s] || { cls: 'disabled', label: status || '—' };
-    return `<span class="status-badge ${info.cls}"><span class="dot"></span>${esc(info.label)}</span>`;
+    return `<span class="status-badge ${info.cls}"><span class="dot"></span>${escapeHtml(info.label)}</span>`;
   }
 
   function openModal(id) {
     const m = document.getElementById(id);
-    if (m) m.classList.add('active');
+    if (m) m.classList.add('open');
   }
+
   function closeModal(id) {
     const m = document.getElementById(id);
-    if (m) m.classList.remove('active');
+    if (m) m.classList.remove('open');
   }
 
   /* ============================================
-     3. AUTH GUARD
+     AUTH GUARD
      ============================================ */
-  async function guard() {
+  async function checkAuth() {
     try {
-      const user = await (window.getCurrentUser ? window.getCurrentUser() : null);
-      if (!user) {
+      const { data: sessionData } = await client.auth.getSession();
+      const session = sessionData?.session;
+      if (!session) {
         window.location.href = 'login.html';
         return false;
       }
-      const role = user.role || user.user_role;
-      const allowed = ['head', 'vice_president', 'deputy'];
-      if (!allowed.includes(role)) {
-        toast('ليس لديك صلاحية الوصول لهذه الصفحة', 'error');
-        setTimeout(() => window.location.href = 'home.html', 1200);
+
+      currentUser = session.user;
+
+      const { data: userData } = await client
+        .from('users')
+        .select('role, full_name')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      userRole = userData?.role || 'committee';
+      const allowedRoles = ['head', 'vice_president', 'deputy'];
+
+      if (!allowedRoles.includes(userRole)) {
+        alert('هذه الصفحة مخصصة للنقيب العام ونوابه فقط');
+        window.location.href = 'dashboard.html';
         return false;
       }
-      state.user = user;
+
+      window.currentUserRole = userRole;
+      window.currentUserName = userData?.full_name || currentUser.email || 'النقيب';
+
+      document.querySelectorAll('[data-user-name]').forEach(el => {
+        el.textContent = window.currentUserName;
+      });
+
       return true;
-    } catch (e) {
-      console.error('Guard error:', e);
+    } catch (err) {
+      console.error('[Admin] Auth error:', err);
       window.location.href = 'login.html';
       return false;
     }
   }
 
   /* ============================================
-     4. TABS
+     TABS
      ============================================ */
   function initTabs() {
     $$('[data-tab-btn]').forEach(btn => {
@@ -154,7 +246,7 @@
 
   function switchTab(tab) {
     if (!tab) return;
-    state.currentTab = tab;
+    activeTab = tab;
 
     $$('[data-tab-btn]').forEach(b => {
       b.classList.toggle('active', b.dataset.tabBtn === tab);
@@ -165,36 +257,35 @@
       c.style.display = show ? '' : 'none';
     });
 
-    // lazy load
     switch (tab) {
-      case 'settings':      loadSettings(); break;
-      case 'home':          loadHomeSettings(); break;
-      case 'users':         loadUsers(); break;
-      case 'governorates':  loadGovernorates(); break;
-      case 'committees':    loadCommitteeGovernorates(); break;
-      case 'types':         loadTypes(); break;
-      case 'branches':      loadBranches(); break;
-      case 'expense-categories': loadExpenseCategories(); break;
-      case 'sessions':      loadSessions(); break;
-      case 'audit':         loadAudit(); break;
+      case 'settings':            loadSettings(); break;
+      case 'home':                loadSettings(); break;
+      case 'users':               loadUsers(); break;
+      case 'governorates':        loadGovernorates(); break;
+      case 'committees':          loadCommitteeGovernorates(); break;
+      case 'types':               loadTypes(); break;
+      case 'branches':            loadBranches(); break;
+      case 'expense-categories':  loadExpenseCategories(); break;
+      case 'sessions':            loadSessions(); break;
+      case 'audit':               loadAudit(); break;
     }
   }
 
   /* ============================================
-     5. SETTINGS TAB
+     SETTINGS
      ============================================ */
   async function loadSettings() {
     try {
-      const { data, error } = await window.sb
+      const { data, error } = await client
         .from('settings')
         .select('key, value');
       if (error) throw error;
 
       const map = {};
       (data || []).forEach(r => { map[r.key] = r.value; });
-      state.settings = map;
+      settings = map;
 
-      // fill inputs with data-setting
+      // Fill data-setting inputs
       $$('[data-setting]').forEach(el => {
         const key = el.dataset.setting;
         if (!(key in map)) return;
@@ -206,194 +297,422 @@
         }
       });
 
-      // logo preview
-      if (map.logo_url) {
+      // Logo preview
+      const logoUrl = map.site_logo_url || map.logo_url;
+      if (logoUrl) {
         const lp = $('#logoPreview');
         if (lp) {
-          lp.innerHTML = `<img src="${esc(map.logo_url)}" alt="logo" />`;
+          lp.innerHTML = `<img src="${escapeHtml(logoUrl)}" alt="logo" />`;
           lp.classList.add('has-logo');
         }
       }
-      // head photo preview
-      if (map.head_photo_url) {
+
+      // Head photo preview
+      const headUrl = map.head_photo_url;
+      if (headUrl) {
         const hp = $('#headPhotoPreview');
         if (hp) {
-          hp.innerHTML = `<img src="${esc(map.head_photo_url)}" alt="head" />`;
+          hp.innerHTML = `<img src="${escapeHtml(headUrl)}" alt="head" />`;
           hp.classList.add('has-photo');
         }
       }
+
+      // Features cards
+      loadFeaturesFromSettings();
+
     } catch (e) {
       console.error('loadSettings:', e);
-      toast('فشل تحميل الإعدادات', 'error');
+      showToast('فشل تحميل الإعدادات', 'error');
     }
   }
 
-  async function loadHomeSettings() {
-    // نفس الـ settings بس للتاب الرئيسية
-    if (!Object.keys(state.settings).length) {
-      await loadSettings();
-    }
-  }
-
-  async function saveSettings(keys = null) {
+  async function saveSettings() {
     try {
       const updates = [];
       $$('[data-setting]').forEach(el => {
         const key = el.dataset.setting;
-        if (keys && !keys.includes(key)) return;
+        if (!key) return;
+
         let val;
         if (el.type === 'checkbox') val = el.checked;
         else if (el.type === 'number') val = el.value === '' ? null : Number(el.value);
         else val = el.value;
+
         updates.push({ key, value: val });
       });
 
+      // Features cards JSON
+      if (featuresCards.length > 0 || 'features_cards' in settings) {
+        updates.push({ key: 'features_cards', value: JSON.stringify(featuresCards) });
+      }
+
       if (!updates.length) {
-        toast('لا يوجد تغييرات', 'info');
+        showToast('لا يوجد تغييرات', 'info');
         return;
       }
 
-      const { error } = await window.sb
+      const { error } = await client
         .from('settings')
         .upsert(updates, { onConflict: 'key' });
 
       if (error) throw error;
-      toast('تم حفظ الإعدادات بنجاح', 'success');
+
+      // Update local cache
+      updates.forEach(u => { settings[u.key] = u.value; });
+
+      // Cache in localStorage
+      try {
+        localStorage.setItem('its_site_settings', JSON.stringify(settings));
+      } catch (e) {}
+
+      showToast('تم حفظ الإعدادات بنجاح', 'success');
+
+      // Broadcast to other tabs
+      if (window.Realtime) {
+        window.Realtime.sendBroadcast('settings-updated', {});
+      }
+
     } catch (e) {
       console.error('saveSettings:', e);
-      toast('فشل حفظ الإعدادات', 'error');
+      showToast('فشل حفظ الإعدادات', 'error');
     }
   }
 
   function initSettingsTab() {
     const saveBtn = $('#saveSettingsBtn');
-    if (saveBtn) saveBtn.addEventListener('click', () => saveSettings());
+    if (saveBtn) saveBtn.addEventListener('click', saveSettings);
 
     const saveHomeBtn = $('#saveHomeBtn');
-    if (saveHomeBtn) saveHomeBtn.addEventListener('click', () => saveSettings());
+    if (saveHomeBtn) saveHomeBtn.addEventListener('click', saveSettings);
 
     // Logo upload
-    const uploadLogoBtn = $('#uploadLogoBtn');
-    const logoFileInput = $('#logoFileInput');
-    const removeLogoBtn = $('#removeLogoBtn');
+    setupImageUpload({
+      btnId: 'uploadLogoBtn',
+      inputId: 'logoFileInput',
+      removeId: 'removeLogoBtn',
+      settingKey: 'site_logo_url',
+      previewId: 'logoPreview',
+      previewClass: 'has-logo',
+      allowedTypes: ALLOWED_LOGO_TYPES,
+      label: 'الشعار'
+    });
 
-    if (uploadLogoBtn && logoFileInput) {
-      uploadLogoBtn.addEventListener('click', () => logoFileInput.click());
-      logoFileInput.addEventListener('change', async (e) => {
-        const file = e.target.files?.[0];
-        if (file) await uploadBranding(file, 'logo_url', '#logoPreview');
-        logoFileInput.value = '';
-      });
-    }
-    if (removeLogoBtn) {
-      removeLogoBtn.addEventListener('click', () => removeBranding('logo_url', '#logoPreview'));
-    }
-
-    // Head photo
-    const uploadHeadBtn = $('#uploadHeadPhotoBtn');
-    const headFileInput = $('#headPhotoInput');
-    const removeHeadBtn = $('#removeHeadPhotoBtn');
-
-    if (uploadHeadBtn && headFileInput) {
-      uploadHeadBtn.addEventListener('click', () => headFileInput.click());
-      headFileInput.addEventListener('change', async (e) => {
-        const file = e.target.files?.[0];
-        if (file) await uploadBranding(file, 'head_photo_url', '#headPhotoPreview');
-        headFileInput.value = '';
-      });
-    }
-    if (removeHeadBtn) {
-      removeHeadBtn.addEventListener('click', () => removeBranding('head_photo_url', '#headPhotoPreview'));
-    }
+    // Head photo upload
+    setupImageUpload({
+      btnId: 'uploadHeadPhotoBtn',
+      inputId: 'headPhotoInput',
+      removeId: 'removeHeadPhotoBtn',
+      settingKey: 'head_photo_url',
+      previewId: 'headPhotoPreview',
+      previewClass: 'has-photo',
+      allowedTypes: ALLOWED_PHOTO_TYPES,
+      label: 'صورة النقيب'
+    });
 
     // Backup
     const backupBtn = $('#backupBtn');
     if (backupBtn) backupBtn.addEventListener('click', exportBackup);
   }
 
-  async function uploadBranding(file, settingKey, previewSel) {
-    try {
-      const maxMB = 2;
-      if (file.size > maxMB * 1024 * 1024) {
-        toast(`الحد الأقصى ${maxMB} ميجا`, 'error');
-        return;
-      }
-      const ext = file.name.split('.').pop();
-      const path = `${settingKey}_${Date.now()}.${ext}`;
+  function setupImageUpload(config) {
+    const btn = document.getElementById(config.btnId);
+    const input = document.getElementById(config.inputId);
+    const removeBtn = document.getElementById(config.removeId);
 
-      const { error: upErr } = await window.sb.storage
-        .from('branding')
-        .upload(path, file, { upsert: true, cacheControl: '3600' });
-      if (upErr) throw upErr;
+    if (btn && input) {
+      btn.addEventListener('click', () => input.click());
+      input.addEventListener('change', async (e) => {
+        const file = e.target.files?.[0];
+        if (file) await uploadBrandingImage(file, config);
+        input.value = '';
+      });
+    }
 
-      const { data: pub } = window.sb.storage.from('branding').getPublicUrl(path);
-      const url = pub.publicUrl;
-
-      const { error: sErr } = await window.sb
-        .from('settings')
-        .upsert({ key: settingKey, value: url }, { onConflict: 'key' });
-      if (sErr) throw sErr;
-
-      const el = $(previewSel);
-      if (el) {
-        el.innerHTML = `<img src="${esc(url)}" alt="" />`;
-        el.classList.add(settingKey === 'logo_url' ? 'has-logo' : 'has-photo');
-      }
-      toast('تم الرفع بنجاح', 'success');
-    } catch (e) {
-      console.error('uploadBranding:', e);
-      toast('فشل رفع الصورة', 'error');
+    if (removeBtn) {
+      removeBtn.addEventListener('click', () => removeBrandingImage(config));
     }
   }
 
-  async function removeBranding(settingKey, previewSel) {
-    if (!confirm('متأكد من الإزالة؟')) return;
+  async function uploadBrandingImage(file, config) {
     try {
-      const { error } = await window.sb
+      if (file.size > MAX_IMAGE_SIZE) {
+        showToast(`حجم الملف كبير — الحد الأقصى 2 ميجا`, 'error');
+        return;
+      }
+      if (!config.allowedTypes.includes(file.type)) {
+        showToast('صيغة غير مدعومة', 'error');
+        return;
+      }
+
+      const ext = (file.name.split('.').pop() || 'png').toLowerCase();
+      const path = `${config.settingKey}_${Date.now()}.${ext}`;
+
+      const { error: upErr } = await client.storage
+        .from(BRANDING_BUCKET)
+        .upload(path, file, { upsert: true, cacheControl: '3600', contentType: file.type });
+      if (upErr) throw upErr;
+
+      const { data: pub } = client.storage.from(BRANDING_BUCKET).getPublicUrl(path);
+      const url = pub.publicUrl;
+
+      const { error: sErr } = await client
         .from('settings')
-        .upsert({ key: settingKey, value: '' }, { onConflict: 'key' });
+        .upsert({ key: config.settingKey, value: url }, { onConflict: 'key' });
+      if (sErr) throw sErr;
+
+      settings[config.settingKey] = url;
+
+      const el = document.getElementById(config.previewId);
+      if (el) {
+        el.innerHTML = `<img src="${escapeHtml(url)}" alt="" />`;
+        el.classList.add(config.previewClass);
+      }
+
+      try {
+        localStorage.setItem('its_site_settings', JSON.stringify(settings));
+      } catch (e) {}
+
+      showToast(`تم رفع ${config.label} بنجاح`, 'success');
+
+      if (window.Realtime) {
+        window.Realtime.sendBroadcast('settings-updated', {});
+      }
+
+    } catch (e) {
+      console.error('uploadBrandingImage:', e);
+      showToast('فشل الرفع: ' + e.message, 'error');
+    }
+  }
+
+  async function removeBrandingImage(config) {
+    if (!confirm(`متأكد من إزالة ${config.label}؟`)) return;
+
+    try {
+      const { error } = await client
+        .from('settings')
+        .upsert({ key: config.settingKey, value: '' }, { onConflict: 'key' });
       if (error) throw error;
 
-      const el = $(previewSel);
+      settings[config.settingKey] = '';
+
+      const el = document.getElementById(config.previewId);
       if (el) {
         el.innerHTML = '';
-        el.classList.remove('has-logo', 'has-photo');
+        el.classList.remove(config.previewClass);
       }
-      toast('تم الحذف', 'success');
+
+      try {
+        localStorage.setItem('its_site_settings', JSON.stringify(settings));
+      } catch (e) {}
+
+      showToast('تم الحذف', 'success');
+
+      if (window.Realtime) {
+        window.Realtime.sendBroadcast('settings-updated', {});
+      }
+
     } catch (e) {
-      console.error('removeBranding:', e);
-      toast('فشل الحذف', 'error');
+      console.error('removeBrandingImage:', e);
+      showToast('فشل الحذف', 'error');
     }
   }
 
   /* ============================================
-     6. USERS TAB
+     FEATURES CARDS
+     ============================================ */
+  let featuresCards = [];
+
+  function loadFeaturesFromSettings() {
+    try {
+      const raw = settings.features_cards;
+      if (raw) {
+        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (Array.isArray(parsed)) featuresCards = parsed;
+      }
+    } catch (e) {
+      featuresCards = [];
+    }
+    renderFeaturesPreview();
+  }
+
+  function renderFeaturesPreview() {
+    const list = document.getElementById('featuresPreviewList');
+    if (!list) return;
+
+    if (!featuresCards.length) {
+      list.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-dim);">لا توجد كروت بعد. اضغط "إضافة كارت" لإضافة أول كارت.</div>';
+      return;
+    }
+
+    list.innerHTML = featuresCards.map((c, idx) => {
+      const iconHTML = c.logo
+        ? `<img src="${escapeHtml(c.logo)}" alt="" />`
+        : getIconByName(c.icon);
+
+      return `
+        <div class="feature-preview-card">
+          <div class="feature-preview-icon">${iconHTML}</div>
+          <div class="feature-preview-info">
+            <div class="feature-preview-title">${escapeHtml(c.title || 'بدون عنوان')}</div>
+            <div class="feature-preview-text">${escapeHtml(c.text || '')}</div>
+          </div>
+          <div class="feature-preview-actions">
+            <button class="feature-action-btn edit" data-action="edit-feature" data-idx="${idx}" title="تعديل">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="feature-action-btn delete" data-action="delete-feature" data-idx="${idx}" title="حذف">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    list.querySelectorAll('[data-action="edit-feature"]').forEach(btn => {
+      btn.addEventListener('click', () => openFeatureModal(parseInt(btn.dataset.idx)));
+    });
+    list.querySelectorAll('[data-action="delete-feature"]').forEach(btn => {
+      btn.addEventListener('click', () => deleteFeature(parseInt(btn.dataset.idx)));
+    });
+  }
+
+  function getIconByName(name) {
+    const icons = {
+      zap: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+      shield: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+      eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+      clock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+      code: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+      users: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
+      check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+      star: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+      heart: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+      award: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>',
+      trending: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>'
+    };
+    return icons[name] || icons.check;
+  }
+
+  function openFeatureModal(index = null) {
+    const modal = document.getElementById('featureModal');
+    if (!modal) return;
+
+    const isEdit = index !== null && index !== undefined && index >= 0;
+    const feature = isEdit ? featuresCards[index] : null;
+
+    const titleEl = document.getElementById('featureModalTitle');
+    if (titleEl) titleEl.textContent = isEdit ? 'تعديل كارت' : 'إضافة كارت';
+
+    const indexInput = document.getElementById('featureIndex');
+    if (indexInput) indexInput.value = isEdit ? index : '';
+
+    const titleInput = document.getElementById('featureTitle');
+    if (titleInput) titleInput.value = isEdit ? (feature.title || '') : '';
+
+    const textInput = document.getElementById('featureText');
+    if (textInput) textInput.value = isEdit ? (feature.text || '') : '';
+
+    const logoInput = document.getElementById('featureLogo');
+    if (logoInput) logoInput.value = isEdit ? (feature.logo || '') : '';
+
+    const iconInput = document.getElementById('featureIcon');
+    if (iconInput) iconInput.value = isEdit ? (feature.icon || 'zap') : 'zap';
+
+    buildIconPicker();
+
+    openModal('featureModal');
+  }
+
+  window.openFeatureModal = openFeatureModal;
+
+  function buildIconPicker() {
+    const picker = document.getElementById('iconPicker');
+    const iconInput = document.getElementById('featureIcon');
+    if (!picker || !iconInput) return;
+
+    const icons = ['zap', 'shield', 'eye', 'clock', 'code', 'users', 'check', 'star', 'heart', 'award', 'trending'];
+    const current = iconInput.value || 'zap';
+
+    picker.innerHTML = icons.map(name => `
+      <div class="icon-option ${name === current ? 'active' : ''}" data-icon="${name}" title="${name}">
+        ${getIconByName(name)}
+      </div>
+    `).join('');
+
+    picker.querySelectorAll('.icon-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        iconInput.value = opt.dataset.icon;
+        picker.querySelectorAll('.icon-option').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+      });
+    });
+  }
+
+  window.closeFeatureModal = function () {
+    closeModal('featureModal');
+  };
+
+  function saveFeature() {
+    const index = document.getElementById('featureIndex')?.value;
+    const title = document.getElementById('featureTitle')?.value.trim();
+    const text = document.getElementById('featureText')?.value.trim();
+    const icon = document.getElementById('featureIcon')?.value || 'zap';
+    const logo = document.getElementById('featureLogo')?.value.trim();
+
+    if (!title) {
+      showToast('العنوان مطلوب', 'warning');
+      return;
+    }
+
+    const card = { icon, title, text, logo: logo || undefined };
+
+    if (index !== '' && index !== null && index !== undefined) {
+      featuresCards[parseInt(index)] = card;
+    } else {
+      featuresCards.push(card);
+    }
+
+    renderFeaturesPreview();
+    closeModal('featureModal');
+    showToast('تم الحفظ. لا تنسَ الضغط على "حفظ إعدادات الرئيسية"', 'info');
+  }
+
+  window.saveFeature = saveFeature;
+
+  function deleteFeature(index) {
+    if (!confirm('هل أنت متأكد من حذف هذا الكارت؟')) return;
+    featuresCards.splice(index, 1);
+    renderFeaturesPreview();
+    showToast('تم الحذف. لا تنسَ الحفظ', 'info');
+  }
+
+  /* ============================================
+     USERS
      ============================================ */
   async function loadUsers() {
-    const tbody = $('#usersTableBody');
+    const tbody = document.getElementById('usersTableBody');
     if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
 
     try {
-      const { data, error } = await window.sb
+      const { data, error } = await client
         .from('users')
-        .select('id, full_name, email, phone, role, position, governorate_id, status, created_at')
+        .select('id, full_name, email, phone, role, position, governorate_id, is_active, registration_source, last_login_at, created_at')
         .order('created_at', { ascending: false });
       if (error) throw error;
 
-      state.users = data || [];
+      users = data || [];
       renderUsers();
 
-      // counts
       const counts = {
-        all: state.users.length,
-        active: state.users.filter(u => u.status === 'active').length,
-        pending: state.users.filter(u => u.status === 'pending').length,
-        rejected: state.users.filter(u => u.status === 'rejected').length
+        all: users.length,
+        active: users.filter(u => u.is_active !== false).length,
+        pending: users.filter(u => u.is_active === false).length,
+        rejected: 0
       };
-      const cAll = $('#countAllUsers'); if (cAll) cAll.textContent = counts.all;
-      const cAct = $('#countActiveUsers'); if (cAct) cAct.textContent = counts.active;
-      const cPnd = $('#countPendingUsers'); if (cPnd) cPnd.textContent = counts.pending;
-      const cRej = $('#countRejectedUsers'); if (cRej) cRej.textContent = counts.rejected;
+      const cAll = document.getElementById('countAllUsers'); if (cAll) cAll.textContent = counts.all;
+      const cAct = document.getElementById('countActiveUsers'); if (cAct) cAct.textContent = counts.active;
+      const cPnd = document.getElementById('countPendingUsers'); if (cPnd) cPnd.textContent = counts.pending;
+      const cRej = document.getElementById('countRejectedUsers'); if (cRej) cRej.textContent = counts.rejected;
     } catch (e) {
       console.error('loadUsers:', e);
       if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--danger);">فشل التحميل</td></tr>`;
@@ -401,56 +720,100 @@
   }
 
   function renderUsers() {
-    const tbody = $('#usersTableBody');
+    const tbody = document.getElementById('usersTableBody');
     if (!tbody) return;
 
-    let list = state.users;
-    if (state.usersFilter !== 'all') {
-      list = list.filter(u => u.status === state.usersFilter);
-    }
+    let list = users;
+    if (usersFilter === 'active') list = list.filter(u => u.is_active !== false);
+    else if (usersFilter === 'pending') list = list.filter(u => u.is_active === false);
 
     if (!list.length) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">لا يوجد مستخدمون</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">لا يوجد مستخدمون في هذه الفئة</td></tr>`;
       return;
     }
 
     const govMap = {};
-    state.governorates.forEach(g => { govMap[g.id] = g.name; });
+    governorates.forEach(g => { govMap[g.id] = g.name; });
 
-    tbody.innerHTML = list.map(u => `
-      <tr>
-        <td>${esc(u.full_name || '—')}</td>
-        <td dir="ltr" style="text-align:right;">${esc(u.email || '—')}</td>
-        <td><span class="role-badge ${roleBadgeClass(u.role)}"><span class="dot"></span>${esc(roleLabel(u.role))}</span></td>
-        <td>${esc(u.position || '—')}</td>
-        <td>${esc(govMap[u.governorate_id] || '—')}</td>
-        <td>${statusBadge(u.status)}</td>
-        <td>
-          <div class="row-actions">
-            <button class="row-btn edit-btn" data-edit-user="${u.id}" title="تعديل">
-              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </button>
-            <button class="row-btn delete-btn" data-del-user="${u.id}" title="حذف">
-              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            </button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = list.map(u => {
+      const isMe = u.id === currentUser.id;
+      const isActive = u.is_active !== false;
+      const isPending = u.is_active === false;
+      const sourceLabel = u.registration_source === 'self_signup' ? 'تسجيل ذاتي'
+                        : u.registration_source === 'admin' ? 'إضافة النقيب'
+                        : (u.registration_source || '—');
 
-    // bind
-    $$('[data-edit-user]').forEach(b => {
-      b.addEventListener('click', () => openUserModal(b.dataset.editUser));
+      let statusBadge = '';
+      if (isPending) {
+        statusBadge = '<span class="status-badge pending"><span class="dot"></span>بانتظار التفعيل</span>';
+      } else {
+        statusBadge = '<span class="status-badge active"><span class="dot"></span>نشط</span>';
+      }
+
+      let actionsHTML = '';
+
+      actionsHTML += `<button class="row-btn edit-btn" data-action="edit-user" data-id="${u.id}" title="تعديل">${ICONS.edit}</button>`;
+
+      if (!isMe) {
+        if (isActive) {
+          actionsHTML += `<button class="row-btn pass-btn" data-action="deactivate-user" data-id="${u.id}" title="تعطيل" style="background:rgba(var(--warning-rgb),0.08);border:1px solid rgba(var(--warning-rgb),0.25);color:var(--warning);">
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </button>`;
+        } else if (isPending) {
+          actionsHTML += `<button class="row-btn approve-btn" data-action="activate-user" data-id="${u.id}" title="تفعيل">${ICONS.check}</button>`;
+          actionsHTML += `<button class="row-btn reject-btn" data-action="reject-user" data-id="${u.id}" title="رفض" style="background:rgba(var(--danger-rgb),0.08);border:1px solid rgba(var(--danger-rgb),0.25);color:var(--danger);">${ICONS.x}</button>`;
+        }
+      }
+
+      actionsHTML += `<button class="row-btn delete-btn" data-action="delete-user" data-id="${u.id}" title="حذف" ${isMe ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''}>${ICONS.trash}</button>`;
+
+      return `
+        <tr style="border-bottom:1px solid var(--border-soft);${isPending ? 'background:rgba(var(--warning-rgb),0.03);' : ''}">
+          <td style="padding:14px 12px;">
+            <div style="font-weight:700;font-size:13.5px;color:var(--text);">${escapeHtml(u.full_name || '—')}</div>
+            ${u.phone ? `<div style="font-size:11.5px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;direction:ltr;text-align:right;margin-top:2px;">${escapeHtml(u.phone)}</div>` : ''}
+          </td>
+          <td style="padding:14px 12px;font-size:12.5px;color:var(--text-muted);direction:ltr;text-align:right;">
+            <span dir="ltr">${escapeHtml(u.email || '—')}</span>
+          </td>
+          <td style="padding:14px 12px;">
+            <span class="role-badge ${roleBadgeClass(u.role)}"><span class="dot"></span>${escapeHtml(roleLabel(u.role))}</span>
+          </td>
+          <td style="padding:14px 12px;font-size:11.5px;color:var(--text-dim);">
+            <span style="display:inline-block;padding:3px 9px;background:rgba(var(--accent-rgb),0.06);border:1px solid rgba(var(--accent-rgb),0.18);border-radius:100px;font-size:10.5px;">${escapeHtml(sourceLabel)}</span>
+          </td>
+          <td style="padding:14px 12px;font-size:12px;color:var(--text-dim);">${escapeHtml(formatDate(u.last_login_at))}</td>
+          <td style="padding:14px 12px;">${statusBadge}</td>
+          <td style="padding:14px 12px;">
+            <div class="row-actions">${actionsHTML}</div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // Bind
+    tbody.querySelectorAll('[data-action="edit-user"]').forEach(b => {
+      b.addEventListener('click', () => openUserModal(b.dataset.id));
     });
-    $$('[data-del-user]').forEach(b => {
-      b.addEventListener('click', () => deleteUser(b.dataset.delUser));
+    tbody.querySelectorAll('[data-action="delete-user"]').forEach(b => {
+      if (b.disabled) return;
+      b.addEventListener('click', () => deleteUser(b.dataset.id));
+    });
+    tbody.querySelectorAll('[data-action="activate-user"]').forEach(b => {
+      b.addEventListener('click', () => activateUser(b.dataset.id));
+    });
+    tbody.querySelectorAll('[data-action="deactivate-user"]').forEach(b => {
+      b.addEventListener('click', () => deactivateUser(b.dataset.id));
+    });
+    tbody.querySelectorAll('[data-action="reject-user"]').forEach(b => {
+      b.addEventListener('click', () => rejectUser(b.dataset.id));
     });
   }
 
   function initUsersTab() {
     $$('[data-users-filter]').forEach(b => {
       b.addEventListener('click', () => {
-        state.usersFilter = b.dataset.usersFilter;
+        usersFilter = b.dataset.usersFilter;
         $$('[data-users-filter]').forEach(x => x.classList.toggle('active', x === b));
         renderUsers();
       });
@@ -474,19 +837,18 @@
   }
 
   async function openUserModal(id = null) {
-    state.editingUserId = id;
+    editingUserId = id;
     const title = $('#userModalTitle');
 
-    // populate governorates
     await ensureGovernoratesLoaded();
     const govSel = $('#userGovernorate');
     if (govSel) {
       govSel.innerHTML = '<option value="">-- اختر المحافظة --</option>' +
-        state.governorates.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join('');
+        governorates.map(g => `<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
     }
 
     if (id) {
-      const u = state.users.find(x => x.id === id);
+      const u = users.find(x => x.id === id);
       if (!u) return;
       if (title) title.textContent = 'تعديل مستخدم';
       $('#userId').value = u.id;
@@ -523,6 +885,7 @@
     openModal('userModal');
   }
 
+  window.openUserModal = openUserModal;
   window.closeUserModal = function () { closeModal('userModal'); };
 
   async function saveUser() {
@@ -537,84 +900,143 @@
     const password = $('#userPassword')?.value || '';
 
     if (!full_name || !email || !role) {
-      toast('املأ الحقول الإلزامية', 'error');
+      showToast('املأ الحقول الإلزامية', 'error');
       return;
     }
 
     const needsGov = role === 'governorate_head' || role === 'governorate_board';
     if (needsGov && !governorate_id) {
-      toast('اختر المحافظة', 'error');
+      showToast('اختر المحافظة', 'error');
       return;
     }
 
     try {
       if (id) {
-        const { error } = await window.sb.from('users').update({
-          full_name, email, phone, role, position, governorate_id, notes
+        const { error } = await client.from('users').update({
+          full_name, email, phone, role, position,
+          governorate_id: governorate_id ? parseInt(governorate_id) : null,
+          notes
         }).eq('id', id);
         if (error) throw error;
-        toast('تم التحديث', 'success');
+        showToast('تم التحديث', 'success');
       } else {
         if (!password || password.length < 6) {
-          toast('كلمة المرور 6 أحرف على الأقل', 'error');
+          showToast('كلمة المرور 6 أحرف على الأقل', 'error');
           return;
         }
-        // إنشاء المستخدم في Auth
-        if (window.sb.auth?.admin?.createUser) {
-          const { data: authData, error: authErr } = await window.sb.auth.admin.createUser({
-            email, password, email_confirm: true
-          });
-          if (authErr) throw authErr;
 
-          const { error } = await window.sb.from('users').insert({
-            id: authData.user.id,
-            full_name, email, phone, role, position, governorate_id, notes,
-            status: 'active'
-          });
-          if (error) throw error;
-        } else {
-          throw new Error('إنشاء المستخدمين يتطلب Service Role');
-        }
-        toast('تم إضافة المستخدم', 'success');
+        // Create user with Supabase Auth (using signup, then admin activate)
+        // ملاحظة: Supabase Admin API يحتاج Service Role. هنستخدم signup عادي
+        const tempClient = window.supabase.createClient(
+          window.SUPABASE_URL,
+          window.SUPABASE_KEY,
+          { auth: { persistSession: false } }
+        );
+
+        const { data: signUpData, error: signUpErr } = await tempClient.auth.signUp({
+          email, password,
+          options: { data: { full_name } }
+        });
+
+        if (signUpErr) throw signUpErr;
+
+        const newUserId = signUpData?.user?.id;
+        if (!newUserId) throw new Error('فشل إنشاء المستخدم');
+
+        const { error } = await client.from('users').upsert({
+          id: newUserId,
+          full_name, email, phone, role, position,
+          governorate_id: governorate_id ? parseInt(governorate_id) : null,
+          notes, is_active: true,
+          registration_source: 'admin'
+        }, { onConflict: 'id' });
+
+        if (error) throw error;
+        showToast('تم إضافة المستخدم', 'success');
       }
 
       closeModal('userModal');
       await loadUsers();
     } catch (e) {
       console.error('saveUser:', e);
-      toast(e.message || 'فشل الحفظ', 'error');
+      showToast(e.message || 'فشل الحفظ', 'error');
     }
   }
 
   async function deleteUser(id) {
     if (!confirm('متأكد من حذف المستخدم؟')) return;
     try {
-      const { error } = await window.sb.from('users').delete().eq('id', id);
+      const { error } = await client.from('users').delete().eq('id', id);
       if (error) throw error;
-      toast('تم الحذف', 'success');
+      showToast('تم الحذف', 'success');
       await loadUsers();
     } catch (e) {
       console.error('deleteUser:', e);
-      toast('فشل الحذف', 'error');
+      showToast('فشل الحذف', 'error');
+    }
+  }
+
+  async function activateUser(id) {
+    if (!confirm('تفعيل هذا المستخدم؟')) return;
+    try {
+      const { error } = await client.from('users').update({
+        is_active: true,
+        activated_at: new Date().toISOString()
+      }).eq('id', id);
+      if (error) throw error;
+      showToast('تم التفعيل', 'success');
+      await loadUsers();
+    } catch (e) {
+      showToast('فشل التفعيل: ' + e.message, 'error');
+    }
+  }
+
+  async function deactivateUser(id) {
+    if (!confirm('تعطيل هذا المستخدم؟')) return;
+    try {
+      const { error } = await client.from('users').update({
+        is_active: false,
+        deactivated_at: new Date().toISOString()
+      }).eq('id', id);
+      if (error) throw error;
+      showToast('تم التعطيل', 'success');
+      await loadUsers();
+    } catch (e) {
+      showToast('فشل التعطيل: ' + e.message, 'error');
+    }
+  }
+
+  async function rejectUser(id) {
+    if (!confirm('رفض هذا المستخدم؟')) return;
+    try {
+      const { error } = await client.from('users').update({
+        is_active: false,
+        rejected_at: new Date().toISOString()
+      }).eq('id', id);
+      if (error) throw error;
+      showToast('تم الرفض', 'success');
+      await loadUsers();
+    } catch (e) {
+      showToast('فشل الرفض: ' + e.message, 'error');
     }
   }
 
   /* ============================================
-     7. GOVERNORATES TAB
+     GOVERNORATES
      ============================================ */
   async function ensureGovernoratesLoaded() {
-    if (state.governorates.length) return state.governorates;
-    const { data, error } = await window.sb
+    if (governorates.length) return governorates;
+    const { data, error } = await client
       .from('governorates')
       .select('*')
       .order('sort_order', { ascending: true });
     if (error) throw error;
-    state.governorates = data || [];
-    return state.governorates;
+    governorates = data || [];
+    return governorates;
   }
 
   async function loadGovernorates() {
-    const tbody = $('#govTableBody');
+    const tbody = document.getElementById('govTableBody');
     if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
 
     try {
@@ -627,34 +1049,30 @@
   }
 
   function renderGovernorates() {
-    const tbody = $('#govTableBody');
+    const tbody = document.getElementById('govTableBody');
     if (!tbody) return;
-    if (!state.governorates.length) {
+    if (!governorates.length) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">لا توجد محافظات</td></tr>`;
       return;
     }
-    tbody.innerHTML = state.governorates.map(g => `
+    tbody.innerHTML = governorates.map(g => `
       <tr>
-        <td dir="ltr" style="text-align:right;">${esc(g.code || '—')}</td>
-        <td>${esc(g.name || '—')}</td>
+        <td dir="ltr" style="text-align:right;">${escapeHtml(g.code || '—')}</td>
+        <td>${escapeHtml(g.name || '—')}</td>
         <td>${g.structure_type === 'council' ? 'مجلس كامل' : 'وكيل + مساعدين'}</td>
-        <td>${esc(g.sort_order ?? '—')}</td>
-        <td>${statusBadge(g.active ? 'active' : 'disabled')}</td>
+        <td>${escapeHtml(g.sort_order ?? '—')}</td>
+        <td>${statusBadge(g.is_active !== false ? 'active' : 'disabled')}</td>
         <td>
           <div class="row-actions">
-            <button class="row-btn edit-btn" data-edit-gov="${g.id}">
-              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </button>
-            <button class="row-btn delete-btn" data-del-gov="${g.id}">
-              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            </button>
+            <button class="row-btn edit-btn" data-edit-gov="${g.id}">${ICONS.edit}</button>
+            <button class="row-btn delete-btn" data-del-gov="${g.id}">${ICONS.trash}</button>
           </div>
         </td>
       </tr>
     `).join('');
 
-    $$('[data-edit-gov]').forEach(b => b.addEventListener('click', () => openGovModal(b.dataset.editGov)));
-    $$('[data-del-gov]').forEach(b => b.addEventListener('click', () => deleteGov(b.dataset.delGov)));
+    tbody.querySelectorAll('[data-edit-gov]').forEach(b => b.addEventListener('click', () => openGovModal(b.dataset.editGov)));
+    tbody.querySelectorAll('[data-del-gov]').forEach(b => b.addEventListener('click', () => deleteGov(b.dataset.delGov)));
   }
 
   function initGovernoratesTab() {
@@ -665,10 +1083,10 @@
   }
 
   function openGovModal(id = null) {
-    state.editingGovId = id;
+    editingGovId = id;
     const title = $('#govModalTitle');
     if (id) {
-      const g = state.governorates.find(x => x.id === id);
+      const g = governorates.find(x => String(x.id) === String(id));
       if (!g) return;
       if (title) title.textContent = 'تعديل محافظة';
       $('#govId').value = g.id;
@@ -676,7 +1094,7 @@
       $('#govCode').value = g.code || '';
       $('#govStructureType').value = g.structure_type || 'council';
       $('#govSortOrder').value = g.sort_order ?? 0;
-      $('#govActive').checked = !!g.active;
+      $('#govActive').checked = g.is_active !== false;
     } else {
       if (title) title.textContent = 'إضافة محافظة';
       $('#govId').value = '';
@@ -688,6 +1106,8 @@
     }
     openModal('govModal');
   }
+
+  window.openGovModal = openGovModal;
   window.closeGovModal = function () { closeModal('govModal'); };
 
   async function saveGov() {
@@ -697,66 +1117,51 @@
       code: $('#govCode').value.trim().toUpperCase() || null,
       structure_type: $('#govStructureType').value,
       sort_order: Number($('#govSortOrder').value) || 0,
-      active: $('#govActive').checked
+      is_active: $('#govActive').checked
     };
-    if (!payload.name) { toast('الاسم مطلوب', 'error'); return; }
+    if (!payload.name) { showToast('الاسم مطلوب', 'error'); return; }
 
     try {
       if (id) {
-        const { error } = await window.sb.from('governorates').update(payload).eq('id', id);
+        const { error } = await client.from('governorates').update(payload).eq('id', id);
         if (error) throw error;
       } else {
-        const { error } = await window.sb.from('governorates').insert(payload);
+        const { error } = await client.from('governorates').insert(payload);
         if (error) throw error;
       }
-      toast('تم الحفظ', 'success');
+      showToast('تم الحفظ', 'success');
       closeModal('govModal');
-      state.governorates = [];
+      governorates = [];
       await loadGovernorates();
     } catch (e) {
       console.error('saveGov:', e);
-      toast('فشل الحفظ', 'error');
+      showToast('فشل الحفظ', 'error');
     }
   }
 
   async function deleteGov(id) {
     if (!confirm('متأكد من الحذف؟')) return;
     try {
-      const { error } = await window.sb.from('governorates').delete().eq('id', id);
+      const { error } = await client.from('governorates').delete().eq('id', id);
       if (error) throw error;
-      toast('تم الحذف', 'success');
-      state.governorates = [];
+      showToast('تم الحذف', 'success');
+      governorates = [];
       await loadGovernorates();
     } catch (e) {
       console.error('deleteGov:', e);
-      toast('فشل الحذف', 'error');
+      showToast('فشل الحذف', 'error');
     }
   }
 
   /* ============================================
-     8. COMMITTEES TAB
+     COMMITTEES
      ============================================ */
-  const COUNCIL_POSITIONS = [
-    { key: 'head', label: 'النقيب' },
-    { key: 'vice1', label: 'النائب الأول' },
-    { key: 'vice2', label: 'النائب الثاني' },
-    { key: 'secretary', label: 'الأمين العام' },
-    { key: 'secretary_assist', label: 'مساعد الأمين' },
-    { key: 'treasurer', label: 'أمين الصندوق' },
-    { key: 'treasurer_assist', label: 'مساعد أمين الصندوق' }
-  ];
-  const SIMPLE_POSITIONS = [
-    { key: 'agent', label: 'الوكيل' },
-    { key: 'assist1', label: 'مساعد أول' },
-    { key: 'assist2', label: 'مساعد ثاني' }
-  ];
-
   async function loadCommitteeGovernorates() {
     await ensureGovernoratesLoaded();
     const sel = $('#committeeGovSelect');
     if (!sel) return;
     sel.innerHTML = '<option value="">-- اختر المحافظة --</option>' +
-      state.governorates.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join('');
+      governorates.map(g => `<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
 
     sel.onchange = () => loadCommitteePositions(sel.value);
   }
@@ -771,10 +1176,10 @@
     container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</div>`;
 
     try {
-      const gov = state.governorates.find(g => g.id === govId);
+      const gov = governorates.find(g => String(g.id) === String(govId));
       const positions = gov?.structure_type === 'simple' ? SIMPLE_POSITIONS : COUNCIL_POSITIONS;
 
-      const { data, error } = await window.sb
+      const { data, error } = await client
         .from('governorate_committees')
         .select('*')
         .eq('governorate_id', govId);
@@ -788,17 +1193,17 @@
           const m = byPos[p.key];
           return `
             <div style="padding:16px;background:rgba(0,0,0,0.25);border:1px solid var(--border-soft);border-radius:var(--radius-md);">
-              <div style="font-size:12px;color:var(--accent);font-weight:700;margin-bottom:6px;">${esc(p.label)}</div>
-              <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">${esc(m?.full_name || '— شاغر —')}</div>
-              <div style="font-size:11.5px;color:var(--text-dim);margin-bottom:10px;">${esc(m?.phone || '')}</div>
-              <button type="button" class="btn btn-outline btn-sm" data-pos-btn="${p.key}" data-pos-label="${esc(p.label)}">
+              <div style="font-size:12px;color:var(--accent);font-weight:700;margin-bottom:6px;">${escapeHtml(p.label)}</div>
+              <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">${escapeHtml(m?.full_name || '— شاغر —')}</div>
+              <div style="font-size:11.5px;color:var(--text-dim);margin-bottom:10px;">${escapeHtml(m?.phone || '')}</div>
+              <button type="button" class="btn btn-outline btn-sm" data-pos-btn="${p.key}" data-pos-label="${escapeHtml(p.label)}">
                 ${m ? 'تعديل' : 'تعيين'}
               </button>
             </div>
           `;
         }).join('') + `</div>`;
 
-      $$('[data-pos-btn]').forEach(b => {
+      container.querySelectorAll('[data-pos-btn]').forEach(b => {
         b.addEventListener('click', () => openPositionModal(govId, b.dataset.posBtn, b.dataset.posLabel));
       });
     } catch (e) {
@@ -818,13 +1223,14 @@
     $('#posNotes').value = '';
     openModal('positionModal');
   }
+
   window.closePositionModal = function () { closeModal('positionModal'); };
 
   async function savePosition() {
     const govId = $('#posGovernorateId').value;
     const position = $('#posPosition').value;
     const full_name = $('#posFullName').value.trim();
-    if (!full_name) { toast('الاسم مطلوب', 'error'); return; }
+    if (!full_name) { showToast('الاسم مطلوب', 'error'); return; }
 
     const payload = {
       governorate_id: govId,
@@ -837,7 +1243,7 @@
     };
 
     try {
-      const { data: existing } = await window.sb
+      const { data: existing } = await client
         .from('governorate_committees')
         .select('id')
         .eq('governorate_id', govId)
@@ -845,18 +1251,18 @@
         .maybeSingle();
 
       if (existing?.id) {
-        const { error } = await window.sb.from('governorate_committees').update(payload).eq('id', existing.id);
+        const { error } = await client.from('governorate_committees').update(payload).eq('id', existing.id);
         if (error) throw error;
       } else {
-        const { error } = await window.sb.from('governorate_committees').insert(payload);
+        const { error } = await client.from('governorate_committees').insert(payload);
         if (error) throw error;
       }
-      toast('تم الحفظ', 'success');
+      showToast('تم الحفظ', 'success');
       closeModal('positionModal');
       loadCommitteePositions(govId);
     } catch (e) {
       console.error('savePosition:', e);
-      toast('فشل الحفظ', 'error');
+      showToast('فشل الحفظ', 'error');
     }
   }
 
@@ -866,18 +1272,18 @@
   }
 
   /* ============================================
-     9. TYPES TAB
+     TYPES
      ============================================ */
   async function loadTypes() {
-    const tbody = $('#typesTableBody');
+    const tbody = document.getElementById('typesTableBody');
     if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
     try {
-      const { data, error } = await window.sb
+      const { data, error } = await client
         .from('membership_types')
         .select('*')
         .order('sort_order', { ascending: true });
       if (error) throw error;
-      state.types = data || [];
+      types = data || [];
       renderTypes();
     } catch (e) {
       console.error('loadTypes:', e);
@@ -886,35 +1292,31 @@
   }
 
   function renderTypes() {
-    const tbody = $('#typesTableBody');
+    const tbody = document.getElementById('typesTableBody');
     if (!tbody) return;
-    if (!state.types.length) {
+    if (!types.length) {
       tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">لا توجد أنواع</td></tr>`;
       return;
     }
-    tbody.innerHTML = state.types.map(t => `
+    tbody.innerHTML = types.map(t => `
       <tr>
-        <td dir="ltr" style="text-align:right;">${esc(t.code || '—')}</td>
-        <td>${esc(t.name || '—')}</td>
-        <td>${esc(t.description || '—')}</td>
-        <td>${esc(t.fee ?? '—')} ج.م</td>
-        <td>${esc(t.duration_months ?? '—')} شهر</td>
-        <td>${statusBadge(t.active ? 'active' : 'disabled')}</td>
+        <td dir="ltr" style="text-align:right;">${escapeHtml(t.code || '—')}</td>
+        <td>${escapeHtml(t.name || '—')}</td>
+        <td>${escapeHtml(t.description || '—')}</td>
+        <td>${escapeHtml(t.fee ?? '—')} ج.م</td>
+        <td>${escapeHtml(t.duration_months ?? '—')} شهر</td>
+        <td>${statusBadge(t.is_active !== false ? 'active' : 'disabled')}</td>
         <td>
           <div class="row-actions">
-            <button class="row-btn edit-btn" data-edit-type="${t.id}">
-              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </button>
-            <button class="row-btn delete-btn" data-del-type="${t.id}">
-              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            </button>
+            <button class="row-btn edit-btn" data-edit-type="${t.id}">${ICONS.edit}</button>
+            <button class="row-btn delete-btn" data-del-type="${t.id}">${ICONS.trash}</button>
           </div>
         </td>
       </tr>
     `).join('');
 
-    $$('[data-edit-type]').forEach(b => b.addEventListener('click', () => openTypeModal(b.dataset.editType)));
-    $$('[data-del-type]').forEach(b => b.addEventListener('click', () => deleteType(b.dataset.delType)));
+    tbody.querySelectorAll('[data-edit-type]').forEach(b => b.addEventListener('click', () => openTypeModal(b.dataset.editType)));
+    tbody.querySelectorAll('[data-del-type]').forEach(b => b.addEventListener('click', () => deleteType(b.dataset.delType)));
   }
 
   function initTypesTab() {
@@ -925,10 +1327,10 @@
   }
 
   function openTypeModal(id = null) {
-    state.editingTypeId = id;
+    editingTypeId = id;
     const title = $('#typeModalTitle');
     if (id) {
-      const t = state.types.find(x => x.id === id);
+      const t = types.find(x => String(x.id) === String(id));
       if (!t) return;
       if (title) title.textContent = 'تعديل نوع';
       $('#typeId').value = t.id;
@@ -938,7 +1340,7 @@
       $('#typeFee').value = t.fee ?? '';
       $('#typeDuration').value = t.duration_months ?? '';
       $('#typeSortOrder').value = t.sort_order ?? 0;
-      $('#typeActive').checked = !!t.active;
+      $('#typeActive').checked = t.is_active !== false;
     } else {
       if (title) title.textContent = 'إضافة نوع عضوية';
       $('#typeId').value = '';
@@ -952,6 +1354,8 @@
     }
     openModal('typeModal');
   }
+
+  window.openTypeModal = openTypeModal;
   window.closeTypeModal = function () { closeModal('typeModal'); };
 
   async function saveType() {
@@ -963,53 +1367,53 @@
       fee: Number($('#typeFee').value) || 0,
       duration_months: Number($('#typeDuration').value) || 12,
       sort_order: Number($('#typeSortOrder').value) || 0,
-      active: $('#typeActive').checked
+      is_active: $('#typeActive').checked
     };
-    if (!payload.name) { toast('الاسم مطلوب', 'error'); return; }
+    if (!payload.name) { showToast('الاسم مطلوب', 'error'); return; }
 
     try {
       if (id) {
-        const { error } = await window.sb.from('membership_types').update(payload).eq('id', id);
+        const { error } = await client.from('membership_types').update(payload).eq('id', id);
         if (error) throw error;
       } else {
-        const { error } = await window.sb.from('membership_types').insert(payload);
+        const { error } = await client.from('membership_types').insert(payload);
         if (error) throw error;
       }
-      toast('تم الحفظ', 'success');
+      showToast('تم الحفظ', 'success');
       closeModal('typeModal');
       await loadTypes();
     } catch (e) {
       console.error('saveType:', e);
-      toast('فشل الحفظ', 'error');
+      showToast('فشل الحفظ: ' + e.message, 'error');
     }
   }
 
   async function deleteType(id) {
     if (!confirm('متأكد من الحذف؟')) return;
     try {
-      const { error } = await window.sb.from('membership_types').delete().eq('id', id);
+      const { error } = await client.from('membership_types').delete().eq('id', id);
       if (error) throw error;
-      toast('تم الحذف', 'success');
+      showToast('تم الحذف', 'success');
       await loadTypes();
     } catch (e) {
       console.error('deleteType:', e);
-      toast('فشل الحذف', 'error');
+      showToast('فشل الحذف', 'error');
     }
   }
 
   /* ============================================
-     10. BRANCHES TAB
+     BRANCHES
      ============================================ */
   async function loadBranches() {
-    const tbody = $('#branchesTableBody');
+    const tbody = document.getElementById('branchesTableBody');
     if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
     try {
-      const { data, error } = await window.sb
+      const { data, error } = await client
         .from('branches')
         .select('*')
         .order('sort_order', { ascending: true });
       if (error) throw error;
-      state.branches = data || [];
+      branches = data || [];
       renderBranches();
     } catch (e) {
       console.error('loadBranches:', e);
@@ -1018,34 +1422,30 @@
   }
 
   function renderBranches() {
-    const tbody = $('#branchesTableBody');
+    const tbody = document.getElementById('branchesTableBody');
     if (!tbody) return;
-    if (!state.branches.length) {
+    if (!branches.length) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">لا توجد شعب</td></tr>`;
       return;
     }
-    tbody.innerHTML = state.branches.map(b => `
+    tbody.innerHTML = branches.map(b => `
       <tr>
-        <td dir="ltr" style="text-align:right;">${esc(b.code || '—')}</td>
-        <td>${esc(b.name || '—')}</td>
-        <td>${esc(b.description || '—')}</td>
-        <td>${esc(b.sort_order ?? '—')}</td>
-        <td>${statusBadge(b.active ? 'active' : 'disabled')}</td>
+        <td dir="ltr" style="text-align:right;">${escapeHtml(b.code || '—')}</td>
+        <td>${escapeHtml(b.name || '—')}</td>
+        <td>${escapeHtml(b.description || '—')}</td>
+        <td>${escapeHtml(b.sort_order ?? '—')}</td>
+        <td>${statusBadge(b.is_active !== false ? 'active' : 'disabled')}</td>
         <td>
           <div class="row-actions">
-            <button class="row-btn edit-btn" data-edit-branch="${b.id}">
-              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </button>
-            <button class="row-btn delete-btn" data-del-branch="${b.id}">
-              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            </button>
+            <button class="row-btn edit-btn" data-edit-branch="${b.id}">${ICONS.edit}</button>
+            <button class="row-btn delete-btn" data-del-branch="${b.id}">${ICONS.trash}</button>
           </div>
         </td>
       </tr>
     `).join('');
 
-    $$('[data-edit-branch]').forEach(b => b.addEventListener('click', () => openBranchModal(b.dataset.editBranch)));
-    $$('[data-del-branch]').forEach(b => b.addEventListener('click', () => deleteBranch(b.dataset.delBranch)));
+    tbody.querySelectorAll('[data-edit-branch]').forEach(b => b.addEventListener('click', () => openBranchModal(b.dataset.editBranch)));
+    tbody.querySelectorAll('[data-del-branch]').forEach(b => b.addEventListener('click', () => deleteBranch(b.dataset.delBranch)));
   }
 
   function initBranchesTab() {
@@ -1056,10 +1456,10 @@
   }
 
   function openBranchModal(id = null) {
-    state.editingBranchId = id;
+    editingBranchId = id;
     const title = $('#branchModalTitle');
     if (id) {
-      const b = state.branches.find(x => x.id === id);
+      const b = branches.find(x => String(x.id) === String(id));
       if (!b) return;
       if (title) title.textContent = 'تعديل شعبة';
       $('#branchId').value = b.id;
@@ -1067,7 +1467,7 @@
       $('#branchCode').value = b.code || '';
       $('#branchDesc').value = b.description || '';
       $('#branchSortOrder').value = b.sort_order ?? 0;
-      $('#branchActive').checked = !!b.active;
+      $('#branchActive').checked = b.is_active !== false;
     } else {
       if (title) title.textContent = 'إضافة شعبة';
       $('#branchId').value = '';
@@ -1079,6 +1479,8 @@
     }
     openModal('branchModal');
   }
+
+  window.openBranchModal = openBranchModal;
   window.closeBranchModal = function () { closeModal('branchModal'); };
 
   async function saveBranch() {
@@ -1088,53 +1490,53 @@
       code: $('#branchCode').value.trim().toUpperCase() || null,
       description: $('#branchDesc').value.trim() || null,
       sort_order: Number($('#branchSortOrder').value) || 0,
-      active: $('#branchActive').checked
+      is_active: $('#branchActive').checked
     };
-    if (!payload.name) { toast('الاسم مطلوب', 'error'); return; }
+    if (!payload.name) { showToast('الاسم مطلوب', 'error'); return; }
 
     try {
       if (id) {
-        const { error } = await window.sb.from('branches').update(payload).eq('id', id);
+        const { error } = await client.from('branches').update(payload).eq('id', id);
         if (error) throw error;
       } else {
-        const { error } = await window.sb.from('branches').insert(payload);
+        const { error } = await client.from('branches').insert(payload);
         if (error) throw error;
       }
-      toast('تم الحفظ', 'success');
+      showToast('تم الحفظ', 'success');
       closeModal('branchModal');
       await loadBranches();
     } catch (e) {
       console.error('saveBranch:', e);
-      toast('فشل الحفظ', 'error');
+      showToast('فشل الحفظ: ' + e.message, 'error');
     }
   }
 
   async function deleteBranch(id) {
     if (!confirm('متأكد من الحذف؟')) return;
     try {
-      const { error } = await window.sb.from('branches').delete().eq('id', id);
+      const { error } = await client.from('branches').delete().eq('id', id);
       if (error) throw error;
-      toast('تم الحذف', 'success');
+      showToast('تم الحذف', 'success');
       await loadBranches();
     } catch (e) {
       console.error('deleteBranch:', e);
-      toast('فشل الحذف', 'error');
+      showToast('فشل الحذف', 'error');
     }
   }
 
   /* ============================================
-     11. EXPENSE CATEGORIES TAB
+     EXPENSE CATEGORIES
      ============================================ */
   async function loadExpenseCategories() {
-    const tbody = $('#expCatTableBody');
+    const tbody = document.getElementById('expCatTableBody');
     if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
     try {
-      const { data, error } = await window.sb
+      const { data, error } = await client
         .from('expense_categories')
         .select('*')
         .order('sort_order', { ascending: true });
       if (error) throw error;
-      state.expenseCategories = data || [];
+      expenseCategories = data || [];
       renderExpenseCategories();
     } catch (e) {
       console.error('loadExpenseCategories:', e);
@@ -1143,34 +1545,30 @@
   }
 
   function renderExpenseCategories() {
-    const tbody = $('#expCatTableBody');
+    const tbody = document.getElementById('expCatTableBody');
     if (!tbody) return;
-    if (!state.expenseCategories.length) {
+    if (!expenseCategories.length) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">لا توجد تصنيفات</td></tr>`;
       return;
     }
-    tbody.innerHTML = state.expenseCategories.map(c => `
+    tbody.innerHTML = expenseCategories.map(c => `
       <tr>
-        <td dir="ltr" style="text-align:right;">${esc(c.code || '—')}</td>
-        <td>${esc(c.name || '—')}</td>
-        <td>${esc(c.description || '—')}</td>
-        <td>${esc(c.sort_order ?? '—')}</td>
-        <td>${statusBadge(c.active ? 'active' : 'disabled')}</td>
+        <td dir="ltr" style="text-align:right;">${escapeHtml(c.code || '—')}</td>
+        <td>${escapeHtml(c.name || '—')}</td>
+        <td>${escapeHtml(c.description || '—')}</td>
+        <td>${escapeHtml(c.sort_order ?? '—')}</td>
+        <td>${statusBadge(c.is_active !== false ? 'active' : 'disabled')}</td>
         <td>
           <div class="row-actions">
-            <button class="row-btn edit-btn" data-edit-expcat="${c.id}">
-              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </button>
-            <button class="row-btn delete-btn" data-del-expcat="${c.id}">
-              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            </button>
+            <button class="row-btn edit-btn" data-edit-expcat="${c.id}">${ICONS.edit}</button>
+            <button class="row-btn delete-btn" data-del-expcat="${c.id}">${ICONS.trash}</button>
           </div>
         </td>
       </tr>
     `).join('');
 
-    $$('[data-edit-expcat]').forEach(b => b.addEventListener('click', () => openExpCatModal(b.dataset.editExpcat)));
-    $$('[data-del-expcat]').forEach(b => b.addEventListener('click', () => deleteExpCat(b.dataset.delExpcat)));
+    tbody.querySelectorAll('[data-edit-expcat]').forEach(b => b.addEventListener('click', () => openExpCatModal(b.dataset.editExpcat)));
+    tbody.querySelectorAll('[data-del-expcat]').forEach(b => b.addEventListener('click', () => deleteExpCat(b.dataset.delExpcat)));
   }
 
   function initExpenseCategoriesTab() {
@@ -1181,10 +1579,10 @@
   }
 
   function openExpCatModal(id = null) {
-    state.editingExpCatId = id;
+    editingExpCatId = id;
     const title = $('#expCatModalTitle');
     if (id) {
-      const c = state.expenseCategories.find(x => x.id === id);
+      const c = expenseCategories.find(x => String(x.id) === String(id));
       if (!c) return;
       if (title) title.textContent = 'تعديل تصنيف';
       $('#expCatId').value = c.id;
@@ -1192,7 +1590,7 @@
       $('#expCatCode').value = c.code || '';
       $('#expCatDesc').value = c.description || '';
       $('#expCatSortOrder').value = c.sort_order ?? 0;
-      $('#expCatActive').checked = !!c.active;
+      $('#expCatActive').checked = c.is_active !== false;
     } else {
       if (title) title.textContent = 'إضافة تصنيف مصروفات';
       $('#expCatId').value = '';
@@ -1204,6 +1602,8 @@
     }
     openModal('expCatModal');
   }
+
+  window.openExpCatModal = openExpCatModal;
   window.closeExpCatModal = function () { closeModal('expCatModal'); };
 
   async function saveExpCat() {
@@ -1213,93 +1613,92 @@
       code: $('#expCatCode').value.trim().toUpperCase() || null,
       description: $('#expCatDesc').value.trim() || null,
       sort_order: Number($('#expCatSortOrder').value) || 0,
-      active: $('#expCatActive').checked
+      is_active: $('#expCatActive').checked
     };
-    if (!payload.name) { toast('الاسم مطلوب', 'error'); return; }
+    if (!payload.name) { showToast('الاسم مطلوب', 'error'); return; }
 
     try {
       if (id) {
-        const { error } = await window.sb.from('expense_categories').update(payload).eq('id', id);
+        const { error } = await client.from('expense_categories').update(payload).eq('id', id);
         if (error) throw error;
       } else {
-        const { error } = await window.sb.from('expense_categories').insert(payload);
+        const { error } = await client.from('expense_categories').insert(payload);
         if (error) throw error;
       }
-      toast('تم الحفظ', 'success');
+      showToast('تم الحفظ', 'success');
       closeModal('expCatModal');
       await loadExpenseCategories();
     } catch (e) {
       console.error('saveExpCat:', e);
-      toast('فشل الحفظ', 'error');
+      showToast('فشل الحفظ: ' + e.message, 'error');
     }
   }
 
   async function deleteExpCat(id) {
     if (!confirm('متأكد من الحذف؟')) return;
     try {
-      const { error } = await window.sb.from('expense_categories').delete().eq('id', id);
+      const { error } = await client.from('expense_categories').delete().eq('id', id);
       if (error) throw error;
-      toast('تم الحذف', 'success');
+      showToast('تم الحذف', 'success');
       await loadExpenseCategories();
     } catch (e) {
       console.error('deleteExpCat:', e);
-      toast('فشل الحذف', 'error');
+      showToast('فشل الحذف', 'error');
     }
   }
 
   /* ============================================
-     12. SESSIONS TAB
+     SESSIONS
      ============================================ */
   async function loadSessions() {
-    const tbody = $('#sessionsTableBody');
-    const actionsBody = $('#actionsTableBody');
-    const actionsCount = $('#actionsCount');
+    const tbody = document.getElementById('sessionsTableBody');
+    const actionsBody = document.getElementById('actionsTableBody');
+    const actionsCount = document.getElementById('actionsCount');
 
     if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
     if (actionsBody) actionsBody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
 
     try {
       const [sessRes, actRes] = await Promise.all([
-        window.sb.from('user_sessions').select('*').order('last_seen', { ascending: false }).limit(50),
-        window.sb.from('user_actions').select('*').order('created_at', { ascending: false }).limit(50)
+        client.from('user_sessions').select('*').order('login_at', { ascending: false }).limit(50),
+        client.from('user_actions').select('*').order('created_at', { ascending: false }).limit(50)
       ]);
 
-      const sessions = sessRes.data || [];
-      const actions = actRes.data || [];
+      const sessionData = sessRes.data || [];
+      const actionData = actRes.data || [];
 
       if (tbody) {
-        if (!sessions.length) {
+        if (!sessionData.length) {
           tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-dim);">لا يوجد نشاط</td></tr>`;
         } else {
-          tbody.innerHTML = sessions.map(s => `
+          tbody.innerHTML = sessionData.map(s => `
             <tr>
-              <td>${esc(s.user_name || s.user_id || '—')}</td>
-              <td>${esc(roleLabel(s.role))}</td>
-              <td>${fmtDate(s.last_seen || s.created_at)}</td>
-              <td>${esc(s.duration || '—')}</td>
-              <td>${esc(s.device || '—')}</td>
+              <td>${escapeHtml(s.user_id || '—')}</td>
+              <td>—</td>
+              <td>${escapeHtml(formatDate(s.login_at || s.created_at))}</td>
+              <td>${s.duration_seconds ? Math.floor(s.duration_seconds / 60) + ' د' : '—'}</td>
+              <td>${escapeHtml((s.device || s.user_agent || '—').slice(0, 40))}</td>
             </tr>
           `).join('');
         }
       }
 
       if (actionsBody) {
-        if (!actions.length) {
+        if (!actionData.length) {
           actionsBody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-dim);">لا توجد إجراءات</td></tr>`;
         } else {
-          actionsBody.innerHTML = actions.map(a => `
+          actionsBody.innerHTML = actionData.map(a => `
             <tr>
-              <td>${esc(a.user_name || a.user_id || '—')}</td>
-              <td>${esc(a.action || '—')}</td>
-              <td>${esc(a.details || '—')}</td>
-              <td>${fmtDate(a.created_at)}</td>
+              <td>${escapeHtml(a.user_email || a.user_id || '—')}</td>
+              <td>${escapeHtml(a.action || '—')}</td>
+              <td>${escapeHtml(a.details || '—')}</td>
+              <td>${escapeHtml(formatDate(a.created_at))}</td>
             </tr>
           `).join('');
         }
       }
 
-      if (actionsCount) actionsCount.textContent = `${actions.length} إجراء`;
-
+      if (actionsCount) actionsCount.textContent = `${actionData.length} إجراء`;
     } catch (e) {
       console.error('loadSessions:', e);
       if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--danger);">فشل التحميل</td></tr>`;
@@ -1313,13 +1712,13 @@
   }
 
   /* ============================================
-     13. AUDIT TAB
+     AUDIT
      ============================================ */
   async function loadAudit() {
-    const tbody = $('#auditTableBody');
+    const tbody = document.getElementById('auditTableBody');
     if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
     try {
-      const { data, error } = await window.sb
+      const { data, error } = await client
         .from('audit_log')
         .select('*')
         .order('created_at', { ascending: false })
@@ -1333,11 +1732,11 @@
 
       tbody.innerHTML = data.map(a => `
         <tr>
-          <td>${esc(a.user_name || a.user_id || '—')}</td>
-          <td>${esc(a.action || '—')}</td>
-          <td>${esc(a.entity || '—')}</td>
-          <td dir="ltr" style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:11.5px;">${esc((a.entity_id || '').slice(0, 8) || '—')}</td>
-          <td>${fmtDate(a.created_at)}</td>
+          <td>${escapeHtml(a.user_email || a.user_id || '—')}</td>
+          <td>${escapeHtml(a.action || '—')}</td>
+          <td>${escapeHtml(a.entity || '—')}</td>
+          <td dir="ltr" style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:11.5px;">${escapeHtml(String(a.entity_id || '').slice(0, 8) || '—')}</td>
+          <td>${escapeHtml(formatDate(a.created_at))}</td>
         </tr>
       `).join('');
     } catch (e) {
@@ -1352,27 +1751,33 @@
   }
 
   /* ============================================
-     14. BACKUP
+     BACKUP
      ============================================ */
   async function exportBackup() {
     try {
-      toast('جاري تجهيز النسخة...', 'info');
-      const [settingsRes, typesRes, branchesRes, usersRes, appsRes] = await Promise.all([
-        window.sb.from('settings').select('*'),
-        window.sb.from('membership_types').select('*'),
-        window.sb.from('branches').select('*'),
-        window.sb.from('users').select('*'),
-        window.sb.from('applications').select('*')
+      showToast('جاري تجهيز النسخة...', 'info');
+
+      const [settingsRes, typesRes, branchesRes, usersRes, appsRes, govRes] = await Promise.all([
+        client.from('settings').select('*'),
+        client.from('membership_types').select('*'),
+        client.from('branches').select('*'),
+        client.from('users').select('*'),
+        client.from('applications').select('*').limit(500),
+        client.from('governorates').select('*')
       ]);
 
       const backup = {
         exported_at: new Date().toISOString(),
+        exported_by: currentUser?.email || null,
         version: '3.0.0',
-        settings: settingsRes.data || [],
-        membership_types: typesRes.data || [],
-        branches: branchesRes.data || [],
-        users: usersRes.data || [],
-        applications: appsRes.data || []
+        data: {
+          settings: settingsRes.data || [],
+          membership_types: typesRes.data || [],
+          branches: branchesRes.data || [],
+          users: usersRes.data || [],
+          applications: appsRes.data || [],
+          governorates: govRes.data || []
+        }
       };
 
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -1385,51 +1790,58 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast('تم تحميل النسخة', 'success');
+      showToast('تم تحميل النسخة', 'success');
     } catch (e) {
       console.error('exportBackup:', e);
-      toast('فشل النسخ', 'error');
+      showToast('فشل النسخ', 'error');
     }
   }
 
   /* ============================================
-     15. NAVBAR / LOGOUT / MOBILE
+     NAVBAR / LOGOUT
      ============================================ */
   function initNavbar() {
     const logoutBtn = $('#logoutBtn');
     if (logoutBtn) {
-      logoutBtn.addEventListener('click', async (e) => {
+      logoutBtn.addEventListener('click', (e) => {
         e.preventDefault();
         if (!confirm('تسجيل الخروج؟')) return;
-        try {
-          if (typeof window.logout === 'function') await window.logout();
-          else await window.sb.auth.signOut();
-        } catch (err) { console.error(err); }
-        window.location.href = 'login.html';
+        if (window.signOut) window.signOut('login.html');
       });
     }
   }
 
   /* ============================================
-     16. REALTIME
+     ICONS LIBRARY
+     ============================================ */
+  const ICONS = {
+    edit: '<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+    trash: '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+    check: '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
+    x: '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+  };
+
+  /* ============================================
+     REALTIME
      ============================================ */
   function initRealtime() {
-    if (typeof window.watchMany !== 'function') return;
+    if (!window.Realtime) return;
+
     try {
-      window.watchMany(
+      unsubscribeRealtime = window.Realtime.watchMany(
         ['users', 'governorates', 'membership_types', 'branches', 'expense_categories', 'settings'],
-        () => {
-          // إعادة تحميل التاب الحالي فقط
-          switch (state.currentTab) {
-            case 'users':              loadUsers(); break;
-            case 'governorates':       state.governorates = []; loadGovernorates(); break;
-            case 'types':              loadTypes(); break;
-            case 'branches':           loadBranches(); break;
-            case 'expense-categories': loadExpenseCategories(); break;
-            case 'settings':
-            case 'home':               loadSettings(); break;
+        (payload, table) => {
+          if (activeTab === 'users' && table === 'users') renderUsers();
+          if (activeTab === 'governorates' && table === 'governorates') {
+            governorates = [];
+            loadGovernorates();
           }
-        }
+          if (activeTab === 'types' && table === 'membership_types') loadTypes();
+          if (activeTab === 'branches' && table === 'branches') loadBranches();
+          if (activeTab === 'expense-categories' && table === 'expense_categories') loadExpenseCategories();
+          if ((activeTab === 'settings' || activeTab === 'home') && table === 'settings') loadSettings();
+        },
+        { debounceMs: 600 }
       );
     } catch (e) {
       console.warn('Realtime init skipped:', e);
@@ -1437,36 +1849,63 @@
   }
 
   /* ============================================
-     17. USER BADGE
+     INIT
      ============================================ */
-  function fillUserBadge() {
-    const name = state.user?.full_name || state.user?.name || state.user?.email || '—';
-    $$('[data-user-name]').forEach(el => el.textContent = name);
-  }
+  function init() {
+    if (typeof window.onSupabaseReady !== 'function') {
+      setTimeout(init, 100);
+      return;
+    }
 
-  /* ============================================
-     18. INIT
-     ============================================ */
-  async function init() {
-    const ok = await guard();
-    if (!ok) return;
+    window.onSupabaseReady(async (c) => {
+      client = c;
 
-    fillUserBadge();
-    initTabs();
-    initSettingsTab();
-    initUsersTab();
-    initGovernoratesTab();
-    initCommitteesTab();
-    initTypesTab();
-    initBranchesTab();
-    initExpenseCategoriesTab();
-    initSessionsTab();
-    initAuditTab();
-    initNavbar();
-    initRealtime();
+      const ok = await checkAuth();
+      if (!ok) return;
 
-    // تحميل أول تاب
-    switchTab('settings');
+      initTabs();
+      initSettingsTab();
+      initUsersTab();
+      initGovernoratesTab();
+      initCommitteesTab();
+      initTypesTab();
+      initBranchesTab();
+      initExpenseCategoriesTab();
+      initSessionsTab();
+      initAuditTab();
+      initNavbar();
+
+      // Feature modal buttons
+      const addFeatureBtn = document.getElementById('addFeatureBtn');
+      if (addFeatureBtn) addFeatureBtn.addEventListener('click', () => openFeatureModal(null));
+
+      const saveFeatureBtn = document.getElementById('saveFeatureBtn');
+      if (saveFeatureBtn) saveFeatureBtn.addEventListener('click', saveFeature);
+
+      // Modal backdrops
+      ['userModal', 'typeModal', 'branchModal', 'govModal', 'expCatModal', 'featureModal', 'positionModal'].forEach(id => {
+        const m = document.getElementById(id);
+        if (m) {
+          m.addEventListener('click', (e) => {
+            if (e.target === m) closeModal(id);
+          });
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          ['userModal', 'typeModal', 'branchModal', 'govModal', 'expCatModal', 'featureModal', 'positionModal'].forEach(closeModal);
+        }
+      });
+
+      // Setup realtime
+      initRealtime();
+
+      // Load initial tab
+      switchTab('settings');
+
+      console.log('[Admin] Ready. Role:', userRole);
+    });
   }
 
   if (document.readyState === 'loading') {
