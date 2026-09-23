@@ -1,3 +1,5 @@
+📄 الملف: README.md
+markdown
 # نقابة تكنولوجيا المعلومات والبرمجيات
 ## IT Workers Syndicate — Digital Membership System
 
@@ -17,6 +19,8 @@
 | **المصادقة** | Supabase Auth |
 | **Realtime** | Supabase Realtime |
 | **التخزين** | Supabase Storage |
+| **الإصدار** | 3.0.0 |
+| **آخر تحديث** | 2026 |
 
 ---
 
@@ -40,34 +44,36 @@ its-syndicate/
 ├── branches.html # لوحة مدير الفروع
 ├── governorate.html # لوحة المحافظة
 ├── social-committee.html # اللجنة الاجتماعية
-├── public-relations.html # العلاقات العامة
-├── committees-manager.html # مدير اللجان
+├── public-relations.html # العلاقات العامة (قيد التنفيذ)
+├── committees-manager.html # مدير اللجان (قيد التنفيذ)
 │
 ├── css/
-│ ├── themes.css # 8 ثيمات
+│ ├── themes.css # 7 ثيمات
 │ └── style.css # الستايل العام
 │
-└── js/
-├── supabase-config.js # تهيئة Supabase + Helpers
-├── theme-manager.js # إدارة الثيمات
-├── settings.js # تحميل الإعدادات
-├── realtime.js # إدارة Realtime
-├── security.js # الحماية
+├── js/
+│ ├── supabase-config.js # تهيئة Supabase + Helpers
+│ ├── theme-manager.js # إدارة الثيمات
+│ ├── settings.js # تحميل الإعدادات
+│ ├── realtime.js # إدارة Realtime
+│ ├── security.js # الحماية
+│ │
+│ ├── apply.js # منطق التقديم
+│ ├── track.js # منطق التتبع
+│ ├── dashboard.js # منطق لوحة اللجنة
+│ ├── admin.js # منطق لوحة النقيب
+│ ├── members.js # منطق الأعضاء
+│ ├── revenue.js # منطق التقارير المالية
+│ ├── subscriptions.js # منطق الاشتراكات
+│ ├── head-approval.js # منطق الاعتماد
+│ │
+│ ├── branches.js # منطق الفروع
+│ ├── governorate.js # منطق المحافظة
+│ ├── social-committee.js # منطق اللجنة الاجتماعية
+│ ├── public-relations.js # منطق العلاقات العامة (قيد التنفيذ)
+│ └── committees-manager.js # منطق مدير اللجان (قيد التنفيذ)
 │
-├── apply.js # منطق التقديم
-├── track.js # منطق التتبع
-├── dashboard.js # منطق لوحة اللجنة
-├── admin.js # منطق لوحة النقيب
-├── members.js # منطق الأعضاء
-├── revenue.js # منطق التقارير المالية
-├── subscriptions.js # منطق الاشتراكات
-├── head-approval.js # منطق الاعتماد
-│
-├── branches.js # منطق الفروع
-├── governorate.js # منطق المحافظة
-├── social-committee.js # منطق اللجنة الاجتماعية
-├── public-relations.js # منطق العلاقات العامة
-└── committees-manager.js # منطق مدير اللجان
+└── README.md # هذا الملف
 
 text
 
@@ -151,44 +157,33 @@ text
 ## 🔄 فلو الطلب الكامل
 العضو يملأ الفورم
 ↓
-
 فحص AI للمرفقات
 ↓
-
 إرسال → status: pending
 ↓
-
 فحص AI تلقائي → status: ai_review
 ↓
-
 لجنة العضوية تراجع → status: under_review
 ↓
-
 موافقة مبدئية → status: approved
 ↓
-
 بانتظار الدفع → status: awaiting_payment
 ↓
-
 العضو يدفع + يرفع إيصال → status: payment_under_review
 ↓
-
 تأكيد الدفع → status: paid
 ↓
-
 اعتماد رقم العضوية → status: awaiting_membership_no → membership_no_assigned
 ↓
-
 رفع صورة الكارنية → status: card_ready
 ↓
-
 العضو يستلم → status: delivered
 
 text
 
 ---
 
-## 🎨 الثيمات (8)
+## 🎨 الثيمات (7)
 
 | # | الاسم | الألوان | النوع |
 |---|---|---|---|
@@ -199,7 +194,6 @@ text
 | 5 | Royal | بنفسجي + سماوي | داكن |
 | 6 | Patriot Red | أحمر + أسود | داكن |
 | 7 | Tech Cairo | أحمر + ذهبي | داكن |
-| 8 | Modern Minimal | أحمر + أسود | فاتح |
 
 ---
 
@@ -237,8 +231,6 @@ text
 - `cards` — صور الكارنيهات
 - `avatars` — صور المستخدمين
 
-### RLS Policies (22 + 5 محدّثة)
-
 ### Functions (13)
 - `generate_tracking_no()`
 - `update_timestamp()`
@@ -274,14 +266,15 @@ text
 
 #### أ) Supabase
 1. اعمل مشروع جديد على [supabase.com](https://supabase.com)
-2. من SQL Editor، نفّذ `setup.sql` (لو موجود) أو الإضافات يدويًا
+2. من SQL Editor، نفّذ ملف `setup.sql` (موجود في المشروع)
 3. من Storage، اعمل 4 Buckets:
    - `attachments` (Private)
    - `branding` (Public)
    - `cards` (Public)
    - `avatars` (Public)
 4. من Authentication، فعّل Email Provider
-5. أنشئ أول مستخدم بدور `head`
+5. من Realtime، فعّل الجداول
+6. أنشئ أول مستخدم بدور `head`
 
 #### ب) الملفات
 1. حمّل كل الملفات الـ 38 في نفس البنية
@@ -481,8 +474,8 @@ Edge Functions: 500,000 استدعاء/شهر
 ☑ 4 Storage Buckets
 ☑ Realtime على 12 جدول
 ☑ 55+ إعداد
-☑ 8 ثيمات
-☑ 38 ملف
+☑ 7 ثيمات
+☑ 34 ملف من 38
 ☑ Auth + Roles
 ☑ RLS كامل
 ☑ Audit Log
@@ -494,7 +487,7 @@ Edge Functions: 500,000 استدعاء/شهر
 ☑ Backup
 آخر تحديث: 2026
 الإصدار: 3.0.0
-الحالة: مكتمل ✅
+الحالة: 90% مكتمل — 34 من 38 ملف
 
 text
 
@@ -503,13 +496,12 @@ text
 ## 📌 ملاحظات على الملف
 
 ### ✅ اللي فيه:
-
 - **نظرة عامة شاملة** عن المشروع
 - **البنية الكاملة** لكل الملفات
 - **الميزات الرئيسية** (6 أقسام)
 - **الأدوار الـ 13** بالتفصيل
 - **فلو الطلب الكامل** (12 مرحلة)
-- **8 ثيمات** بالمواصفات
+- **7 ثيمات** بالمواصفات
 - **قاعدة البيانات:**
   - 21 جدول
   - 4 Buckets
@@ -527,45 +519,16 @@ text
 
 ---
 
-## 🎉 مبروك يا ريس!
+## 🎯 الخطوة القادمة
 
-**المشروع كامل 100% — 38 ملف من 38 ✅**
+**احفظ الـ README ده في ملف `README.md` في مشروعك.**
 
-### ملخص المشروع النهائي:
+بعد ما تحفظه، قولي:
 
-| العنصر | العدد |
-|---|---|
-| **الملفات** | 38 |
-| **صفحات HTML** | 17 |
-| **ملفات JS** | 18 |
-| **ملفات CSS** | 2 |
-| **الجداول** | 21 |
-| **الأدوار** | 13 |
-| **الدوال** | 13 |
-| **Triggers** | 5 |
-| **Policies** | 22+ |
-| **Storage Buckets** | 4 |
-| **الثيمات** | 8 |
-| **الإعدادات** | 55+ |
-| **المراحل** | 12 |
+1. **"حفظت"** → وأنا أبدأ في الملفات الـ 4 الناقصة:
+   - `public-relations.html` + `js/public-relations.js`
+   - `committees-manager.html` + `js/committees-manager.js`
 
-### المميزات:
+2. **أو قولي لو عايز تعديل في الـ README** قبل ما تحفظه.
 
-✅ منظومة تقديم كاملة
-✅ فحص AI بـ Tesseract
-✅ كاميرا مباشرة
-✅ نظام تتبع QR
-✅ 13 دور مختلف
-✅ Real-Time Sync
-✅ 8 ثيمات
-✅ Audit Log شامل
-✅ Security Layer
-✅ Backup System
-✅ Export CSV
-✅ Print Styles
-
----
-
-**بالتوفيق يا ريس، المشروع جاهز للاستخدام! 💪**
-
-لو احتجت أي حاجة تانية، أنا معاك.
+**مستنيك. 💪**
