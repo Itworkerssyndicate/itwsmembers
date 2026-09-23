@@ -1,14 +1,15 @@
 /* =====================================================
    IT SYNDICATE — MEMBERS LOGIC
    Version: 3.0.0
+   Path: js/members.js
    =====================================================
    يحتوي على:
    - Auth + Role check
-   - 5 كروت إحصائية (إجمالي / نشط / قريب / منتهي / رعاية)
+   - 5 كروت إحصائية
    - جدول الأعضاء + Pagination
-   - 5 فلاتر (بحث + شعبة + محافظة + نوع + حالة)
+   - 5 فلاتر
    - Member Detail Modal (4 تابات)
-   - Assign Membership No Modal
+   - Assign Membership No
    - Renew Modal
    - Export CSV + Print
    - Realtime
@@ -22,7 +23,6 @@
      ============================================ */
   const PAGE_SIZE = 20;
   const SOON_DAYS = 30;
-  const CARD_BUCKET = 'cards';
   const ATTACHMENTS_BUCKET = 'attachments';
 
   /* ============================================
@@ -46,8 +46,6 @@
   };
   let unsubscribeRealtime = null;
   let currentMember = null;
-  let currentMemberDetail = null;
-  let pendingApprovalOnly = false;
 
   /* ============================================
      HELPERS
@@ -69,16 +67,6 @@
     try {
       return new Date(dateStr).toLocaleString('ar-EG', {
         year: 'numeric', month: '2-digit', day: '2-digit'
-      });
-    } catch (e) { return '---'; }
-  }
-
-  function formatDateFull(dateStr) {
-    if (!dateStr) return '---';
-    try {
-      return new Date(dateStr).toLocaleString('ar-EG', {
-        year: 'numeric', month: 'long', day: 'numeric',
-        hour: '2-digit', minute: '2-digit'
       });
     } catch (e) { return '---'; }
   }
@@ -133,30 +121,33 @@
     return 'days-active';
   }
 
+  function getCardStatusLabel(status) {
+    const map = {
+      'not_issued': 'لم يتم الإصدار',
+      'processing': 'جاري التجهيز',
+      'ready': 'جاهز',
+      'delivered': 'تم الاستلام'
+    };
+    return map[status] || 'غير محدد';
+  }
+
   /* ============================================
-     SVG ICONS
+     ICONS
      ============================================ */
   const ICONS = {
     user: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
     check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
     clock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-    x: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
-    heart: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
     eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
-    key: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>',
     refresh: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>',
-    download: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
-    print: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
-    search: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
     close: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
     chevronLeft: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>',
     chevronRight: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>',
-    card: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>',
-    file: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+    heart: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>'
   };
 
   /* ============================================
-     AUTH CHECK
+     AUTH
      ============================================ */
   async function checkAuth() {
     try {
@@ -216,7 +207,7 @@
   }
 
   /* ============================================
-     LOAD LOOKUPS
+     LOOKUPS
      ============================================ */
   async function loadLookups() {
     try {
@@ -262,14 +253,13 @@
           typeFilter.appendChild(opt);
         });
       }
-
     } catch (err) {
       console.error('[Members] Lookups error:', err);
     }
   }
 
   /* ============================================
-     LOAD STATS
+     STATS
      ============================================ */
   async function loadStats() {
     try {
@@ -301,7 +291,6 @@
       set('statExpiringSoon', soon);
       set('statExpired', expired);
       set('statHealthCare', hc);
-
     } catch (e) {
       console.error('[Members] Stats error:', e);
     }
@@ -374,7 +363,6 @@
 
       const countEl = document.getElementById('tableCount');
       if (countEl) countEl.textContent = `${members.length} عضو`;
-
     } catch (err) {
       console.error('[Members] Load error:', err);
       if (tbody) {
@@ -496,7 +484,7 @@
         const action = btn.dataset.action;
         const id = btn.dataset.id;
         if (action === 'view') openMemberModal(id);
-        else if (action === 'renew') openRenewModal(id);
+        else if (action === 'renew') window.openRenewModal(id);
       });
     });
   }
@@ -622,7 +610,6 @@
         .order('start_date', { ascending: false });
 
       renderMemberContent(member, payments || [], subs || []);
-
     } catch (err) {
       console.error('[Members] Detail error:', err);
       content.innerHTML = `
@@ -642,7 +629,6 @@
     const branchName = getBranchName(m.branch_id);
     const hcStatus = m.has_health_care ? getSubStatus(m.health_care_end) : null;
 
-    const initialTab = m.membership_no ? 'info' : 'membership';
     const canAssign = !m.membership_no || !m.membership_no.trim();
 
     content.innerHTML = `
@@ -673,15 +659,14 @@
 
         <!-- TABS -->
         <div class="modal-tabs" style="margin:16px 24px 0;">
-          <button class="modal-tab-btn ${initialTab === 'info' ? 'active' : ''}" data-modal-tab="info">المعلومات</button>
-          <button class="modal-tab-btn ${initialTab === 'subs' ? 'active' : ''}" data-modal-tab="subs">الاشتراكات</button>
+          <button class="modal-tab-btn active" data-modal-tab="info">المعلومات</button>
+          <button class="modal-tab-btn" data-modal-tab="subs">الاشتراكات</button>
           <button class="modal-tab-btn" data-modal-tab="payments">سجل المدفوعات</button>
           ${canAssign ? `<button class="modal-tab-btn" data-modal-tab="membership">رقم العضوية</button>` : ''}
         </div>
 
         <!-- TAB: INFO -->
-        <div data-tab-panel="info" style="padding:24px;overflow-y:auto;max-height:calc(90vh - 260px);display:${initialTab === 'info' ? 'block' : 'none'};">
-
+        <div data-tab-panel="info" style="padding:24px;overflow-y:auto;max-height:calc(90vh - 260px);">
           <h4 style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">البيانات الشخصية</h4>
           <div class="detail-grid" style="margin-bottom:20px;">
             ${renderDetailItem('الرقم القومي', m.national_id, true)}
@@ -720,11 +705,10 @@
             ${renderDetailItem('إجمالي المدفوع', (parseFloat(m.total_paid) || 0).toLocaleString('ar-EG') + ' ج', true)}
             ${renderDetailItem('حالة الكارنية', getCardStatusLabel(m.card_status))}
           </div>
-
         </div>
 
         <!-- TAB: SUBS -->
-        <div data-tab-panel="subs" style="padding:24px;overflow-y:auto;max-height:calc(90vh - 260px);display:${initialTab === 'subs' ? 'block' : 'none'};">
+        <div data-tab-panel="subs" style="padding:24px;overflow-y:auto;max-height:calc(90vh - 260px);display:none;">
           ${renderSubsTab(subs, m)}
         </div>
 
@@ -735,11 +719,8 @@
 
         ${canAssign ? `
           <div data-tab-panel="membership" style="padding:24px;overflow-y:auto;max-height:calc(90vh - 260px);display:none;">
-            <div style="padding:20px;background:rgba(var(--warning-rgb),0.06);border:1.5px solid rgba(var(--warning-rgb),0.3);border-radius:12px;margin-bottom:20px;">
-              <div style="font-size:14px;font-weight:700;color:var(--warning);margin-bottom:8px;">بانتظار إصدار رقم العضوية</div>
-              <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">
-                هذا العضو ليس لديه رقم عضوية حتى الآن. اضغط الزر أدناه لإصدار رقم عضوية جديد.
-              </div>
+            <div class="notice info">
+              <strong>ملاحظة:</strong> هذا العضو ليس لديه رقم عضوية حتى الآن. اضغط الزر أدناه لإصدار رقم عضوية جديد.
             </div>
 
             <div class="form-group">
@@ -811,8 +792,7 @@
       id: 'current',
       start_date: m.membership_start,
       end_date: m.membership_end,
-      amount: m.total_paid,
-      is_active: true
+      amount: m.total_paid
     }];
 
     return list.map(s => {
@@ -844,10 +824,10 @@
 
     return payments.map(p => {
       const status = p.status === 'confirmed'
-        ? { label: 'مؤكد', cls: 'status-confirmed' }
+        ? { label: 'مؤكد', cls: 'sub-active' }
         : p.status === 'pending'
-        ? { label: 'معلق', cls: 'status-pending' }
-        : { label: 'مرفوض', cls: 'status-rejected' };
+        ? { label: 'معلق', cls: 'sub-soon' }
+        : { label: 'مرفوض', cls: 'sub-expired' };
 
       return `
         <div class="payment-history-item">
@@ -857,9 +837,9 @@
             <div class="ph-type">${escapeHtml(p.payment_method || '—')}</div>
           </div>
           <div class="ph-actions">
-            <span class="status-badge ${status.cls}">${status.label}</span>
-            ${p.receipt_url ? `
-              <button class="ph-btn view" data-action="view-receipt" data-path="${escapeHtml(p.receipt_url)}" title="عرض الإيصال">
+            <span class="sub-status ${status.cls}">${status.label}</span>
+            ${p.receipt_path ? `
+              <button class="ph-btn view" data-action="view-receipt" data-path="${escapeHtml(p.receipt_path)}" title="عرض الإيصال">
                 ${ICONS.eye}
               </button>
             ` : ''}
@@ -869,22 +849,11 @@
     }).join('');
   }
 
-  function getCardStatusLabel(status) {
-    const map = {
-      'not_issued': 'لم يتم الإصدار',
-      'processing': 'جاري التجهيز',
-      'ready': 'جاهز',
-      'delivered': 'تم الاستلام'
-    };
-    return map[status] || 'غير محدد';
-  }
-
   window.closeMemberModal = function () {
     const modal = document.getElementById('memberModal');
     if (modal) modal.classList.remove('open');
     document.body.style.overflow = '';
     currentMember = null;
-    currentMemberDetail = null;
   };
 
   /* ============================================
@@ -912,7 +881,6 @@
       const endDate = new Date(now.getFullYear(), now.getMonth() + duration, now.getDate())
         .toISOString().slice(0, 10);
 
-      // Generate membership no if empty
       let finalMembershipNo = membershipNo;
       if (!finalMembershipNo) {
         const year = now.getFullYear();
@@ -943,7 +911,6 @@
 
       if (error) throw error;
 
-      // Update linked application if exists
       if (m.application_id) {
         try {
           await client
@@ -969,10 +936,9 @@
 
       showToast(`تم اعتماد رقم العضوية: ${finalMembershipNo}`, 'success');
 
-      closeMemberModal();
+      window.closeMemberModal();
       await loadMembers();
       await loadStats();
-
     } catch (err) {
       console.error('[Members] Assign error:', err);
       showToast('فشل: ' + err.message, 'error');
@@ -1047,19 +1013,16 @@
 
       if (error) throw error;
 
-      // Add subscription record
       try {
         await client.from('membership_subscriptions').insert([{
           member_id: memberId,
           start_date: startDate,
           end_date: endDate,
           amount: amount,
-          is_active: true,
-          created_by: currentUser.id
+          is_active: true
         }]);
       } catch (e) {}
 
-      // Add payment record
       if (amount > 0) {
         try {
           await client.from('payments').insert([{
@@ -1067,22 +1030,20 @@
             amount: amount,
             payment_method: 'cash',
             status: 'confirmed',
-            notes: `تجديد لمدة ${months} شهر`,
-            created_by: currentUser.id
+            notes: `تجديد لمدة ${months} شهر`
           }]);
         } catch (e) {}
       }
 
       showToast('تم التجديد بنجاح', 'success');
 
-      closeRenewModal();
+      window.closeRenewModal();
       await loadMembers();
       await loadStats();
 
       if (window.Realtime) {
         window.Realtime.sendBroadcast('member-renewed', { memberId });
       }
-
     } catch (err) {
       console.error('[Members] Renew error:', err);
       showToast('فشل: ' + err.message, 'error');
@@ -1180,7 +1141,7 @@
   }
 
   /* ============================================
-     SETUP LISTENERS
+     LISTENERS
      ============================================ */
   function setupListeners() {
     const branchFilter = document.getElementById('branchFilter');
@@ -1275,7 +1236,6 @@
     const confirmRenewBtn = document.getElementById('confirmRenewBtn');
     if (confirmRenewBtn) confirmRenewBtn.addEventListener('click', confirmRenew);
 
-    // View receipt buttons
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-action="view-receipt"]');
       if (btn) {
@@ -1284,7 +1244,6 @@
       }
     });
 
-    // Modal backdrops
     ['memberModal', 'renewModal'].forEach(id => {
       const modal = document.getElementById(id);
       if (!modal) return;
