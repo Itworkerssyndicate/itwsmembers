@@ -45,10 +45,7 @@
     align-items: center;
   }
 
-  .hero-content {
-    position: relative;
-    z-index: 2;
-  }
+  .hero-content { position: relative; z-index: 2; }
 
   .hero-badge {
     display: inline-flex;
@@ -99,9 +96,7 @@
     display: inline-block;
   }
 
-  @keyframes shine {
-    to { background-position: 200% center; }
-  }
+  @keyframes shine { to { background-position: 200% center; } }
 
   .hero-desc {
     font-size: clamp(15px, 1.6vw, 17px);
@@ -306,9 +301,7 @@
   }
 
   /* ---------- ABOUT CARD ---------- */
-  .about-section {
-    padding-top: 0;
-  }
+  .about-section { padding-top: 0; }
 
   .about-card {
     max-width: 1000px;
@@ -368,10 +361,8 @@
     line-height: 1.8;
   }
 
-  /* ---------- HEAD CARD (جديد) ---------- */
-  .head-section {
-    padding-top: 0;
-  }
+  /* ---------- HEAD CARD ---------- */
+  .head-section { padding-top: 0; }
 
   .head-card {
     max-width: 1000px;
@@ -450,7 +441,6 @@
     stroke-linejoin: round;
   }
 
-  /* حلقة متحركة حوالين الصورة */
   .head-photo-wrap::before {
     content: '';
     position: absolute;
@@ -460,9 +450,7 @@
     animation: rotateSlow 20s linear infinite;
   }
 
-  @keyframes rotateSlow {
-    to { transform: rotate(360deg); }
-  }
+  @keyframes rotateSlow { to { transform: rotate(360deg); } }
 
   .head-content {
     position: relative;
@@ -577,9 +565,7 @@
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(var(--accent-rgb), 0.15);
   }
 
-  .feature-card:hover::before {
-    opacity: 1;
-  }
+  .feature-card:hover::before { opacity: 1; }
 
   .feature-icon {
     width: 54px;
@@ -762,7 +748,7 @@
     stroke-linejoin: round;
   }
 
-  /* ---------- STEPS (ديناميكي) ---------- */
+  /* ---------- STEPS ---------- */
   .steps-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -845,9 +831,7 @@
   }
 
   /* ---------- CTA ---------- */
-  .cta-section {
-    padding: 60px 24px 100px;
-  }
+  .cta-section { padding: 60px 24px 100px; }
 
   .cta-box {
     max-width: 900px;
@@ -909,113 +893,44 @@
       grid-template-columns: 1fr;
       gap: 50px;
     }
-
-    .hero-visual {
-      height: 380px;
-    }
-
-    .hero-content {
-      text-align: center;
-    }
-
-    .hero-desc {
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .hero-actions {
-      justify-content: center;
-    }
-
+    .hero-visual { height: 380px; }
+    .hero-content { text-align: center; }
+    .hero-desc { margin-left: auto; margin-right: auto; }
+    .hero-actions { justify-content: center; }
     .head-card {
       grid-template-columns: 1fr;
       text-align: center;
       gap: 24px;
     }
-
-    .head-photo-wrap {
-      margin: 0 auto;
-    }
-
-    .head-message {
-      text-align: right;
-    }
+    .head-photo-wrap { margin: 0 auto; }
+    .head-message { text-align: right; }
   }
 
   @media (max-width: 768px) {
-    .hero {
-      padding: 120px 18px 60px;
-    }
-
-    .hero-title {
-      font-size: clamp(28px, 8vw, 42px);
-    }
-
-    .hero-visual {
-      height: 320px;
-    }
-
-    .section {
-      padding: 60px 18px;
-    }
-
+    .hero { padding: 120px 18px 60px; }
+    .hero-title { font-size: clamp(28px, 8vw, 42px); }
+    .hero-visual { height: 320px; }
+    .section { padding: 60px 18px; }
     .about-card {
       grid-template-columns: 1fr;
       text-align: center;
       padding: 24px 20px;
     }
-
-    .about-logo {
-      margin: 0 auto;
-    }
-
-    .head-card {
-      padding: 28px 22px;
-    }
-
-    .head-photo {
-      width: 130px;
-      height: 130px;
-    }
-
-    .cta-box {
-      padding: 40px 24px;
-    }
-
-    .code-card {
-      max-width: 100%;
-    }
-
-    .code-body {
-      font-size: 11.5px;
-    }
+    .about-logo { margin: 0 auto; }
+    .head-card { padding: 28px 22px; }
+    .head-photo { width: 130px; height: 130px; }
+    .cta-box { padding: 40px 24px; }
+    .code-card { max-width: 100%; }
+    .code-body { font-size: 11.5px; }
   }
 
   @media (max-width: 480px) {
-    .hero {
-      padding: 110px 14px 40px;
-    }
-
-    .hero-actions {
-      flex-direction: column;
-    }
-
-    .hero-actions .btn {
-      width: 100%;
-    }
-
-    .section {
-      padding: 50px 14px;
-    }
-
-    .step-num {
-      font-size: 36px;
-    }
-
-    .head-photo {
-      width: 110px;
-      height: 110px;
-    }
+    .hero { padding: 110px 14px 40px; }
+    .hero-actions { flex-direction: column; }
+    .hero-actions .btn { width: 100%; }
+    .section { padding: 50px 14px; }
+    .step-num { font-size: 36px; }
+    .head-photo { width: 110px; height: 110px; }
   }
 </style>
 </head>
@@ -1191,7 +1106,7 @@
   </div>
 </section>
 
-<!-- HEAD CARD — النقيب العام (جديد) -->
+<!-- HEAD CARD -->
 <section class="section head-section" id="headSection">
   <div class="container">
     <div class="head-card">
@@ -1258,7 +1173,7 @@
   </div>
 </section>
 
-<!-- STEPS (ديناميكي) -->
+<!-- STEPS -->
 <section class="section steps-section">
   <div class="container">
     <div class="section-head">
@@ -1267,7 +1182,6 @@
     </div>
 
     <div class="steps-grid" id="stepsGrid">
-      <!-- Step 1 -->
       <div class="step-card">
         <div class="step-num">01</div>
         <div class="step-icon">
@@ -1280,7 +1194,6 @@
         <p data-setting="step1_desc">بياناتك الأساسية والمهنية في دقائق</p>
       </div>
 
-      <!-- Step 2 -->
       <div class="step-card">
         <div class="step-num">02</div>
         <div class="step-icon">
@@ -1294,7 +1207,6 @@
         <p data-setting="step2_desc">بطاقة + شهادة + صورة شخصية</p>
       </div>
 
-      <!-- Step 3 -->
       <div class="step-card">
         <div class="step-num">03</div>
         <div class="step-icon">
@@ -1307,7 +1219,6 @@
         <p data-setting="step3_desc">تحقق فوري من صحة وجودة المستندات</p>
       </div>
 
-      <!-- Step 4 -->
       <div class="step-card">
         <div class="step-num">04</div>
         <div class="step-icon">
@@ -1426,6 +1337,7 @@
 <script src="js/theme-manager.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/realtime.js"></script>
+<script src="js/security.js"></script>
 
 <script>
 /* ============================================
@@ -1606,7 +1518,7 @@
       .replace(/'/g, '&#39;');
   }
 
-  /* ✅ FEATURES */
+  /* FEATURES */
   function renderFeatures(cards) {
     const grid = document.getElementById('featuresGrid');
     const section = document.getElementById('featuresSection');
@@ -1634,7 +1546,7 @@
     }).join('');
   }
 
-  /* ✅ ABOUT */
+  /* ABOUT */
   function renderAbout(settings) {
     const section = document.getElementById('aboutSection');
     if (!section) return;
@@ -1661,7 +1573,7 @@
     section.style.display = 'block';
   }
 
-  /* ✅ NEW: HEAD CARD */
+  /* HEAD CARD */
   function renderHead(settings) {
     const section = document.getElementById('headSection');
     if (!section) return;
@@ -1671,17 +1583,14 @@
     const headPhoto = settings.head_photo_url;
     const headMessage = settings.head_message;
 
-    // Name
     document.querySelectorAll('[data-head-name]').forEach(el => {
       el.textContent = headName;
     });
 
-    // Title
     document.querySelectorAll('[data-head-title]').forEach(el => {
       el.textContent = headTitle;
     });
 
-    // Photo
     const imgEl = document.getElementById('headPhotoImg');
     const fbEl = document.getElementById('headPhotoFallback');
 
@@ -1694,7 +1603,6 @@
       fbEl.style.display = 'block';
     }
 
-    // Message
     const msgEl = document.getElementById('headMessage');
     if (msgEl) {
       if (headMessage && headMessage.trim()) {
@@ -1705,11 +1613,10 @@
       }
     }
 
-    // Show section
     section.style.display = 'block';
   }
 
-  /* ✅ CODE CARD */
+  /* CODE CARD */
   function renderCodeCard(settings) {
     const body = document.getElementById('codeCardBody');
     if (!body) return;
@@ -1719,7 +1626,7 @@
     }
   }
 
-  /* ✅ FOOTER BUTTON */
+  /* FOOTER BUTTON */
   function renderFooterButton(settings) {
     const btn = document.getElementById('footerButton');
     if (!btn) return;
@@ -1736,7 +1643,7 @@
     }
   }
 
-  /* ✅ HERO BUTTONS */
+  /* HERO BUTTONS */
   function renderHeroButtons(settings) {
     const btn1 = document.getElementById('heroBtn1');
     const btn2 = document.getElementById('heroBtn2');
@@ -1747,7 +1654,7 @@
     if (ctaBtn && settings.cta_btn_url) ctaBtn.href = settings.cta_btn_url;
   }
 
-  /* ✅ APPLY ALL */
+  /* APPLY ALL */
   function applyCustomSettings(settings) {
     if (!settings) return;
 
@@ -1764,13 +1671,13 @@
 
     renderFeatures(cards);
     renderAbout(settings);
-    renderHead(settings);  // ✅ NEW
+    renderHead(settings);
     renderCodeCard(settings);
     renderFooterButton(settings);
     renderHeroButtons(settings);
   }
 
-  /* ✅ INIT */
+  /* INIT */
   function init() {
     renderFeatures([]);
 
@@ -1794,11 +1701,10 @@
       }
     });
 
-    // Realtime updates from admin
     if (window.Realtime) {
       window.Realtime.watch('settings', () => {
         if (window.SettingsManager) {
-          window.SettingsManager.load({ force: true });
+          window.SettingsManager.load(true);
         }
       }, { debounceMs: 600 });
     }
