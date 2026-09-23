@@ -1,43 +1,91 @@
 /* =====================================================
-   IT SYNDICATE — THEMES
-   Version: 3.0.0
+   IT SYNDICATE — THEMES + FONTS
+   Version: 4.0.0
    Path: css/themes.css
    =====================================================
    يحتوي على:
    - 8 ثيمات كاملة
    - متغيرات الألوان + RGB + الظلال + الحدود + Radius
+   - خطوط: Cairo + Alexandria + JetBrains Mono
    - دعم الوضع الفاتح والداكن
    - Theme Transition
    ===================================================== */
 
 /* ============================================
+   GOOGLE FONTS — IMPORT
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Alexandria:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+
+/* ============================================
    ROOT — Default Variables (Neon Dark)
    ============================================ */
 :root {
-  /* Accent Colors */
+  /* ==========================================
+     Fonts
+     ========================================== */
+  --font-main: 'Cairo', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Alexandria', 'Cairo', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  /* Font Sizes */
+  --fs-xs: 11px;
+  --fs-sm: 12.5px;
+  --fs-base: 15px;
+  --fs-md: 16px;
+  --fs-lg: 18px;
+  --fs-xl: 22px;
+  --fs-2xl: 28px;
+  --fs-3xl: 36px;
+
+  /* Font Weights */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
+  --fw-black: 900;
+
+  /* Line Heights */
+  --lh-tight: 1.2;
+  --lh-snug: 1.4;
+  --lh-normal: 1.6;
+  --lh-relaxed: 1.8;
+
+  /* ==========================================
+     Accent Colors
+     ========================================== */
   --accent: #00f0ff;
   --accent-2: #b026ff;
   --accent-rgb: 0, 240, 255;
   --accent-2-rgb: 176, 38, 255;
 
-  /* Backgrounds */
+  /* ==========================================
+     Backgrounds
+     ========================================== */
   --bg: #0a0c14;
   --bg-2: #0f1119;
   --bg-3: #141824;
   --card-bg: rgba(15, 17, 25, 0.7);
   --card-bg-solid: #0f1119;
 
-  /* Text */
+  /* ==========================================
+     Text
+     ========================================== */
   --text: #ffffff;
   --text-muted: #a0a8b8;
   --text-dim: #6b7280;
 
-  /* Borders */
+  /* ==========================================
+     Borders
+     ========================================== */
   --border: rgba(255, 255, 255, 0.08);
   --border-soft: rgba(255, 255, 255, 0.05);
   --border-strong: rgba(255, 255, 255, 0.15);
 
-  /* Status Colors */
+  /* ==========================================
+     Status Colors
+     ========================================== */
   --success: #22c55e;
   --success-rgb: 34, 197, 94;
   --danger: #ef4444;
@@ -47,29 +95,39 @@
   --info: #3b82f6;
   --info-rgb: 59, 130, 246;
 
-  /* Radius */
+  /* ==========================================
+     Radius
+     ========================================== */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-full: 100px;
 
-  /* Shadows */
+  /* ==========================================
+     Shadows
+     ========================================== */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
   --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.25);
   --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.3);
   --shadow-xl: 0 30px 60px rgba(0, 0, 0, 0.4);
 
-  /* Glow */
+  /* ==========================================
+     Glow
+     ========================================== */
   --glow-accent: 0 0 20px rgba(0, 240, 255, 0.3);
   --glow-accent-strong: 0 0 30px rgba(0, 240, 255, 0.5);
   --glow-accent-2: 0 0 20px rgba(176, 38, 255, 0.3);
 
-  /* Gradients */
+  /* ==========================================
+     Gradients
+     ========================================== */
   --gradient-accent: linear-gradient(135deg, var(--accent), var(--accent-2));
   --gradient-bg: linear-gradient(135deg, var(--bg), var(--bg-2));
 
-  /* Transitions */
+  /* ==========================================
+     Transitions
+     ========================================== */
   --transition-fast: 0.15s ease;
   --transition-base: 0.25s ease;
   --transition-slow: 0.4s ease;
@@ -322,13 +380,334 @@
    BASE BODY
    ============================================ */
 body {
+  font-family: var(--font-main);
   background: var(--bg);
   color: var(--text);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  font-weight: var(--fw-regular);
   transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* ============================================
+   HEADINGS — Alexandria
+   ============================================ */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--fw-black);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.3px;
+  color: var(--text);
+}
+
+h1 { font-size: var(--fs-3xl); font-weight: 900; }
+h2 { font-size: var(--fs-2xl); font-weight: 900; }
+h3 { font-size: var(--fs-xl); font-weight: 800; }
+h4 { font-size: var(--fs-lg); font-weight: 800; }
+h5 { font-size: var(--fs-md); font-weight: 700; }
+h6 { font-size: var(--fs-base); font-weight: 700; }
+
+
+/* ============================================
+   HEADER / NAVBAR
+   ============================================ */
+.navbar,
+.nav-container,
+.logo-text,
+.logo-main,
+.logo-sub {
+  font-family: var(--font-main);
+}
+
+.logo-main {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+.logo-sub {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 1.5px;
+}
+
+.nav-links a {
+  font-family: var(--font-main);
+  font-weight: 700;
 }
 
 /* ============================================
-   THEME TRANSITION (عند تغيير الثيم)
+   BUTTONS
+   ============================================ */
+.btn,
+button {
+  font-family: var(--font-main);
+  font-weight: 700;
+}
+
+/* ============================================
+   FORMS
+   ============================================ */
+input,
+textarea,
+select,
+.form-group label {
+  font-family: var(--font-main);
+}
+
+input,
+textarea,
+select {
+  font-weight: var(--fw-medium);
+}
+
+.form-group label {
+  font-weight: var(--fw-bold);
+}
+
+/* ============================================
+   CONTENT / PARAGRAPHS
+   ============================================ */
+p,
+.hero-desc,
+.section-desc,
+.about-text,
+.head-message,
+.footer-desc,
+.feature-card p,
+.type-desc,
+.step-card p {
+  font-family: var(--font-main);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-relaxed);
+}
+
+/* ============================================
+   TITLES / HEADINGS in Sections
+   ============================================ */
+.hero-title,
+.section-title,
+.about-title,
+.head-name,
+.head-title,
+.cta-box h2,
+.feature-card h3,
+.type-name,
+.step-card h3 {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  letter-spacing: -0.3px;
+}
+
+.hero-title {
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.section-title {
+  font-weight: 900;
+}
+
+/* ============================================
+   MONO / CODE
+   ============================================ */
+code,
+pre,
+.code-body,
+.code-title,
+.type-amount,
+.step-num,
+.mono,
+.stat-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.code-body,
+.code-title {
+  font-weight: 500;
+}
+
+/* ============================================
+   BADGES / LABELS
+   ============================================ */
+.badge,
+.role-badge,
+.status-badge,
+.payment-method-badge,
+.head-label,
+.hero-badge,
+.form-hint {
+  font-family: var(--font-main);
+  font-weight: 700;
+}
+
+.form-hint {
+  font-weight: 500;
+  font-size: var(--fs-xs);
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+table {
+  font-family: var(--font-main);
+}
+
+thead th {
+  font-family: var(--font-main);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+tbody td {
+  font-weight: 500;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.footer,
+.footer-col,
+.footer-links a,
+.footer-contact li,
+.footer-bottom,
+.footer-desc {
+  font-family: var(--font-main);
+}
+
+.footer-col h4,
+.footer-logo-main {
+  font-family: var(--font-heading);
+  font-weight: 800;
+}
+
+.footer-logo-sub {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 1.5px;
+}
+
+.footer-links a {
+  font-weight: 600;
+}
+
+.footer-contact li {
+  font-weight: 500;
+}
+
+/* ============================================
+   MODALS
+   ============================================ */
+.modal-content,
+.modal-header-custom h3,
+.modal-body,
+.modal-footer-custom {
+  font-family: var(--font-main);
+}
+
+.modal-header-custom h3 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+}
+
+/* ============================================
+   TOASTS
+   ============================================ */
+.toast,
+.toast-container {
+  font-family: var(--font-main);
+  font-weight: 700;
+}
+
+/* ============================================
+   THEME PANEL
+   ============================================ */
+.theme-panel,
+.theme-panel-header h4,
+.theme-option,
+.theme-option-title,
+.theme-option-desc {
+  font-family: var(--font-main);
+}
+
+.theme-panel-header h4 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+}
+
+/* ============================================
+   SPECIFIC COMPONENTS
+   ============================================ */
+
+/* Hero badge */
+.hero-badge span:not(.dot-pulse) {
+  font-family: var(--font-main);
+  font-weight: 600;
+}
+
+/* About / Head titles */
+.about-title {
+  font-family: var(--font-heading);
+  font-weight: 800;
+}
+
+.head-name {
+  font-family: var(--font-heading);
+  font-weight: 900;
+}
+
+.head-title {
+  font-family: var(--font-main);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* Feature cards */
+.feature-card h3 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+}
+
+.feature-card p {
+  font-weight: 400;
+}
+
+/* Type cards */
+.type-name {
+  font-family: var(--font-heading);
+  font-weight: 800;
+}
+
+.type-amount {
+  font-family: var(--font-mono);
+  font-weight: 800;
+}
+
+/* Steps */
+.step-num {
+  font-family: var(--font-mono);
+  font-weight: 800;
+}
+
+.step-card h3 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+}
+
+/* CTA */
+.cta-box h2 {
+  font-family: var(--font-heading);
+  font-weight: 900;
+}
+
+/* ============================================
+   THEME TRANSITION
    ============================================ */
 .theme-transition,
 .theme-transition *,
@@ -340,6 +719,7 @@ body {
     border-color 0.3s ease,
     box-shadow 0.3s ease !important;
 }
+
 
 /* ============================================
    LIGHT THEME OVERRIDES
@@ -358,7 +738,6 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* Nav links */
 [data-theme="neon-light"] .nav-links a,
 [data-theme="minimal"] .nav-links a {
   color: var(--text-muted);
@@ -377,7 +756,7 @@ body {
   border-color: rgba(0, 0, 0, 0.12);
 }
 
-/* Modal content */
+/* Modal */
 [data-theme="neon-light"] .modal-content,
 [data-theme="minimal"] .modal-content {
   background: #ffffff;
@@ -439,7 +818,7 @@ body {
   background: rgba(0, 0, 0, 0.04);
 }
 
-/* Background grid & glows */
+/* Background grid */
 [data-theme="neon-light"] .bg-grid,
 [data-theme="minimal"] .bg-grid {
   background-image:
@@ -477,8 +856,9 @@ body {
     rgba(0, 0, 0, 0.03) 100%);
 }
 
+
 /* ============================================
-   BODY BACKGROUND GRADIENT (Subtle)
+   BODY BACKGROUND GRADIENT
    ============================================ */
 body::before {
   content: '';
@@ -493,6 +873,7 @@ body::before {
   transition: background 0.3s ease;
 }
 
+
 /* ============================================
    SELECTION
    ============================================ */
@@ -505,6 +886,7 @@ body::before {
   background: rgba(var(--accent-rgb), 0.3);
   color: var(--text);
 }
+
 
 /* ============================================
    SCROLLBAR
@@ -538,6 +920,7 @@ body::before {
   border-color: #eef0f2;
 }
 
+
 /* ============================================
    FOCUS VISIBLE
    ============================================ */
@@ -546,6 +929,7 @@ body::before {
   outline-offset: 2px;
   border-radius: 4px;
 }
+
 
 /* ============================================
    REDUCED MOTION
@@ -557,5 +941,41 @@ body::before {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* ============================================
+   RESPONSIVE FONTS
+   ============================================ */
+@media (max-width: 768px) {
+  :root {
+    --fs-3xl: 28px;
+    --fs-2xl: 22px;
+    --fs-xl: 18px;
+    --fs-lg: 16px;
+    --fs-base: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --fs-3xl: 24px;
+    --fs-2xl: 20px;
+    --fs-xl: 17px;
+    --fs-lg: 15px;
+    --fs-base: 13.5px;
+  }
+}
+
+
+/* ============================================
+   PRINT
+   ============================================ */
+@media print {
+  body {
+    font-family: var(--font-main);
+    background: #fff !important;
+    color: #000 !important;
   }
 }
