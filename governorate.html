@@ -31,7 +31,6 @@
     z-index: 10;
   }
 
-  /* Page header */
   .page-header {
     display: flex;
     align-items: center;
@@ -87,7 +86,7 @@
   .user-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
   .user-role { font-size: 11.5px; color: #22c55e; letter-spacing: 0.5px; font-weight: 600; }
 
-  /* Governorate badge */
+  /* Governorate Hero */
   .gov-hero {
     display: flex;
     align-items: center;
@@ -126,7 +125,6 @@
     text-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
   }
 
-  /* Stats */
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -152,9 +150,7 @@
   .stat-icon {
     width: 48px; height: 48px;
     border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
     border: 1px solid;
   }
@@ -223,7 +219,6 @@
     flex-shrink: 0;
   }
 
-  /* Filters */
   .filters-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -287,7 +282,6 @@
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
 
-  /* Actions */
   .actions-row {
     display: flex;
     gap: 10px;
@@ -295,7 +289,6 @@
     margin-bottom: 20px;
   }
 
-  /* Table */
   .table-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -344,12 +337,7 @@
     -webkit-backdrop-filter: blur(10px);
   }
 
-  /* Member cell */
-  .member-cell {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+  .member-cell { display: flex; align-items: center; gap: 10px; }
   .member-avatar {
     width: 38px; height: 38px;
     border-radius: var(--radius-sm);
@@ -378,7 +366,6 @@
     color: var(--text-dim);
   }
 
-  /* MNO badge */
   .mno-badge {
     display: inline-block;
     padding: 4px 12px;
@@ -392,7 +379,6 @@
     white-space: nowrap;
   }
 
-  /* Branch badge */
   .branch-cell {
     display: inline-block;
     padding: 4px 10px;
@@ -405,7 +391,6 @@
     white-space: nowrap;
   }
 
-  /* Days cell */
   .days-cell {
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
@@ -416,7 +401,6 @@
   .days-soon { color: var(--warning); }
   .days-expired { color: var(--danger); }
 
-  /* Status badge */
   .status-badge {
     display: inline-flex;
     align-items: center;
@@ -449,7 +433,6 @@
     color: var(--danger);
   }
 
-  /* Health care badge */
   .hc-badge {
     display: inline-flex;
     align-items: center;
@@ -469,7 +452,6 @@
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
 
-  /* Actions */
   .row-actions {
     display: flex;
     gap: 6px;
@@ -498,28 +480,44 @@
     transform: translateY(-2px);
   }
 
-  /* Empty state */
-  .empty-state {
-    padding: 60px 20px;
-    text-align: center;
-    color: var(--text-dim);
-  }
-  .empty-state svg {
-    width: 48px; height: 48px;
-    stroke: var(--text-dim);
-    fill: none;
-    stroke-width: 1.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    margin: 0 auto 16px;
-    display: block;
-    opacity: 0.5;
-  }
-
-  /* Pagination */
   #paginationBox {
     padding: 16px 22px;
     border-top: 1px solid var(--border-soft);
+  }
+
+  /* Report grid */
+  .report-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    padding: 20px;
+  }
+  .report-card {
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    transition: all 0.2s;
+  }
+  .report-card:hover {
+    border-color: rgba(var(--accent-rgb), 0.4);
+    background: rgba(var(--accent-rgb), 0.05);
+  }
+  .report-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .report-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent);
+    text-shadow: var(--glow-accent);
   }
 
   /* Modal */
@@ -560,7 +558,6 @@
     stroke-width: 2; stroke-linecap: round;
   }
 
-  /* Detail grid */
   .detail-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -584,46 +581,9 @@
     word-break: break-word;
   }
 
-  /* Report grid */
-  .report-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 12px;
-    padding: 20px;
-  }
-  .report-card {
-    padding: 16px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    transition: all 0.2s;
-  }
-  .report-card:hover {
-    border-color: rgba(var(--accent-rgb), 0.4);
-    background: rgba(var(--accent-rgb), 0.05);
-  }
-  .report-name {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--text);
-  }
-  .report-count {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--accent);
-    text-shadow: var(--glow-accent);
-  }
-
-  /* Responsive */
   @media (max-width: 1024px) {
     .filters-grid { grid-template-columns: 1fr 1fr; }
   }
-
   @media (max-width: 768px) {
     body { padding: 90px 0 30px; }
     .gov-wrap { padding: 0 16px; }
@@ -638,7 +598,6 @@
     .gov-hero-name { font-size: 18px; }
   }
 
-  /* Print */
   @media print {
     .navbar, .actions-row, .filters-card, #paginationBox,
     .row-actions, .footer, .bg-grid, .bg-glow, .bg-layer,
@@ -839,7 +798,6 @@
   <!-- ============ TAB 1: MEMBERS ============ -->
   <div data-tab-content="members">
 
-    <!-- FILTERS -->
     <div class="filters-card">
       <div class="filters-header">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -888,7 +846,6 @@
       </div>
     </div>
 
-    <!-- ACTIONS -->
     <div class="actions-row">
       <button type="button" class="btn btn-outline" id="refreshBtn">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -917,7 +874,6 @@
       </button>
     </div>
 
-    <!-- TABLE -->
     <div class="table-card">
       <div class="table-card-header">
         <div class="table-card-title">
@@ -984,9 +940,7 @@
 
 </div>
 
-<!-- ============================================
-     MEMBER DETAIL MODAL
-     ============================================ -->
+<!-- MEMBER DETAIL MODAL -->
 <div id="memberModal" class="modal modal-lg">
   <div class="modal-content">
     <div class="modal-header-custom">
@@ -1021,6 +975,7 @@
 <script src="js/theme-manager.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/realtime.js"></script>
+<script src="js/security.js"></script>
 <script src="js/governorate.js"></script>
 
 <script>
@@ -1029,7 +984,6 @@
     if (nav) nav.classList.toggle('open');
   };
 
-  /* Tabs */
   (function () {
     document.querySelectorAll('[data-tab-btn]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1044,7 +998,6 @@
     });
   })();
 
-  /* Background particles */
   (function () {
     const canvas = document.getElementById('bgCanvas');
     if (!canvas) return;
