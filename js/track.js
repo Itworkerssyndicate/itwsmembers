@@ -1,6 +1,7 @@
 /* =====================================================
    IT SYNDICATE — TRACK LOGIC
    Version: 3.0.0
+   Path: js/track.js
    =====================================================
    يحتوي على:
    - بحث مزدوج (رقم تتبع / رقم قومي)
@@ -773,7 +774,6 @@
       box.classList.add('has-file');
       if (filenameEl) filenameEl.textContent = file.name;
 
-      // Upload
       try {
         const appId = currentApplication.id;
         const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
