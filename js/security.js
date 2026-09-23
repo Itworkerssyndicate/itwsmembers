@@ -1,443 +1,333 @@
 /* =====================================================
-   IT SYNDICATE — SECURITY MODULE
-   Version: 3.0.0
+   IT SYNDICATE — SECURITY UTILITIES
+   Version: 1.0.0
    Path: js/security.js
    =====================================================
-   يحتوي على:
-   - منع Right Click (القائمة اليمنى)
-   - منع F12 + Ctrl+Shift+I/J/C + Ctrl+U
-   - منع النسخ (Copy) — مع استثناء الـ Inputs
-   - منع السحب (Drag) للصور
-   - كشف DevTools (Debugger Trap + Window Size)
-   - Console Warning
-   - حماية الحقول الحساسة (الرقم القومي / الباسورد)
-   - تعطيل Print Screen (اختياري)
-   - منع Iframe Embedding
-   - منع Drop من الخارج
+   يوفر:
+   - Sanitize strings (منع XSS)
+   - escapeHtml
+   - Rate limiting بسيط
+   - CSRF-like token
+   - Input validation helpers
+   - Session fingerprint
+   - منع right-click (اختياري)
    ===================================================== */
 
 (function () {
   'use strict';
 
   /* ============================================
-     CONFIG
+     SANITIZE — منع XSS
      ============================================ */
-  const CONFIG = {
-    disableRightClick: true,
-    disableF12: true,
-    disableShortcuts: true,
-    disableCopy: true,
-    disableCut: true,
-    disableDrag: true,
-    detectDevTools: true,
-    consoleWarning: true,
-    disablePrintScreen: false,
-    allowInputsCopy: true,
-    allowAdminPages: true,
-    adminPagePatterns: [
-      'admin.html',
-      'dashboard.html',
-      'head-approval.html',
-      'members.html',
-      'revenue.html',
-      'subscriptions.html',
-      'branches.html',
-      'governorate.html',
-      'social-committee.html',
-      'public-relations.html',
-      'committees-manager.html',
-      'profile.html'
-    ]
-  };
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
 
-  /* ============================================
-     DETECT CURRENT PAGE
-     ============================================ */
-  function isAdminPage() {
-    if (!CONFIG.allowAdminPages) return false;
-    const path = window.location.pathname.toLowerCase();
-    return CONFIG.adminPagePatterns.some(p => path.includes(p));
+  function stripTags(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/<[^>]*>/g, '');
+  }
+
+  function sanitizeInput(str, maxLength = 1000) {
+    if (str === null || str === undefined) return '';
+    let s = String(str).trim();
+    if (s.length > maxLength) s = s.slice(0, maxLength);
+    return stripTags(s);
+  }
+
+  function escapeAttr(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 
   /* ============================================
-     SHOW ALERT (Subtle)
+     VALIDATION
      ============================================ */
-  let lastAlertTime = 0;
-  function showBlockedAlert() {
-    const now = Date.now();
-    if (now - lastAlertTime < 2000) return; // Rate limit
-    lastAlertTime = now;
-
-    if (typeof window.showToast === 'function') {
-      window.showToast('هذا الإجراء غير مسموح', 'warning', 2000);
-    }
+  function isValidEmail(email) {
+    if (!email) return false;
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
   }
 
-  /* ============================================
-     1) BLOCK RIGHT CLICK
-     ============================================ */
-  function blockRightClick() {
-    if (!CONFIG.disableRightClick) return;
-
-    document.addEventListener('contextmenu', (e) => {
-      const target = e.target;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
-      if (isAdminPage()) return;
-
-      e.preventDefault();
-      showBlockedAlert();
-      return false;
-    }, { capture: true });
+  function isValidPhone(phone) {
+    if (!phone) return false;
+    const cleaned = String(phone).replace(/[\s\-\(\)\+]/g, '');
+    return /^[0-9]{10,15}$/.test(cleaned);
   }
 
-  /* ============================================
-     2) BLOCK KEYBOARD SHORTCUTS
-     ============================================ */
-  function blockKeyboardShortcuts() {
-    document.addEventListener('keydown', (e) => {
-      if (isAdminPage()) return;
-
-      const key = e.key ? e.key.toUpperCase() : '';
-      const keyCode = e.keyCode || e.which;
-
-      // F12
-      if (CONFIG.disableF12 && (key === 'F12' || keyCode === 123)) {
-        e.preventDefault();
-        e.stopPropagation();
-        showBlockedAlert();
-        return false;
-      }
-
-      // Ctrl+Shift+I / J / C / K
-      if (CONFIG.disableShortcuts && e.ctrlKey && e.shiftKey) {
-        if (['I', 'J', 'C', 'K'].includes(key)) {
-          e.preventDefault();
-          e.stopPropagation();
-          showBlockedAlert();
-          return false;
-        }
-      }
-
-      // Ctrl+U (View Source)
-      if (CONFIG.disableShortcuts && e.ctrlKey && !e.shiftKey && key === 'U') {
-        e.preventDefault();
-        e.stopPropagation();
-        showBlockedAlert();
-        return false;
-      }
-
-      // Ctrl+S (Save Page)
-      if (CONFIG.disableShortcuts && e.ctrlKey && !e.shiftKey && key === 'S') {
-        e.preventDefault();
-        e.stopPropagation();
-        showBlockedAlert();
-        return false;
-      }
-
-      // Print Screen
-      if (CONFIG.disablePrintScreen && (key === 'PRINTSCREEN' || keyCode === 44)) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
-    }, { capture: true });
+  function isValidNationalId(id) {
+    if (!id) return false;
+    return /^[0-9]{14}$/.test(String(id));
   }
 
-  /* ============================================
-     3) BLOCK COPY / CUT
-     ============================================ */
-  function blockCopy() {
-    if (!CONFIG.disableCopy) return;
-
-    document.addEventListener('copy', (e) => {
-      const target = e.target;
-      const tag = target.tagName;
-
-      // Allow inputs / textareas
-      if (CONFIG.allowInputsCopy && (tag === 'INPUT' || tag === 'TEXTAREA')) {
-        return;
-      }
-
-      // Allow inside copy-enabled elements
-      if (target.closest('[data-allow-copy]')) return;
-
-      // Allow admin pages
-      if (isAdminPage()) return;
-
-      e.preventDefault();
-      showBlockedAlert();
-      return false;
-    }, { capture: true });
-
-    if (CONFIG.disableCut) {
-      document.addEventListener('cut', (e) => {
-        const target = e.target;
-        const tag = target.tagName;
-
-        if (CONFIG.allowInputsCopy && (tag === 'INPUT' || tag === 'TEXTAREA')) {
-          return;
-        }
-
-        if (isAdminPage()) return;
-
-        e.preventDefault();
-        showBlockedAlert();
-        return false;
-      }, { capture: true });
-    }
-  }
-
-  /* ============================================
-     4) BLOCK DRAG (Images + Links)
-     ============================================ */
-  function blockDrag() {
-    if (!CONFIG.disableDrag) return;
-
-    document.addEventListener('dragstart', (e) => {
-      const target = e.target;
-      if (target.tagName === 'IMG' || target.tagName === 'A') {
-        e.preventDefault();
-        return false;
-      }
-    }, { capture: true });
-  }
-
-  /* ============================================
-     5) DETECT DEVTOOLS (Debugger Trap)
-     ============================================ */
-  function detectDevToolsDebugger() {
-    if (!CONFIG.detectDevTools) return;
-
-    setInterval(() => {
-      const start = performance.now();
-      // eslint-disable-next-line no-debugger
-      debugger;
-      const end = performance.now();
-
-      // If devtools is open, the debugger pauses execution > 100ms
-      if (end - start > 100) {
-        if (window.ITS_DEBUG) console.log('[Security] DevTools detected');
-      }
-    }, 3000);
-  }
-
-  /* ============================================
-     6) DETECT DEVTOOLS (Window Size)
-     ============================================ */
-  function detectDevToolsSize() {
-    if (!CONFIG.detectDevTools) return;
-
-    const threshold = 160;
-
-    function check() {
-      const widthDiff = window.outerWidth - window.innerWidth;
-      const heightDiff = window.outerHeight - window.innerHeight;
-
-      if (widthDiff > threshold || heightDiff > threshold) {
-        if (window.ITS_DEBUG) console.log('[Security] DevTools possible (size detection)');
-      }
-    }
-
-    setInterval(check, 2000);
-  }
-
-  /* ============================================
-     7) CONSOLE WARNING
-     ============================================ */
-  function consoleWarning() {
-    if (!CONFIG.consoleWarning) return;
-
-    const styleHeader = `
-      color: #e62e2e;
-      font-size: 32px;
-      font-weight: 900;
-      font-family: 'Tajawal', sans-serif;
-      text-shadow: 0 0 20px #e62e2e;
-      padding: 10px;
-    `;
-
-    const styleBody = `
-      color: #ff5555;
-      font-size: 14px;
-      font-weight: 700;
-      font-family: 'Cairo', sans-serif;
-      padding: 10px;
-      line-height: 1.6;
-    `;
-
-    const styleInfo = `
-      color: #00f0ff;
-      font-size: 12px;
-      font-family: 'JetBrains Mono', monospace;
-      padding: 4px;
-    `;
-
-    console.log('%c⛔ توقف!', styleHeader);
-    console.log(
-      '%cهذه المنطقة مخصصة للمطورين فقط.\n' +
-      'إذا قام أحدهم بإخبارك بنسخ أو لصق أي شيء هنا،\n' +
-      'فهو يحاول اختراق حسابك أو سرقة بياناتك.\n' +
-      'يرجى إغلاق هذه النافذة فورًا.',
-      styleBody
-    );
-    console.log('%c— نقابة تكنولوجيا المعلومات والبرمجيات', styleInfo);
-  }
-
-  /* ============================================
-     8) PROTECT SENSITIVE INPUTS
-     ============================================ */
-  function protectSensitiveInputs() {
-    const sensitivePatterns = [
-      'national_id',
-      'password',
-      'userPassword',
-      'phone',
-      'card_number',
-      'cvv'
-    ];
-
-    function protect() {
-      sensitivePatterns.forEach(pattern => {
-        document.querySelectorAll(`input[name*="${pattern}"], input[id*="${pattern}"]`).forEach(input => {
-          input.setAttribute('autocomplete', 'off');
-          input.setAttribute('autocorrect', 'off');
-          input.setAttribute('autocapitalize', 'off');
-          input.setAttribute('spellcheck', 'false');
-        });
-      });
-    }
-
-    protect();
-
-    // Re-protect on DOM changes
-    const observer = new MutationObserver(() => {
-      protect();
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-  }
-
-  /* ============================================
-     9) BLOCK IFRAME EMBEDDING (Clickjacking)
-     ============================================ */
-  function blockIframeEmbedding() {
+  function isValidUrl(url) {
+    if (!url) return false;
     try {
-      if (window.self !== window.top) {
-        console.warn('[Security] Page is embedded in an iframe');
-      }
+      const u = new URL(url);
+      return ['http:', 'https:'].includes(u.protocol);
     } catch (e) {
-      console.warn('[Security] Cross-origin iframe detected');
-    }
-  }
-
-  /* ============================================
-     10) BLOCK TEXT SELECTION (Optional)
-     ============================================ */
-  function blockTextSelection() {
-    if (isAdminPage()) return;
-
-    const style = document.createElement('style');
-    style.textContent = `
-      .no-select {
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        -webkit-touch-callout: none;
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
-  /* ============================================
-     11) DISABLE SAVE PAGE (Ctrl+S)
-     ============================================ */
-  function disableSavePage() {
-    document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key && e.key.toLowerCase() === 's') {
-        if (isAdminPage()) return;
-        e.preventDefault();
-        return false;
-      }
-    }, { capture: true });
-  }
-
-  /* ============================================
-     12) DISABLE DROP FROM OUTSIDE
-     ============================================ */
-  function disableExternalDrop() {
-    document.addEventListener('dragover', (e) => {
-      if (e.target.closest('.file-upload, [data-allow-drop]')) return;
-      e.preventDefault();
-    }, { capture: true });
-
-    document.addEventListener('drop', (e) => {
-      if (e.target.closest('.file-upload, [data-allow-drop]')) return;
-      e.preventDefault();
       return false;
-    }, { capture: true });
-  }
-
-  /* ============================================
-     INIT
-     ============================================ */
-  function init() {
-    try {
-      blockRightClick();
-      blockKeyboardShortcuts();
-      blockCopy();
-      blockDrag();
-      consoleWarning();
-      protectSensitiveInputs();
-      blockIframeEmbedding();
-      blockTextSelection();
-      disableSavePage();
-      disableExternalDrop();
-
-      if (CONFIG.detectDevTools) {
-        detectDevToolsDebugger();
-        detectDevToolsSize();
-      }
-
-      if (window.ITS_DEBUG) {
-        console.log('[Security] All protections active');
-      }
-
-      window.dispatchEvent(new CustomEvent('security-ready'));
-
-    } catch (err) {
-      console.error('[Security] Init failed:', err);
     }
   }
 
   /* ============================================
-     PUBLIC API
+     RATE LIMITING
+     ============================================ */
+  const rateLimits = new Map();
+
+  function rateLimit(key, maxAttempts = 5, windowMs = 60000) {
+    const now = Date.now();
+    const entry = rateLimits.get(key) || { count: 0, resetAt: now + windowMs };
+
+    if (now > entry.resetAt) {
+      entry.count = 0;
+      entry.resetAt = now + windowMs;
+    }
+
+    entry.count++;
+    rateLimits.set(key, entry);
+
+    if (entry.count > maxAttempts) {
+      return {
+        allowed: false,
+        remaining: 0,
+        resetAt: entry.resetAt,
+        retryAfter: Math.ceil((entry.resetAt - now) / 1000)
+      };
+    }
+
+    return {
+      allowed: true,
+      remaining: maxAttempts - entry.count,
+      resetAt: entry.resetAt,
+      retryAfter: 0
+    };
+  }
+
+  function clearRateLimit(key) {
+    rateLimits.delete(key);
+  }
+
+  /* ============================================
+     CSRF TOKEN (Client-side)
+     ============================================ */
+  function generateToken(length = 32) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let token = '';
+    if (window.crypto && window.crypto.getRandomValues) {
+      const bytes = new Uint8Array(length);
+      window.crypto.getRandomValues(bytes);
+      for (let i = 0; i < length; i++) {
+        token += chars[bytes[i] % chars.length];
+      }
+    } else {
+      for (let i = 0; i < length; i++) {
+        token += chars[Math.floor(Math.random() * chars.length)];
+      }
+    }
+    return token;
+  }
+
+  function getCsrfToken() {
+    let token = sessionStorage.getItem('its_csrf_token');
+    if (!token) {
+      token = generateToken(32);
+      sessionStorage.setItem('its_csrf_token', token);
+    }
+    return token;
+  }
+
+  function validateCsrfToken(token) {
+    const stored = sessionStorage.getItem('its_csrf_token');
+    return stored && stored === token;
+  }
+
+  /* ============================================
+     SESSION FINGERPRINT
+     ============================================ */
+  function getSessionFingerprint() {
+    const parts = [
+      navigator.userAgent || '',
+      navigator.language || '',
+      screen.width + 'x' + screen.height,
+      new Date().getTimezoneOffset()
+    ];
+    const str = parts.join('|');
+    // simple hash
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) - hash) + str.charCodeAt(i);
+      hash = hash & hash;
+    }
+    return Math.abs(hash).toString(36);
+  }
+
+  /* ============================================
+     SECURE STORAGE
+     ============================================ */
+  function secureSet(key, value) {
+    try {
+      const data = {
+        v: value,
+        t: Date.now(),
+        f: getSessionFingerprint()
+      };
+      localStorage.setItem(key, JSON.stringify(data));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function secureGet(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      // لو الـ fingerprint مختلف، ارفض
+      if (data.f && data.f !== getSessionFingerprint()) {
+        localStorage.removeItem(key);
+        return null;
+      }
+      return data.v;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /* ============================================
+     BASIC PROTECTION (اختياري)
+     ============================================ */
+  function disableRightClick() {
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
+
+  function disableDevToolsShortcuts() {
+    document.addEventListener('keydown', (e) => {
+      // F12
+      if (e.key === 'F12') e.preventDefault();
+      // Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+Shift+C
+      if (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) {
+        e.preventDefault();
+      }
+      // Ctrl+U
+      if (e.ctrlKey && e.key.toUpperCase() === 'U') {
+        e.preventDefault();
+      }
+    });
+  }
+
+  /* ============================================
+     CONSOLE WARNING
+     ============================================ */
+  function showConsoleWarning() {
+    try {
+      const style1 = 'color: #ef4444; font-size: 32px; font-weight: bold; text-shadow: 2px 2px 0 #000;';
+      const style2 = 'color: #f59e0b; font-size: 16px; font-weight: bold;';
+      const style3 = 'color: #fff; font-size: 14px;';
+
+      console.log('%c⚠️ تحذير! ⚠️', style1);
+      console.log('%cهذه المنطقة مخصصة للمطورين فقط', style2);
+      console.log('%cلا تلصق أي كود هنا إلا لو كنت متأكد 100%', style3);
+      console.log('%cأي كود تلصقه قد يسرق بياناتك أو يعطّل حسابك', style3);
+    } catch (e) {}
+  }
+
+  /* ============================================
+     HELPER — Debounce
+     ============================================ */
+  function debounce(fn, delay = 300) {
+    let timer = null;
+    return function (...args) {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+  }
+
+  /* ============================================
+     HELPER — Throttle
+     ============================================ */
+  function throttle(fn, limit = 300) {
+    let inThrottle = false;
+    return function (...args) {
+      if (!inThrottle) {
+        fn.apply(this, args);
+        inThrottle = true;
+        setTimeout(() => { inThrottle = false; }, limit);
+      }
+    };
+  }
+
+  /* ============================================
+     EXPORT
      ============================================ */
   window.Security = {
-    isAdminPage,
-    config: CONFIG,
-    enable: (feature) => {
-      if (feature in CONFIG) {
-        CONFIG[feature] = true;
-      }
-    },
-    disable: (feature) => {
-      if (feature in CONFIG) {
-        CONFIG[feature] = false;
-      }
+    // Sanitize
+    escapeHtml,
+    escapeAttr,
+    stripTags,
+    sanitizeInput,
+
+    // Validation
+    isValidEmail,
+    isValidPhone,
+    isValidNationalId,
+    isValidUrl,
+
+    // Rate Limit
+    rateLimit,
+    clearRateLimit,
+
+    // CSRF
+    getCsrfToken,
+    validateCsrfToken,
+    generateToken,
+
+    // Session
+    getSessionFingerprint,
+
+    // Storage
+    secureSet,
+    secureGet,
+
+    // Protection
+    disableRightClick,
+    disableDevToolsShortcuts,
+
+    // Helpers
+    debounce,
+    throttle,
+
+    // Init
+    init: function () {
+      showConsoleWarning();
+      // ⚡ مش بنفعّل الحماية دي بشكل افتراضي — عشان ما تزعجش المستخدم
+      // لو عايز تفعّلها، شيل الكومنت:
+      // disableRightClick();
+      // disableDevToolsShortcuts();
     }
   };
 
   /* ============================================
-     START
+     AUTO INIT
      ============================================ */
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => {
+      window.Security.init();
+    });
   } else {
-    init();
+    window.Security.init();
   }
 
 })();
