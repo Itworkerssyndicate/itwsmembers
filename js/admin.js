@@ -1,6 +1,6 @@
 /* =====================================================
    IT SYNDICATE — ADMIN LOGIC
-   Version: 3.0.0
+   Version: 3.1.0
    Path: js/admin.js
    =====================================================
    يحتوي على:
@@ -8,6 +8,7 @@
    - Tab management (10 tabs)
    - Settings: تحميل + حفظ + شعار + صورة النقيب + backup
    - Home: تحميل + حفظ إعدادات الرئيسية
+   - ⚡ Features Cards: إضافة/تعديل/حذف/معاينة
    - Users: CRUD + فلاتر + تفعيل/تعطيل/رفض + تغيير باسورد
    - Governorates: CRUD
    - Committees: مجالس المحافظات
@@ -64,6 +65,31 @@
   ];
 
   /* ============================================
+     ICONS LIBRARY
+     ============================================ */
+  const ICONS = {
+    edit: '<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+    trash: '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+    check: '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
+    x: '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    // Feature icons
+    zap: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+    eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    code: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+    users: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
+    star: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+    award: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>',
+    trending: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+    smartphone: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+    briefcase: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+    graduation: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+    activity: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>'
+  };
+
+  /* ============================================
      STATE
      ============================================ */
   let client = null;
@@ -88,6 +114,9 @@
   let editingBranchId = null;
   let editingExpCatId = null;
   let currentCommitteeGovId = null;
+
+  // ⚡ Features
+  let featuresCards = [];
 
   let unsubscribeRealtime = null;
 
@@ -282,7 +311,12 @@
       if (error) throw error;
 
       const map = {};
-      (data || []).forEach(r => { map[r.key] = r.value; });
+      (data || []).forEach(r => {
+        let v = r.value;
+        // لو JSONB object أو array → خزنه كما هو
+        // لو string → خزنه كنص
+        map[r.key] = v;
+      });
       settings = map;
 
       // Fill data-setting inputs
@@ -290,10 +324,25 @@
         const key = el.dataset.setting;
         if (!(key in map)) return;
         const val = map[key];
-        if (el.type === 'checkbox') {
-          el.checked = val === true || val === 'true' || val === '1';
+
+        // لو العنصر input/textarea/select
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
+          if (el.type === 'checkbox') {
+            el.checked = val === true || val === 'true' || val === '1';
+          } else {
+            // متلمسش اللي المستخدم بيكتب فيه
+            if (document.activeElement !== el) {
+              el.value = (typeof val === 'object') ? JSON.stringify(val) : (val ?? '');
+            }
+          }
         } else {
-          el.value = val ?? '';
+          // عنصر نصي
+          if (typeof val !== 'object') {
+            const str = String(val ?? '');
+            if (el.textContent.trim() !== str.trim()) {
+              el.textContent = str;
+            }
+          }
         }
       });
 
@@ -317,7 +366,7 @@
         }
       }
 
-      // Features cards
+      // ⚡ Features cards
       loadFeaturesFromSettings();
 
     } catch (e) {
@@ -329,6 +378,7 @@
   async function saveSettings() {
     try {
       const updates = [];
+
       $$('[data-setting]').forEach(el => {
         const key = el.dataset.setting;
         if (!key) return;
@@ -341,10 +391,8 @@
         updates.push({ key, value: val });
       });
 
-      // Features cards JSON
-      if (featuresCards.length > 0 || 'features_cards' in settings) {
-        updates.push({ key: 'features_cards', value: JSON.stringify(featuresCards) });
-      }
+      // ⚡ Features cards JSON — دائمًا احفظها
+      updates.push({ key: 'features_cards', value: featuresCards });
 
       if (!updates.length) {
         showToast('لا يوجد تغييرات', 'info');
@@ -374,7 +422,7 @@
 
     } catch (e) {
       console.error('saveSettings:', e);
-      showToast('فشل حفظ الإعدادات', 'error');
+      showToast('فشل حفظ الإعدادات: ' + (e.message || ''), 'error');
     }
   }
 
@@ -412,6 +460,13 @@
     // Backup
     const backupBtn = $('#backupBtn');
     if (backupBtn) backupBtn.addEventListener('click', exportBackup);
+
+    // ⚡ Feature buttons
+    const addFeatureBtn = $('#addFeatureBtn');
+    if (addFeatureBtn) addFeatureBtn.addEventListener('click', () => openFeatureModal(null));
+
+    const saveFeatureBtn = $('#saveFeatureBtn');
+    if (saveFeatureBtn) saveFeatureBtn.addEventListener('click', saveFeature);
   }
 
   function setupImageUpload(config) {
@@ -518,21 +573,30 @@
   }
 
   /* ============================================
-     FEATURES CARDS
+     ⚡ FEATURES CARDS
      ============================================ */
-  let featuresCards = [];
-
   function loadFeaturesFromSettings() {
     try {
       const raw = settings.features_cards;
       if (raw) {
         const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-        if (Array.isArray(parsed)) featuresCards = parsed;
+        if (Array.isArray(parsed)) {
+          featuresCards = parsed;
+        } else {
+          featuresCards = [];
+        }
+      } else {
+        featuresCards = [];
       }
     } catch (e) {
+      console.error('[Admin] loadFeaturesFromSettings error:', e);
       featuresCards = [];
     }
     renderFeaturesPreview();
+  }
+
+  function getIconByName(name) {
+    return ICONS[name] || ICONS.check;
   }
 
   function renderFeaturesPreview() {
@@ -540,7 +604,7 @@
     if (!list) return;
 
     if (!featuresCards.length) {
-      list.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-dim);">لا توجد كروت بعد. اضغط "إضافة كارت" لإضافة أول كارت.</div>';
+      list.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);">لا توجد كروت بعد. اضغط "إضافة كارت" لإضافة أول كارت.</div>';
       return;
     }
 
@@ -557,10 +621,10 @@
             <div class="feature-preview-text">${escapeHtml(c.text || '')}</div>
           </div>
           <div class="feature-preview-actions">
-            <button class="feature-action-btn edit" data-action="edit-feature" data-idx="${idx}" title="تعديل">
+            <button type="button" class="feature-action-btn edit" data-action="edit-feature" data-idx="${idx}" title="تعديل">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </button>
-            <button class="feature-action-btn delete" data-action="delete-feature" data-idx="${idx}" title="حذف">
+            <button type="button" class="feature-action-btn delete" data-action="delete-feature" data-idx="${idx}" title="حذف">
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </button>
           </div>
@@ -574,23 +638,6 @@
     list.querySelectorAll('[data-action="delete-feature"]').forEach(btn => {
       btn.addEventListener('click', () => deleteFeature(parseInt(btn.dataset.idx)));
     });
-  }
-
-  function getIconByName(name) {
-    const icons = {
-      zap: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
-      shield: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
-      eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
-      clock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-      code: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
-      users: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
-      check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
-      star: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
-      heart: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
-      award: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>',
-      trending: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>'
-    };
-    return icons[name] || icons.check;
   }
 
   function openFeatureModal(index = null) {
@@ -630,7 +677,7 @@
     const iconInput = document.getElementById('featureIcon');
     if (!picker || !iconInput) return;
 
-    const icons = ['zap', 'shield', 'eye', 'clock', 'code', 'users', 'check', 'star', 'heart', 'award', 'trending'];
+    const icons = ['zap', 'shield', 'eye', 'clock', 'code', 'users', 'star', 'heart', 'award', 'trending', 'smartphone', 'briefcase', 'graduation', 'activity', 'check'];
     const current = iconInput.value || 'zap';
 
     picker.innerHTML = icons.map(name => `
@@ -664,7 +711,13 @@
       return;
     }
 
-    const card = { icon, title, text, logo: logo || undefined };
+    const card = {
+      icon,
+      title,
+      text: text || ''
+    };
+
+    if (logo) card.logo = logo;
 
     if (index !== '' && index !== null && index !== undefined) {
       featuresCards[parseInt(index)] = card;
@@ -674,7 +727,7 @@
 
     renderFeaturesPreview();
     closeModal('featureModal');
-    showToast('تم الحفظ. لا تنسَ الضغط على "حفظ إعدادات الرئيسية"', 'info');
+    showToast('تم الحفظ — لا تنسَ الضغط على "حفظ إعدادات الرئيسية"', 'info');
   }
 
   window.saveFeature = saveFeature;
@@ -683,7 +736,7 @@
     if (!confirm('هل أنت متأكد من حذف هذا الكارت؟')) return;
     featuresCards.splice(index, 1);
     renderFeaturesPreview();
-    showToast('تم الحذف. لا تنسَ الحفظ', 'info');
+    showToast('تم الحذف — لا تنسَ الحفظ', 'info');
   }
 
   /* ============================================
@@ -743,29 +796,29 @@
                         : u.registration_source === 'admin' ? 'إضافة النقيب'
                         : (u.registration_source || '—');
 
-      let statusBadge = '';
+      let statusBadgeHTML = '';
       if (isPending) {
-        statusBadge = '<span class="status-badge pending"><span class="dot"></span>بانتظار التفعيل</span>';
+        statusBadgeHTML = '<span class="status-badge pending"><span class="dot"></span>بانتظار التفعيل</span>';
       } else {
-        statusBadge = '<span class="status-badge active"><span class="dot"></span>نشط</span>';
+        statusBadgeHTML = '<span class="status-badge active"><span class="dot"></span>نشط</span>';
       }
 
       let actionsHTML = '';
 
-      actionsHTML += `<button class="row-btn edit-btn" data-action="edit-user" data-id="${u.id}" title="تعديل">${ICONS.edit}</button>`;
+      actionsHTML += `<button type="button" class="row-btn edit-btn" data-action="edit-user" data-id="${u.id}" title="تعديل">${ICONS.edit}</button>`;
 
       if (!isMe) {
         if (isActive) {
-          actionsHTML += `<button class="row-btn pass-btn" data-action="deactivate-user" data-id="${u.id}" title="تعطيل" style="background:rgba(var(--warning-rgb),0.08);border:1px solid rgba(var(--warning-rgb),0.25);color:var(--warning);">
+          actionsHTML += `<button type="button" class="row-btn" data-action="deactivate-user" data-id="${u.id}" title="تعطيل" style="background:rgba(var(--warning-rgb),0.08);border:1px solid rgba(var(--warning-rgb),0.25);color:var(--warning);">
             <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           </button>`;
         } else if (isPending) {
-          actionsHTML += `<button class="row-btn approve-btn" data-action="activate-user" data-id="${u.id}" title="تفعيل">${ICONS.check}</button>`;
-          actionsHTML += `<button class="row-btn reject-btn" data-action="reject-user" data-id="${u.id}" title="رفض" style="background:rgba(var(--danger-rgb),0.08);border:1px solid rgba(var(--danger-rgb),0.25);color:var(--danger);">${ICONS.x}</button>`;
+          actionsHTML += `<button type="button" class="row-btn" data-action="activate-user" data-id="${u.id}" title="تفعيل" style="background:rgba(var(--success-rgb),0.08);border:1px solid rgba(var(--success-rgb),0.25);color:var(--success);">${ICONS.check}</button>`;
+          actionsHTML += `<button type="button" class="row-btn" data-action="reject-user" data-id="${u.id}" title="رفض" style="background:rgba(var(--danger-rgb),0.08);border:1px solid rgba(var(--danger-rgb),0.25);color:var(--danger);">${ICONS.x}</button>`;
         }
       }
 
-      actionsHTML += `<button class="row-btn delete-btn" data-action="delete-user" data-id="${u.id}" title="حذف" ${isMe ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''}>${ICONS.trash}</button>`;
+      actionsHTML += `<button type="button" class="row-btn delete-btn" data-action="delete-user" data-id="${u.id}" title="حذف" ${isMe ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''}>${ICONS.trash}</button>`;
 
       return `
         <tr style="border-bottom:1px solid var(--border-soft);${isPending ? 'background:rgba(var(--warning-rgb),0.03);' : ''}">
@@ -783,7 +836,7 @@
             <span style="display:inline-block;padding:3px 9px;background:rgba(var(--accent-rgb),0.06);border:1px solid rgba(var(--accent-rgb),0.18);border-radius:100px;font-size:10.5px;">${escapeHtml(sourceLabel)}</span>
           </td>
           <td style="padding:14px 12px;font-size:12px;color:var(--text-dim);">${escapeHtml(formatDate(u.last_login_at))}</td>
-          <td style="padding:14px 12px;">${statusBadge}</td>
+          <td style="padding:14px 12px;">${statusBadgeHTML}</td>
           <td style="padding:14px 12px;">
             <div class="row-actions">${actionsHTML}</div>
           </td>
@@ -925,8 +978,6 @@
           return;
         }
 
-        // Create user with Supabase Auth (using signup, then admin activate)
-        // ملاحظة: Supabase Admin API يحتاج Service Role. هنستخدم signup عادي
         const tempClient = window.supabase.createClient(
           window.SUPABASE_URL,
           window.SUPABASE_KEY,
@@ -1064,8 +1115,8 @@
         <td>${statusBadge(g.is_active !== false ? 'active' : 'disabled')}</td>
         <td>
           <div class="row-actions">
-            <button class="row-btn edit-btn" data-edit-gov="${g.id}">${ICONS.edit}</button>
-            <button class="row-btn delete-btn" data-del-gov="${g.id}">${ICONS.trash}</button>
+            <button type="button" class="row-btn edit-btn" data-edit-gov="${g.id}">${ICONS.edit}</button>
+            <button type="button" class="row-btn delete-btn" data-del-gov="${g.id}">${ICONS.trash}</button>
           </div>
         </td>
       </tr>
@@ -1308,8 +1359,8 @@
         <td>${statusBadge(t.is_active !== false ? 'active' : 'disabled')}</td>
         <td>
           <div class="row-actions">
-            <button class="row-btn edit-btn" data-edit-type="${t.id}">${ICONS.edit}</button>
-            <button class="row-btn delete-btn" data-del-type="${t.id}">${ICONS.trash}</button>
+            <button type="button" class="row-btn edit-btn" data-edit-type="${t.id}">${ICONS.edit}</button>
+            <button type="button" class="row-btn delete-btn" data-del-type="${t.id}">${ICONS.trash}</button>
           </div>
         </td>
       </tr>
@@ -1437,8 +1488,8 @@
         <td>${statusBadge(b.is_active !== false ? 'active' : 'disabled')}</td>
         <td>
           <div class="row-actions">
-            <button class="row-btn edit-btn" data-edit-branch="${b.id}">${ICONS.edit}</button>
-            <button class="row-btn delete-btn" data-del-branch="${b.id}">${ICONS.trash}</button>
+            <button type="button" class="row-btn edit-btn" data-edit-branch="${b.id}">${ICONS.edit}</button>
+            <button type="button" class="row-btn delete-btn" data-del-branch="${b.id}">${ICONS.trash}</button>
           </div>
         </td>
       </tr>
@@ -1560,8 +1611,8 @@
         <td>${statusBadge(c.is_active !== false ? 'active' : 'disabled')}</td>
         <td>
           <div class="row-actions">
-            <button class="row-btn edit-btn" data-edit-expcat="${c.id}">${ICONS.edit}</button>
-            <button class="row-btn delete-btn" data-del-expcat="${c.id}">${ICONS.trash}</button>
+            <button type="button" class="row-btn edit-btn" data-edit-expcat="${c.id}">${ICONS.edit}</button>
+            <button type="button" class="row-btn delete-btn" data-del-expcat="${c.id}">${ICONS.trash}</button>
           </div>
         </td>
       </tr>
@@ -1769,7 +1820,7 @@
       const backup = {
         exported_at: new Date().toISOString(),
         exported_by: currentUser?.email || null,
-        version: '3.0.0',
+        version: '3.1.0',
         data: {
           settings: settingsRes.data || [],
           membership_types: typesRes.data || [],
@@ -1812,39 +1863,145 @@
   }
 
   /* ============================================
-     ICONS LIBRARY
-     ============================================ */
-  const ICONS = {
-    edit: '<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
-    trash: '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
-    check: '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
-    x: '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
-  };
-
-  /* ============================================
      REALTIME
      ============================================ */
   function initRealtime() {
-    if (!window.Realtime) return;
+    if (!window.Realtime || typeof window.Realtime.watchMany !== 'function') {
+      console.warn('[Admin] Realtime not available');
+      return;
+    }
 
     try {
       unsubscribeRealtime = window.Realtime.watchMany(
         ['users', 'governorates', 'membership_types', 'branches', 'expense_categories', 'settings'],
         (payload, table) => {
-          if (activeTab === 'users' && table === 'users') renderUsers();
+          // ⚡ Users: تحديث خفيف
+          if (activeTab === 'users' && table === 'users') {
+            refreshUsersUI();
+          }
+
+          // ⚡ Governorates
           if (activeTab === 'governorates' && table === 'governorates') {
             governorates = [];
             loadGovernorates();
           }
-          if (activeTab === 'types' && table === 'membership_types') loadTypes();
-          if (activeTab === 'branches' && table === 'branches') loadBranches();
-          if (activeTab === 'expense-categories' && table === 'expense_categories') loadExpenseCategories();
-          if ((activeTab === 'settings' || activeTab === 'home') && table === 'settings') loadSettings();
+
+          // ⚡ Types
+          if (activeTab === 'types' && table === 'membership_types') {
+            loadTypes();
+          }
+
+          // ⚡ Branches
+          if (activeTab === 'branches' && table === 'branches') {
+            loadBranches();
+          }
+
+          // ⚡ Expense Categories
+          if (activeTab === 'expense-categories' && table === 'expense_categories') {
+            loadExpenseCategories();
+          }
+
+          // ⚡ Settings: تحديث خفيف — بدون إعادة تحميل الصفحة
+          if ((activeTab === 'settings' || activeTab === 'home') && table === 'settings') {
+            refreshSettingsUI();
+          }
         },
-        { debounceMs: 600 }
+        { debounceMs: 800 }
       );
     } catch (e) {
       console.warn('Realtime init skipped:', e);
+    }
+  }
+
+  /**
+   * ⚡ تحديث خفيف للمستخدمين — بدون إعادة تحميل الصفحة
+   */
+  async function refreshUsersUI() {
+    try {
+      const { data, error } = await client
+        .from('users')
+        .select('id, full_name, email, phone, role, position, governorate_id, is_active, registration_source, last_login_at, created_at')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      users = data || [];
+      renderUsers();
+    } catch (e) {
+      console.error('[Admin] refreshUsersUI:', e);
+    }
+  }
+
+  /**
+   * ⚡ تحديث خفيف للإعدادات — من غير ما نلمس اللي المستخدم بيكتبه
+   */
+  async function refreshSettingsUI() {
+    try {
+      const { data, error } = await client
+        .from('settings')
+        .select('key, value');
+      if (error) throw error;
+
+      const map = {};
+      (data || []).forEach(r => { map[r.key] = r.value; });
+
+      Object.keys(map).forEach(key => {
+        const newVal = map[key];
+        const oldVal = settings[key];
+
+        // لو نفس القيمة، تجاهل
+        if (JSON.stringify(newVal) === JSON.stringify(oldVal)) return;
+
+        settings[key] = newVal;
+
+        // ⚡ حدّث الـ inputs اللي مش في focus
+        $$(`[data-setting="${key}"]`).forEach(el => {
+          if (document.activeElement === el) return; // متلمسش اللي المستخدم بيكتب فيه
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
+            if (el.type === 'checkbox') {
+              el.checked = newVal === true || newVal === 'true' || newVal === '1';
+            } else {
+              el.value = (typeof newVal === 'object') ? JSON.stringify(newVal) : (newVal ?? '');
+            }
+          }
+        });
+
+        // ⚡ حدّث الـ previews
+        if (key === 'site_logo_url' || key === 'logo_url') {
+          const lp = $('#logoPreview');
+          if (lp) {
+            if (newVal) {
+              lp.innerHTML = `<img src="${escapeHtml(newVal)}" alt="logo" />`;
+              lp.classList.add('has-logo');
+            } else {
+              lp.innerHTML = '';
+              lp.classList.remove('has-logo');
+            }
+          }
+        }
+
+        if (key === 'head_photo_url') {
+          const hp = $('#headPhotoPreview');
+          if (hp) {
+            if (newVal) {
+              hp.innerHTML = `<img src="${escapeHtml(newVal)}" alt="head" />`;
+              hp.classList.add('has-photo');
+            } else {
+              hp.innerHTML = '';
+              hp.classList.remove('has-photo');
+            }
+          }
+        }
+
+        // ⚡ features_cards — أعد تحميل المعاينة
+        if (key === 'features_cards') {
+          loadFeaturesFromSettings();
+        }
+      });
+
+      console.log('[Admin] Settings refreshed (light)');
+    } catch (e) {
+      console.error('[Admin] refreshSettingsUI:', e);
     }
   }
 
@@ -1875,15 +2032,8 @@
       initAuditTab();
       initNavbar();
 
-      // Feature modal buttons
-      const addFeatureBtn = document.getElementById('addFeatureBtn');
-      if (addFeatureBtn) addFeatureBtn.addEventListener('click', () => openFeatureModal(null));
-
-      const saveFeatureBtn = document.getElementById('saveFeatureBtn');
-      if (saveFeatureBtn) saveFeatureBtn.addEventListener('click', saveFeature);
-
       // Modal backdrops
-      ['userModal', 'typeModal', 'branchModal', 'govModal', 'expCatModal', 'featureModal', 'positionModal'].forEach(id => {
+      ['userModal', 'typeModal', 'branchModal', 'govModal', 'expCatModal', 'featureModal', 'positionModal', 'changePasswordModal'].forEach(id => {
         const m = document.getElementById(id);
         if (m) {
           m.addEventListener('click', (e) => {
@@ -1894,7 +2044,7 @@
 
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-          ['userModal', 'typeModal', 'branchModal', 'govModal', 'expCatModal', 'featureModal', 'positionModal'].forEach(closeModal);
+          ['userModal', 'typeModal', 'branchModal', 'govModal', 'expCatModal', 'featureModal', 'positionModal', 'changePasswordModal'].forEach(closeModal);
         }
       });
 
