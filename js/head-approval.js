@@ -1,11 +1,12 @@
 /* =====================================================
    IT SYNDICATE — HEAD APPROVAL LOGIC
    Version: 3.0.0
+   Path: js/head-approval.js
    =====================================================
    يحتوي على:
    - Auth + Role check (head / vp / deputy)
    - 6 كروت إحصائية
-   - جدول الطلبات المعتمدة (paid → delivered)
+   - جدول الطلبات المعتمدة
    - Assign Modal (إصدار رقم العضوية)
    - Card Upload Modal (رفع صورة الكارنية)
    - Detail Modal
@@ -24,9 +25,6 @@
   const MAX_CARD_SIZE = 5 * 1024 * 1024;
   const ALLOWED_CARD_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
-  /* ============================================
-     STATUS MAP
-     ============================================ */
   const STATUS_MAP = {
     'paid':                     { label: 'تم الدفع',                 cls: 'status-paid' },
     'awaiting_membership_no':   { label: 'بانتظار رقم العضوية',      cls: 'status-awaiting' },
@@ -133,7 +131,7 @@
   }
 
   /* ============================================
-     SVG ICONS
+     ICONS
      ============================================ */
   const ICONS = {
     approve: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
@@ -144,12 +142,11 @@
     chevronLeft: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>',
     chevronRight: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>',
     inbox: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>',
-    close: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
     check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"/></svg>'
   };
 
   /* ============================================
-     AUTH CHECK
+     AUTH
      ============================================ */
   async function checkAuth() {
     try {
@@ -197,7 +194,7 @@
   }
 
   /* ============================================
-     LOAD LOOKUPS
+     LOOKUPS
      ============================================ */
   async function loadLookups() {
     try {
@@ -232,14 +229,13 @@
           govFilter.appendChild(opt);
         });
       }
-
     } catch (err) {
       console.error('[HeadApproval] Lookups error:', err);
     }
   }
 
   /* ============================================
-     LOAD STATS
+     STATS
      ============================================ */
   async function loadStats() {
     try {
@@ -285,7 +281,6 @@
       setNum('statCardReady', counts.card_ready);
       setNum('statDelivered', counts.delivered);
       setNum('statTotal', counts.total);
-
     } catch (e) {
       console.error('[HeadApproval] Stats error:', e);
     }
@@ -357,7 +352,6 @@
 
       const countEl = document.getElementById('tableCount');
       if (countEl) countEl.textContent = `${totalCount} طلب`;
-
     } catch (err) {
       console.error('[HeadApproval] Load error:', err);
       if (tbody) {
@@ -587,13 +581,13 @@
   }
 
   /* ============================================
-     GENERATE MEMBERSHIP NO
+     ASSIGN MEMBERSHIP NO
      ============================================ */
   async function generateMembershipNo(branchId) {
     try {
       let prefix = 'MEM';
-      if (window.SettingsManager) {
-        prefix = window.SettingsManager.get('membership_no_prefix', 'MEM');
+      if (window.SettingsManager?.get) {
+        prefix = window.SettingsManager.get('membership_no_prefix', 'MEM') || 'MEM';
       }
 
       const year = new Date().getFullYear();
@@ -621,9 +615,6 @@
     }
   }
 
-  /* ============================================
-     ASSIGN MODAL
-     ============================================ */
   async function openAssignModal(appId) {
     const modal = document.getElementById('assignModal');
     if (!modal) return;
@@ -754,10 +745,9 @@
 
       showToast(`تم اعتماد رقم العضوية: ${membershipNo}`, 'success');
 
-      closeAssignModal();
+      window.closeAssignModal();
       await loadApplications();
       await loadStats();
-
     } catch (err) {
       console.error('[HeadApproval] Assign error:', err);
       showToast('فشل: ' + err.message, 'error');
@@ -770,7 +760,7 @@
   }
 
   /* ============================================
-     CARD MODAL
+     CARD UPLOAD
      ============================================ */
   function openCardModal(appId) {
     const modal = document.getElementById('cardModal');
@@ -917,10 +907,9 @@
 
       showToast('تم رفع صورة الكارنية بنجاح', 'success');
 
-      closeCardModal();
+      window.closeCardModal();
       await loadApplications();
       await loadStats();
-
     } catch (err) {
       console.error('[HeadApproval] Card error:', err);
       showToast('فشل: ' + err.message, 'error');
@@ -958,7 +947,7 @@
           </div>
         </div>
         <button onclick="closeDetailModal()" style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;">
-          <span style="width:16px;height:16px;display:inline-flex;">${ICONS.close}</span>
+          <span style="width:16px;height:16px;display:inline-flex;">${ICONS.check}</span>
         </button>
       </div>
 
@@ -1087,7 +1076,7 @@
   }
 
   /* ============================================
-     SETUP LISTENERS
+     LISTENERS
      ============================================ */
   function setupListeners() {
     document.querySelectorAll('[data-filter]').forEach(card => {
