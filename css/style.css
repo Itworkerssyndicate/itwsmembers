@@ -1521,3 +1521,38 @@ table tbody tr:last-child td {
     animation: none !important;
   }
 }
+
+/* ============================================
+   MOBILE BUTTON FIX
+   ============================================ */
+
+.btn {
+  white-space: normal !important;
+  max-width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.hero-actions .btn,
+.cta-actions .btn {
+  min-width: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .hero-actions,
+  .cta-actions,
+  .save-bar-actions,
+  .modal-footer-custom {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 10px !important;
+  }
+  
+  .hero-actions .btn,
+  .cta-actions .btn,
+  .save-bar-actions .btn,
+  .modal-footer-custom .btn {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
