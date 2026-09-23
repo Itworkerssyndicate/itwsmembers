@@ -1,12 +1,13 @@
 /* =====================================================
    IT SYNDICATE — ADMIN LOGIC
-   Version: 3.1.0
+   Version: 3.2.0
    Path: js/admin.js
    =====================================================
    يحتوي على:
    - Auth + Role check (head / vp / deputy)
    - Tab management (10 tabs)
    - Settings: تحميل + حفظ + شعار + صورة النقيب + backup
+   - ⚡ About Card: شعار + عنوان + نص + toggle
    - Home: تحميل + حفظ إعدادات الرئيسية
    - ⚡ Features Cards: إضافة/تعديل/حذف/معاينة
    - Users: CRUD + فلاتر + تفعيل/تعطيل/رفض + تغيير باسورد
@@ -72,7 +73,6 @@
     trash: '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
     check: '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
     x: '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-    // Feature icons
     zap: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
     shield: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
     eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
@@ -312,10 +312,7 @@
 
       const map = {};
       (data || []).forEach(r => {
-        let v = r.value;
-        // لو JSONB object أو array → خزنه كما هو
-        // لو string → خزنه كنص
-        map[r.key] = v;
+        map[r.key] = r.value;
       });
       settings = map;
 
@@ -325,18 +322,15 @@
         if (!(key in map)) return;
         const val = map[key];
 
-        // لو العنصر input/textarea/select
         if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
           if (el.type === 'checkbox') {
             el.checked = val === true || val === 'true' || val === '1';
           } else {
-            // متلمسش اللي المستخدم بيكتب فيه
             if (document.activeElement !== el) {
               el.value = (typeof val === 'object') ? JSON.stringify(val) : (val ?? '');
             }
           }
         } else {
-          // عنصر نصي
           if (typeof val !== 'object') {
             const str = String(val ?? '');
             if (el.textContent.trim() !== str.trim()) {
@@ -346,7 +340,7 @@
         }
       });
 
-      // Logo preview
+      // ⚡ Logo preview
       const logoUrl = map.site_logo_url || map.logo_url;
       if (logoUrl) {
         const lp = $('#logoPreview');
@@ -356,13 +350,23 @@
         }
       }
 
-      // Head photo preview
+      // ⚡ Head photo preview
       const headUrl = map.head_photo_url;
       if (headUrl) {
         const hp = $('#headPhotoPreview');
         if (hp) {
           hp.innerHTML = `<img src="${escapeHtml(headUrl)}" alt="head" />`;
           hp.classList.add('has-photo');
+        }
+      }
+
+      // ⚡ About logo preview
+      const aboutLogo = map.about_card_logo;
+      if (aboutLogo) {
+        const al = $('#aboutLogoPreview');
+        if (al) {
+          al.innerHTML = `<img src="${escapeHtml(aboutLogo)}" alt="" />`;
+          al.classList.add('has-logo');
         }
       }
 
@@ -391,7 +395,7 @@
         updates.push({ key, value: val });
       });
 
-      // ⚡ Features cards JSON — دائمًا احفظها
+      // ⚡ Features cards JSON — احفظها دايمًا
       updates.push({ key: 'features_cards', value: featuresCards });
 
       if (!updates.length) {
@@ -455,6 +459,18 @@
       previewClass: 'has-photo',
       allowedTypes: ALLOWED_PHOTO_TYPES,
       label: 'صورة النقيب'
+    });
+
+    // ⚡ About logo upload
+    setupImageUpload({
+      btnId: 'uploadAboutLogoBtn',
+      inputId: 'aboutLogoFileInput',
+      removeId: 'removeAboutLogoBtn',
+      settingKey: 'about_card_logo',
+      previewId: 'aboutLogoPreview',
+      previewClass: 'has-logo',
+      allowedTypes: ALLOWED_LOGO_TYPES,
+      label: 'شعار قسم "عن النقابة"'
     });
 
     // Backup
@@ -844,7 +860,6 @@
       `;
     }).join('');
 
-    // Bind
     tbody.querySelectorAll('[data-action="edit-user"]').forEach(b => {
       b.addEventListener('click', () => openUserModal(b.dataset.id));
     });
@@ -1820,7 +1835,7 @@
       const backup = {
         exported_at: new Date().toISOString(),
         exported_by: currentUser?.email || null,
-        version: '3.1.0',
+        version: '3.2.0',
         data: {
           settings: settingsRes.data || [],
           membership_types: typesRes.data || [],
@@ -1875,33 +1890,27 @@
       unsubscribeRealtime = window.Realtime.watchMany(
         ['users', 'governorates', 'membership_types', 'branches', 'expense_categories', 'settings'],
         (payload, table) => {
-          // ⚡ Users: تحديث خفيف
           if (activeTab === 'users' && table === 'users') {
             refreshUsersUI();
           }
 
-          // ⚡ Governorates
           if (activeTab === 'governorates' && table === 'governorates') {
             governorates = [];
             loadGovernorates();
           }
 
-          // ⚡ Types
           if (activeTab === 'types' && table === 'membership_types') {
             loadTypes();
           }
 
-          // ⚡ Branches
           if (activeTab === 'branches' && table === 'branches') {
             loadBranches();
           }
 
-          // ⚡ Expense Categories
           if (activeTab === 'expense-categories' && table === 'expense_categories') {
             loadExpenseCategories();
           }
 
-          // ⚡ Settings: تحديث خفيف — بدون إعادة تحميل الصفحة
           if ((activeTab === 'settings' || activeTab === 'home') && table === 'settings') {
             refreshSettingsUI();
           }
@@ -1914,7 +1923,7 @@
   }
 
   /**
-   * ⚡ تحديث خفيف للمستخدمين — بدون إعادة تحميل الصفحة
+   * ⚡ تحديث خفيف للمستخدمين
    */
   async function refreshUsersUI() {
     try {
@@ -1933,7 +1942,7 @@
   }
 
   /**
-   * ⚡ تحديث خفيف للإعدادات — من غير ما نلمس اللي المستخدم بيكتبه
+   * ⚡ تحديث خفيف للإعدادات
    */
   async function refreshSettingsUI() {
     try {
@@ -1949,14 +1958,12 @@
         const newVal = map[key];
         const oldVal = settings[key];
 
-        // لو نفس القيمة، تجاهل
         if (JSON.stringify(newVal) === JSON.stringify(oldVal)) return;
 
         settings[key] = newVal;
 
-        // ⚡ حدّث الـ inputs اللي مش في focus
         $$(`[data-setting="${key}"]`).forEach(el => {
-          if (document.activeElement === el) return; // متلمسش اللي المستخدم بيكتب فيه
+          if (document.activeElement === el) return;
           if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
             if (el.type === 'checkbox') {
               el.checked = newVal === true || newVal === 'true' || newVal === '1';
@@ -1966,7 +1973,7 @@
           }
         });
 
-        // ⚡ حدّث الـ previews
+        // ⚡ Logo previews
         if (key === 'site_logo_url' || key === 'logo_url') {
           const lp = $('#logoPreview');
           if (lp) {
@@ -1993,7 +2000,21 @@
           }
         }
 
-        // ⚡ features_cards — أعد تحميل المعاينة
+        // ⚡ About logo preview
+        if (key === 'about_card_logo') {
+          const al = $('#aboutLogoPreview');
+          if (al) {
+            if (newVal) {
+              al.innerHTML = `<img src="${escapeHtml(newVal)}" alt="" />`;
+              al.classList.add('has-logo');
+            } else {
+              al.innerHTML = '';
+              al.classList.remove('has-logo');
+            }
+          }
+        }
+
+        // ⚡ Features cards
         if (key === 'features_cards') {
           loadFeaturesFromSettings();
         }
