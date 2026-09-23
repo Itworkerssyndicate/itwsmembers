@@ -1,15 +1,15 @@
 /* =====================================================
    IT SYNDICATE — SETTINGS MANAGER
-   Version: 3.1.0
+   Version: 3.2.0
    Path: js/settings.js
    =====================================================
    يحتوي على:
    - تحميل الإعدادات من Supabase
-   - تطبيقها على DOM (data-site-name / data-setting / ...)
-   - مزامنة Realtime
+   - تطبيقها على DOM (data-setting / data-site-name / ...)
+   - مزامنة Realtime خفيفة
    - تخزين مؤقت في localStorage
-   - دعم events + broadcast
-   - منع applyToDom المتكرر
+   - منع applyToDom المتكرر (hash)
+   - دعم about_card + features_cards
    ===================================================== */
 
 (function () {
@@ -66,10 +66,9 @@
   function applyToDom(s) {
     if (!s) return;
 
-    // ⚡ منع applyToDom المتكرر بنفس القيم
+    // منع applyToDom المتكرر بنفس القيم
     const newHash = hashSettings(s);
     if (newHash === lastApplyHash) {
-      // حتى لو نفس الـ hash، بس لازم نطلق event عشان الصفحات التانية
       window.dispatchEvent(new CustomEvent('settings-applied', { detail: { settings: s } }));
       return;
     }
@@ -315,7 +314,7 @@
     setText('[data-terms-text]', s.terms_text);
 
     /* ==========================================
-       ⚡ GENERIC: [data-setting] — نمط home.html
+       ⚡ GENERIC: [data-setting] — النمط العام
        ========================================== */
     document.querySelectorAll('[data-setting]').forEach(el => {
       const key = el.dataset.setting;
@@ -371,7 +370,44 @@
     });
 
     /* ==========================================
-       Health Care
+       ⚡ About Card — شعار القسم
+       ========================================== */
+    const aboutLogo = s.about_card_logo;
+    if (aboutLogo) {
+      const aboutImg = document.getElementById('aboutLogoImg');
+      const aboutFb = document.getElementById('aboutLogoFallback');
+      if (aboutImg) {
+        if (aboutImg.dataset.currentSrc !== aboutLogo) {
+          aboutImg.dataset.currentSrc = aboutLogo;
+          aboutImg.onload = () => {
+            aboutImg.style.display = 'block';
+            if (aboutFb) aboutFb.style.display = 'none';
+          };
+          aboutImg.onerror = () => {
+            aboutImg.style.display = 'none';
+            if (aboutFb) aboutFb.style.display = 'block';
+          };
+          aboutImg.src = aboutLogo;
+        }
+      }
+    }
+
+    /* ==========================================
+       ⚡ Features Cards — عنوان القسم
+       ========================================== */
+    if (s.features_title) {
+      document.querySelectorAll('[data-features-title]').forEach(el => {
+        setTextIfChanged(el, s.features_title);
+      });
+    }
+    if (s.features_subtitle) {
+      document.querySelectorAll('[data-features-subtitle]').forEach(el => {
+        setTextIfChanged(el, s.features_subtitle);
+      });
+    }
+
+    /* ==========================================
+       ⚡ Health Care
        ========================================== */
     if (s.health_care_enabled === 'false' || s.health_care_enabled === false) {
       document.querySelectorAll('[data-health-care-section]').forEach(el => {
@@ -380,7 +416,7 @@
     }
 
     /* ==========================================
-       Maintenance Mode
+       ⚡ Maintenance Mode
        ========================================== */
     const isMaintenance = s.maintenance_mode === 'true' || s.maintenance_mode === true;
     if (isMaintenance) {
@@ -446,7 +482,7 @@
               localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
             } catch (e) {}
 
-            // ⚡ Dispatch settings-ready
+            // Dispatch settings-ready
             window.dispatchEvent(new CustomEvent('settings-ready', {
               detail: { settings }
             }));
@@ -497,9 +533,8 @@
   function setupRealtime() {
     if (realtimeSetup) return;
 
-    // ⚡ نستخدم window.Realtime مش window.watch
+    // نستخدم window.Realtime
     if (!window.Realtime || typeof window.Realtime.watch !== 'function') {
-      // حاول تاني بعد شوية
       setTimeout(setupRealtime, 500);
       return;
     }
@@ -511,7 +546,6 @@
         if (typeof window.clearSettingsCache === 'function') {
           window.clearSettingsCache();
         }
-        // ⚡ force reload بس
         isLoaded = false;
         await load(true);
       }, { debounceMs: 800 });
@@ -531,7 +565,7 @@
     // 2) Realtime
     setupRealtime();
 
-    // 3) Sync from Supabase (مرة واحدة بس)
+    // 3) Sync from Supabase (مرة واحدة)
     const doFreshLoad = () => {
       if (!isFreshLoaded) {
         load(true);
