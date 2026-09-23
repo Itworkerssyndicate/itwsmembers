@@ -1,5 +1,18 @@
 /* =====================================================
-   IT SYNDICATE — Social Committee Logic
+   IT SYNDICATE — SOCIAL COMMITTEE LOGIC
+   Version: 3.0.0
+   Path: js/social-committee.js
+   =====================================================
+   يحتوي على:
+   - Auth + Role check (social_committee_head / vice)
+   - 5 كروت إحصائية (إجمالي / رعاية / سارية / تنتهي قريبًا / منتهية)
+   - 3 تابات:
+     1. كل الأعضاء
+     2. الرعاية الصحية
+     3. تقرير الرعاية حسب المحافظة
+   - Member Detail Modal
+   - Realtime
+   - Export CSV (للأعضاء + للرعاية)
    ===================================================== */
 
 (function () {
@@ -80,7 +93,7 @@
     return b?.name || '—';
   }
 
-  function getMembershipTypeName(typeId) {
+  function getTypeName(typeId) {
     const t = membershipTypes.find(x => String(x.id) === String(typeId));
     return t?.name || '—';
   }
@@ -102,15 +115,26 @@
     return { label: 'سارية', cls: 'hc-date-active', key: 'active' };
   }
 
+  function getCardStatusLabel(status) {
+    const map = {
+      'not_issued': 'لم يتم الإصدار',
+      'processing': 'جاري التجهيز',
+      'ready': 'جاهز',
+      'delivered': 'تم الاستلام'
+    };
+    return map[status] || 'غير محدد';
+  }
+
   /* ============================================
      SVG ICONS
      ============================================ */
   const ICONS = {
     eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
-    health: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
     inbox: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>',
     chevronLeft: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>',
-    chevronRight: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>'
+    chevronRight: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>',
+    close: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
   };
 
   /* ============================================
@@ -315,24 +339,20 @@
         .select('*', { count: 'exact' })
         .eq('is_active', true);
 
-      // Governorate
       if (filters.governorate && filters.governorate !== 'all') {
         query = query.eq('governorate', filters.governorate);
       }
 
-      // Branch
       if (filters.branch && filters.branch !== 'all') {
         query = query.eq('branch_id', parseInt(filters.branch));
       }
 
-      // HC filter
       if (filters.hc === 'yes') {
         query = query.eq('has_health_care', true);
       } else if (filters.hc === 'no') {
         query = query.eq('has_health_care', false);
       }
 
-      // Search
       if (filters.search) {
         const s = filters.search.trim();
         query = query.or(
@@ -432,7 +452,7 @@
             ${hasHC ? `
               <div style="display:flex;flex-direction:column;gap:4px;">
                 <span class="hc-badge">
-                  ${ICONS.health}
+                  ${ICONS.heart}
                   <span>نعم</span>
                 </span>
                 <span class="hc-dates ${hcStatus.cls}">${escapeHtml(hcStatus.label)}</span>
@@ -452,7 +472,6 @@
       `;
     }).join('');
 
-    // Row click
     tbody.querySelectorAll('tr[data-id]').forEach(tr => {
       tr.addEventListener('click', (e) => {
         if (e.target.closest('.row-btn')) return;
@@ -540,7 +559,7 @@
         <tr>
           <td colspan="8" style="text-align:center;padding:60px 20px;">
             <div style="display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--text-dim);">
-              <span style="width:48px;height:48px;display:inline-flex;">${ICONS.health}</span>
+              <span style="width:48px;height:48px;display:inline-flex;">${ICONS.heart}</span>
               <div style="font-size:15px;">لا يوجد أعضاء لهم رعاية صحية</div>
             </div>
           </td>
@@ -601,7 +620,6 @@
       `;
     }).join('');
 
-    // Row click
     tbody.querySelectorAll('tr[data-id]').forEach(tr => {
       tr.addEventListener('click', (e) => {
         if (e.target.closest('.row-btn')) return;
@@ -806,7 +824,7 @@
       if (error || !m) throw new Error('لم يتم العثور على العضو');
 
       const branchName = getBranchName(m.branch_id);
-      const typeName = getMembershipTypeName(m.membership_type_id);
+      const typeName = getTypeName(m.membership_type_id);
 
       body.innerHTML = `
         <div style="animation:fadeUp 0.3s;">
@@ -820,7 +838,7 @@
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 ${m.membership_no ? `<span class="mno-badge">${escapeHtml(m.membership_no)}</span>` : ''}
-                ${m.has_health_care ? `<span class="hc-badge">${ICONS.health}<span>رعاية صحية</span></span>` : ''}
+                ${m.has_health_care ? `<span class="hc-badge">${ICONS.heart}<span>رعاية صحية</span></span>` : ''}
               </div>
             </div>
           </div>
@@ -857,7 +875,7 @@
 
           ${m.has_health_care ? `
             <h4 style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;color:#ec4899;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
-              ${ICONS.health}
+              ${ICONS.heart}
               الرعاية الصحية
             </h4>
             <div class="detail-grid">
@@ -1009,7 +1027,6 @@
      LISTENERS
      ============================================ */
   function setupListeners() {
-    // Branch filter
     const branchFilter = document.getElementById('branchFilter');
     if (branchFilter) {
       branchFilter.addEventListener('change', (e) => {
@@ -1019,7 +1036,6 @@
       });
     }
 
-    // Gov filter
     const govFilter = document.getElementById('govFilter');
     if (govFilter) {
       govFilter.addEventListener('change', (e) => {
@@ -1029,7 +1045,6 @@
       });
     }
 
-    // HC filter
     const hcFilter = document.getElementById('hcFilter');
     if (hcFilter) {
       hcFilter.addEventListener('change', (e) => {
@@ -1039,7 +1054,6 @@
       });
     }
 
-    // Search
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
       let t = null;
@@ -1053,7 +1067,6 @@
       });
     }
 
-    // Refresh
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) {
       refreshBtn.addEventListener('click', async () => {
@@ -1066,7 +1079,6 @@
       });
     }
 
-    // Refresh HC
     const refreshHCBtn = document.getElementById('refreshHCBtn');
     if (refreshHCBtn) {
       refreshHCBtn.addEventListener('click', async () => {
@@ -1078,14 +1090,12 @@
       });
     }
 
-    // Export
     const exportBtn = document.getElementById('exportBtn');
     if (exportBtn) exportBtn.addEventListener('click', exportCSV);
 
     const exportHCBtn = document.getElementById('exportHCBtn');
     if (exportHCBtn) exportHCBtn.addEventListener('click', exportHC_CSV);
 
-    // Logout
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
@@ -1095,7 +1105,6 @@
       });
     }
 
-    // Modal backdrop
     const modal = document.getElementById('memberModal');
     if (modal) {
       modal.addEventListener('click', (e) => {
