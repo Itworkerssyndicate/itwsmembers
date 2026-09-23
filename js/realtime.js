@@ -1,431 +1,449 @@
 /* =====================================================
-   IT SYNDICATE — REALTIME MANAGER
+   IT SYNDICATE — REALTIME ENGINE
    Version: 3.0.0
    Path: js/realtime.js
    =====================================================
-   يحتوي على:
-   - watch (مراقبة جدول كامل)
-   - watchRow (مراقبة صف واحد)
-   - watchMany (مراقبة عدة جداول)
-   - watchManyAndReload (مراقبة + reload callback)
-   - broadcast (إرسال رسائل للتابات التانية)
-   - debounce للحماية من السبام
-   - cleanup تلقائي
+   يوفر:
+   - watch()       : مراقبة جدول واحد
+   - watchMany()   : مراقبة عدة جداول
+   - unwatch()     : إيقاف مراقبة جدول
+   - unwatchAll()  : إيقاف كل المراقبات
+   - sendBroadcast(): إرسال حدث لباقي التابات
+   - onBroadcast() : الاستماع لأحداث التابات
+   - Debounce ذكي لمنع refresh المتكرر
    ===================================================== */
 
 (function () {
   'use strict';
 
   /* ============================================
-     CONSTANTS
-     ============================================ */
-  const BROADCAST_CHANNEL = 'its_global_broadcast';
-  const DEFAULT_DEBOUNCE = 400;
-
-  /* ============================================
      STATE
      ============================================ */
+  const channels = new Map();       // key -> channel object
+  const debounceTimers = new Map(); // key -> timeout id
+  const broadcastListeners = new Map(); // event -> Set of callbacks
+
+  let broadcastChannel = null;
   let client = null;
   let isReady = false;
-  const channels = new Map(); // channelName -> channel
-  const watchers = new Map(); // watcherId -> { channel, cleanup }
-  let broadcastChannel = null;
-  let watcherCounter = 0;
+  let initRetries = 0;
+  const MAX_INIT_RETRIES = 50;
 
   /* ============================================
      HELPERS
      ============================================ */
+  function safeString(v) {
+    try {
+      return String(v ?? '');
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function makeKey(table, filter) {
+    if (!filter) return `rt:${table}`;
+    // filter object -> stable string
+    const parts = Object.keys(filter)
+      .sort()
+      .map(k => `${k}=${safeString(filter[k])}`)
+      .join('&');
+    return `rt:${table}?${parts}`;
+  }
+
+  function debounce(key, fn, ms) {
+    const delay = Math.max(50, Number(ms) || 300);
+    if (debounceTimers.has(key)) {
+      clearTimeout(debounceTimers.get(key));
+    }
+    const t = setTimeout(() => {
+      debounceTimers.delete(key);
+      try {
+        fn();
+      } catch (e) {
+        console.error(`[Realtime] debounced callback error (${key}):`, e);
+      }
+    }, delay);
+    debounceTimers.set(key, t);
+  }
+
   function log(...args) {
-    if (window.ITS_DEBUG) console.log('[Realtime]', ...args);
+    // غيّرها لـ console.log لو محتاج تشوف اللوجات
+    // console.log('[Realtime]', ...args);
   }
 
   function warn(...args) {
     console.warn('[Realtime]', ...args);
   }
 
-  function genId(prefix) {
-    watcherCounter++;
-    return `${prefix}-${Date.now()}-${watcherCounter}`;
-  }
-
-  function debounce(fn, delay) {
-    let timer = null;
-    return function (...args) {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn.apply(this, args), delay);
-    };
-  }
-
   /* ============================================
-     GET OR CREATE CHANNEL
+     BROADCAST CHANNEL
      ============================================ */
-  function getChannel(name) {
-    if (channels.has(name)) {
-      return channels.get(name);
-    }
-
-    if (!client) {
-      warn('Client not ready');
-      return null;
-    }
-
-    const channel = client.channel(name);
-    channels.set(name, channel);
-
-    channel.subscribe((status, err) => {
-      log(`Channel "${name}" status:`, status);
-      if (err) warn(`Channel "${name}" error:`, err);
-    });
-
-    return channel;
-  }
-
-  function removeChannel(name) {
-    if (channels.has(name)) {
-      try {
-        const ch = channels.get(name);
-        client.removeChannel(ch);
-      } catch (e) {}
-      channels.delete(name);
-    }
-  }
-
-  /* ============================================
-     WATCH (Table)
-     ============================================ */
-  /**
-   * Watch a full table for any change
-   * @param {string} table - Table name
-   * @param {Function} callback - Called on any change
-   * @param {Object} options - { event: '*', schema: 'public', debounceMs, immediate }
-   * @returns {Function} - Unsubscribe function
-   */
-  function watch(table, callback, options) {
-    if (!client) {
-      warn('watch: client not ready');
-      return () => {};
-    }
-
-    const opts = options || {};
-    const event = opts.event || '*';
-    const schema = opts.schema || 'public';
-    const debounceMs = opts.debounceMs ?? DEFAULT_DEBOUNCE;
-    const channelName = opts.channelName || `watch-${table}`;
-
-    const channel = getChannel(channelName);
-    if (!channel) return () => {};
-
-    const id = genId('watch');
-    const wrappedCallback = debounceMs > 0
-      ? debounce((payload) => callback(payload), debounceMs)
-      : callback;
-
-    const handler = (payload) => {
-      log(`Change on ${table}:`, payload.eventType);
-      wrappedCallback(payload);
-    };
-
-    channel.on(
-      'postgres_changes',
-      { event, schema, table },
-      handler
-    );
-
-    const cleanup = () => {
-      try {
-        channel.unsubscribe();
-      } catch (e) {}
-      watchers.delete(id);
-      // Remove channel if no other watchers
-      if (watchers.size === 0) {
-        removeChannel(channelName);
-      }
-    };
-
-    watchers.set(id, { channel, cleanup });
-
-    log(`Watching table "${table}" (id: ${id})`);
-    return cleanup;
-  }
-
-  /* ============================================
-     WATCH ROW (Specific row)
-     ============================================ */
-  /**
-   * Watch a specific row in a table
-   * @param {string} table - Table name
-   * @param {string|number} rowId - Row ID (usually UUID)
-   * @param {Function} callback
-   * @param {Object} options - { idColumn: 'id', schema, debounceMs }
-   * @returns {Function} - Unsubscribe
-   */
-  function watchRow(table, rowId, callback, options) {
-    if (!client) {
-      warn('watchRow: client not ready');
-      return () => {};
-    }
-
-    const opts = options || {};
-    const idColumn = opts.idColumn || 'id';
-    const schema = opts.schema || 'public';
-    const debounceMs = opts.debounceMs ?? DEFAULT_DEBOUNCE;
-    const channelName = opts.channelName || `watchrow-${table}-${rowId}`;
-
-    const channel = getChannel(channelName);
-    if (!channel) return () => {};
-
-    const id = genId('watchrow');
-    const wrappedCallback = debounceMs > 0
-      ? debounce((payload) => callback(payload), debounceMs)
-      : callback;
-
-    const handler = (payload) => {
-      // Only trigger if the changed row matches
-      const newData = payload.new || {};
-      const oldData = payload.old || {};
-      const matchId = newData[idColumn] || oldData[idColumn];
-
-      if (String(matchId) === String(rowId)) {
-        log(`Row change on ${table}:${rowId}:`, payload.eventType);
-        wrappedCallback(payload);
-      }
-    };
-
-    channel.on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema,
-        table,
-        filter: `${idColumn}=eq.${rowId}`
-      },
-      handler
-    );
-
-    const cleanup = () => {
-      try {
-        channel.unsubscribe();
-      } catch (e) {}
-      watchers.delete(id);
-      if (watchers.size === 0) {
-        removeChannel(channelName);
-      }
-    };
-
-    watchers.set(id, { channel, cleanup });
-
-    log(`Watching row "${table}:${rowId}" (id: ${id})`);
-    return cleanup;
-  }
-
-  /* ============================================
-     WATCH MANY (Multiple tables)
-     ============================================ */
-  /**
-   * Watch multiple tables with a single callback
-   * @param {string[]} tables
-   * @param {Function} callback
-   * @param {Object} options
-   * @returns {Function} - Unsubscribe all
-   */
-  function watchMany(tables, callback, options) {
-    if (!Array.isArray(tables) || tables.length === 0) {
-      return () => {};
-    }
-
-    const cleanups = tables.map(table => watch(table, callback, options));
-
-    return () => {
-      cleanups.forEach(fn => {
-        try {
-          fn();
-        } catch (e) {}
-      });
-    };
-  }
-
-  /* ============================================
-     WATCH MANY AND RELOAD
-     ============================================ */
-  /**
-   * Convenience: watch multiple tables and call reload on any change
-   * @param {string[]} tables
-   * @param {Function} reloadFn - async function to call
-   * @param {Object} options - { debounceMs, immediate }
-   * @returns {Function} - Unsubscribe
-   */
-  function watchManyAndReload(tables, reloadFn, options) {
-    if (!Array.isArray(tables) || typeof reloadFn !== 'function') {
-      return () => {};
-    }
-
-    const opts = options || {};
-    const debounceMs = opts.debounceMs ?? 600;
-
-    // Use a single debounced reload for all tables
-    const debouncedReload = debounce(async () => {
-      try {
-        await reloadFn();
-      } catch (e) {
-        warn('Reload callback failed:', e.message);
-      }
-    }, debounceMs);
-
-    const handleChange = (payload) => {
-      log('Change detected, scheduling reload...', payload?.table);
-      debouncedReload();
-    };
-
-    // Watch each table
-    const cleanups = tables.map(table =>
-      watch(table, handleChange, { ...opts, debounceMs: 0 })
-    );
-
-    // Optional immediate call
-    if (opts.immediate) {
-      setTimeout(() => {
-        debouncedReload();
-      }, 100);
-    }
-
-    return () => {
-      cleanups.forEach(fn => {
-        try {
-          fn();
-        } catch (e) {}
-      });
-    };
-  }
-
-  /* ============================================
-     BROADCAST (Cross-tab messaging)
-     ============================================ */
-  function ensureBroadcastChannel() {
+  function initBroadcast() {
     if (broadcastChannel) return broadcastChannel;
     if (!client) return null;
 
-    broadcastChannel = client.channel(BROADCAST_CHANNEL, {
-      config: {
-        broadcast: { self: false }
-      }
-    });
-
-    broadcastChannel
-      .on('broadcast', { event: 'message' }, (payload) => {
-        log('Broadcast received:', payload);
-        window.dispatchEvent(new CustomEvent('broadcast-notification', {
-          detail: payload.payload
-        }));
-      })
-      .subscribe((status) => {
-        log('Broadcast channel status:', status);
-      });
-
-    return broadcastChannel;
-  }
-
-  /**
-   * Send a broadcast message to all tabs
-   * @param {string} type - Message type
-   * @param {Object} data - Payload
-   */
-  function sendBroadcast(type, data) {
-    const channel = ensureBroadcastChannel();
-    if (!channel) return;
-
     try {
-      channel.send({
-        type: 'broadcast',
-        event: 'message',
-        payload: {
-          type,
-          ...data,
-          timestamp: new Date().toISOString()
+      broadcastChannel = client.channel('its-broadcast', {
+        config: {
+          broadcast: { self: false }
         }
       });
-      log('Broadcast sent:', type);
+
+      broadcastChannel
+        .on('broadcast', { event: '*' }, (payload) => {
+          const eventName = payload?.event || payload?.type || '*';
+          const data = payload?.payload ?? payload?.data ?? {};
+
+          log('broadcast received:', eventName, data);
+
+          // استدعاء المستمعين المسجلين
+          const listeners = broadcastListeners.get(eventName);
+          if (listeners) {
+            listeners.forEach(cb => {
+              try {
+                cb(data, eventName);
+              } catch (e) {
+                console.error('[Realtime] broadcast listener error:', e);
+              }
+            });
+          }
+
+          // استدعاء المستمعين للحدث العام
+          const globalListeners = broadcastListeners.get('*');
+          if (globalListeners) {
+            globalListeners.forEach(cb => {
+              try {
+                cb(data, eventName);
+              } catch (e) {
+                console.error('[Realtime] global broadcast listener error:', e);
+              }
+            });
+          }
+        })
+        .subscribe((status) => {
+          log('broadcast channel status:', status);
+        });
+
+      return broadcastChannel;
     } catch (e) {
-      warn('Broadcast failed:', e.message);
+      warn('initBroadcast failed:', e);
+      broadcastChannel = null;
+      return null;
     }
   }
 
   /* ============================================
-     CLEANUP
+     CORE: WATCH
      ============================================ */
-  function cleanup() {
-    watchers.forEach(({ cleanup: fn }) => {
-      try {
-        fn();
-      } catch (e) {}
-    });
-    watchers.clear();
-    channels.clear();
+  /**
+   * watch(table, callback, options)
+   * @param {string} table - اسم الجدول
+   * @param {Function} callback - (payload, table) => void
+   * @param {Object} options
+   *   - event: 'INSERT' | 'UPDATE' | 'DELETE' | '*' (default: '*')
+   *   - filter: { column: value }  (optional)
+   *   - debounceMs: number (default: 400)
+   *   - key: string (custom key, default auto)
+   * @returns {Function} unsubscribe function
+   */
+  function watch(table, callback, options = {}) {
+    if (!table || typeof callback !== 'function') {
+      warn('watch: invalid args');
+      return () => {};
+    }
+
+    if (!client) {
+      // حاول تاني بعد شوية
+      setTimeout(() => watch(table, callback, options), 150);
+      return () => {};
+    }
+
+    const event = options.event || '*';
+    const filter = options.filter || null;
+    const debounceMs = options.debounceMs != null ? options.debounceMs : 400;
+    const customKey = options.key || null;
+
+    const key = customKey || makeKey(table, filter);
+
+    // لو موجود بالفعل، هنعيد استخدامه ونضيف الـ callback
+    if (channels.has(key)) {
+      const existing = channels.get(key);
+      existing.callbacks.add(callback);
+      return () => unwatchByKey(key, callback);
+    }
+
+    // إنشاء channel جديد
+    let channel;
+    try {
+      // اسم القناة لازم يكون فريد ومقبول من Supabase
+      const channelName = `rt-${table}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      channel = client.channel(channelName);
+
+      const callbacks = new Set([callback]);
+
+      const handler = (payload) => {
+        // Debounce عشان نمنع refresh المتكرر
+        debounce(key, () => {
+          log(`change on ${table}:`, payload?.eventType);
+          callbacks.forEach(cb => {
+            try {
+              cb(payload, table);
+            } catch (e) {
+              console.error(`[Realtime] watch callback error (${table}):`, e);
+            }
+          });
+        }, debounceMs);
+      };
+
+      // بناء الـ on() حسب event و filter
+      if (filter && typeof filter === 'object') {
+        // filter: { column: value } — Supabase بياخد string "column=eq.value"
+        const filterStr = Object.keys(filter)
+          .map(col => `${col}=eq.${filter[col]}`)
+          .join('&');
+
+        channel.on(
+          'postgres_changes',
+          { event, schema: 'public', table, filter: filterStr },
+          handler
+        );
+      } else {
+        channel.on(
+          'postgres_changes',
+          { event, schema: 'public', table },
+          handler
+        );
+      }
+
+      channel.subscribe((status) => {
+        log(`channel ${key} status:`, status);
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          warn(`channel ${key} error: ${status}`);
+        }
+      });
+
+      channels.set(key, {
+        channel,
+        table,
+        callbacks,
+        event,
+        filter,
+        debounceMs
+      });
+
+      log('watching:', key);
+    } catch (e) {
+      warn('watch failed:', e);
+      return () => {};
+    }
+
+    return () => unwatchByKey(key, callback);
+  }
+
+  /* ============================================
+     UNWATCH
+     ============================================ */
+  function unwatchByKey(key, callback) {
+    const entry = channels.get(key);
+    if (!entry) return;
+
+    if (callback) {
+      entry.callbacks.delete(callback);
+      // لو مفيش callbacks تانية، اقفل القناة
+      if (entry.callbacks.size === 0) {
+        closeChannel(key);
+      }
+    } else {
+      closeChannel(key);
+    }
+  }
+
+  function closeChannel(key) {
+    const entry = channels.get(key);
+    if (!entry) return;
+
+    try {
+      if (entry.channel && typeof entry.channel.unsubscribe === 'function') {
+        entry.channel.unsubscribe();
+      }
+    } catch (e) {
+      warn('closeChannel error:', e);
+    }
+
+    // امسح الـ debounce timer
+    if (debounceTimers.has(key)) {
+      clearTimeout(debounceTimers.get(key));
+      debounceTimers.delete(key);
+    }
+
+    channels.delete(key);
+    log('unwatched:', key);
+  }
+
+  function unwatch(table, filter) {
+    const key = makeKey(table, filter || null);
+    closeChannel(key);
+  }
+
+  function unwatchAll() {
+    Array.from(channels.keys()).forEach(closeChannel);
+
     if (broadcastChannel) {
       try {
-        client.removeChannel(broadcastChannel);
+        broadcastChannel.unsubscribe();
       } catch (e) {}
       broadcastChannel = null;
     }
-  }
 
-  function count() {
-    return watchers.size;
+    debounceTimers.forEach(t => clearTimeout(t));
+    debounceTimers.clear();
+    broadcastListeners.clear();
   }
 
   /* ============================================
-     PUBLIC API
+     WATCH MANY
      ============================================ */
-  window.Realtime = {
-    // Watchers
-    watch,
-    watchRow,
-    watchMany,
-    watchManyAndReload,
+  /**
+   * watchMany(tables, callback, options)
+   * @param {string[]} tables
+   * @param {Function} callback - (payload, table) => void
+   * @param {Object} options
+   * @returns {Function} unsubscribe function
+   */
+  function watchMany(tables, callback, options = {}) {
+    if (!Array.isArray(tables) || !tables.length) {
+      warn('watchMany: invalid tables');
+      return () => {};
+    }
+    if (typeof callback !== 'function') {
+      warn('watchMany: invalid callback');
+      return () => {};
+    }
 
-    // Broadcast
-    sendBroadcast,
-    broadcast: sendBroadcast,
+    const unsubscribers = tables.map(t =>
+      watch(t, callback, options)
+    );
 
-    // Utilities
-    cleanup,
-    count: () => count(),
-    isReady: () => isReady,
-    status: () => ({
-      isReady,
-      watchers: watchers.size,
-      channels: channels.size,
-      hasBroadcast: !!broadcastChannel
-    })
-  };
+    return () => {
+      unsubscribers.forEach(fn => {
+        try { fn(); } catch (e) {}
+      });
+    };
+  }
+
+  /* ============================================
+     BROADCAST API
+     ============================================ */
+  /**
+   * إرسال حدث لكل التابات المفتوحة
+   */
+  function sendBroadcast(event, payload = {}) {
+    if (!event) return false;
+
+    // إرسال عبر Supabase Broadcast
+    const ch = initBroadcast();
+    if (ch) {
+      try {
+        ch.send({
+          type: 'broadcast',
+          event: event,
+          payload: payload || {}
+        });
+      } catch (e) {
+        warn('sendBroadcast error:', e);
+      }
+    }
+
+    // إرسال محلي في نفس التاب (لأي listeners محليين)
+    try {
+      window.dispatchEvent(new CustomEvent('broadcast-' + event, {
+        detail: payload || {}
+      }));
+    } catch (e) {}
+
+    // إرسال event عام
+    try {
+      window.dispatchEvent(new CustomEvent('broadcast', {
+        detail: { event, payload: payload || {} }
+      }));
+    } catch (e) {}
+
+    return true;
+  }
+
+  /**
+   * الاستماع لأحداث Broadcast
+   */
+  function onBroadcast(event, callback) {
+    if (!event || typeof callback !== 'function') return () => {};
+
+    if (!broadcastListeners.has(event)) {
+      broadcastListeners.set(event, new Set());
+    }
+    broadcastListeners.get(event).add(callback);
+
+    // تأكد إن الـ broadcast channel شغال
+    initBroadcast();
+
+    return () => {
+      const set = broadcastListeners.get(event);
+      if (set) {
+        set.delete(callback);
+        if (set.size === 0) broadcastListeners.delete(event);
+      }
+    };
+  }
 
   /* ============================================
      INIT
      ============================================ */
-  function start(c) {
-    client = c;
-    isReady = true;
+  function init() {
+    if (isReady) return;
 
-    // Ensure broadcast channel
-    ensureBroadcastChannel();
+    if (typeof window.onSupabaseReady !== 'function') {
+      initRetries++;
+      if (initRetries > MAX_INIT_RETRIES) {
+        warn('onSupabaseReady not found after max retries');
+        return;
+      }
+      setTimeout(init, 200);
+      return;
+    }
 
-    // Cleanup on page unload
-    window.addEventListener('beforeunload', () => {
-      cleanup();
+    window.onSupabaseReady((c) => {
+      client = c;
+      isReady = true;
+      log('Realtime ready');
+
+      // جهّز الـ broadcast channel
+      initBroadcast();
     });
-
-    log('Ready');
-    window.dispatchEvent(new CustomEvent('realtime-ready'));
   }
 
-  // Wait for Supabase
-  if (typeof window.onSupabaseReady === 'function') {
-    window.onSupabaseReady(start);
-  } else if (window.supabaseClient) {
-    start(window.supabaseClient);
+  /* ============================================
+     EXPORT
+     ============================================ */
+  window.Realtime = {
+    watch,
+    watchMany,
+    unwatch,
+    unwatchAll,
+    sendBroadcast,
+    onBroadcast,
+
+    // معلومات
+    get isReady() { return isReady; },
+    get activeCount() { return channels.size; },
+    getChannelKeys() { return Array.from(channels.keys()); }
+  };
+
+  /* ============================================
+     AUTO INIT
+     ============================================ */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    window.addEventListener('supabase-ready', (e) => {
-      start(e.detail?.client || window.supabaseClient);
-    }, { once: true });
+    init();
   }
 
 })();
