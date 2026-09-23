@@ -28,9 +28,7 @@
     z-index: 10;
   }
 
-  .apply-hero .section-label {
-    margin-bottom: 12px;
-  }
+  .apply-hero .section-label { margin-bottom: 12px; }
 
   .apply-hero h1 {
     font-family: 'Tajawal', sans-serif;
@@ -273,6 +271,7 @@
     gap: 16px;
     flex-wrap: wrap;
     transition: all 0.3s;
+    cursor: pointer;
   }
 
   .health-care-box:hover {
@@ -405,10 +404,7 @@
     font-size: 20px;
   }
 
-  .invoice-preview .label {
-    color: var(--text-muted);
-  }
-
+  .invoice-preview .label { color: var(--text-muted); }
   .invoice-preview .value {
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
@@ -962,7 +958,7 @@
   <!-- FORM -->
   <form id="applyForm" enctype="multipart/form-data" novalidate>
 
-    <!-- ============ SECTION 1: BASIC INFO ============ -->
+    <!-- SECTION 1: BASIC INFO -->
     <div class="form-section">
       <div class="form-section-header">
         <div class="form-section-icon">
@@ -1017,7 +1013,7 @@
       </div>
     </div>
 
-    <!-- ============ SECTION 2: PROFESSIONAL ============ -->
+    <!-- SECTION 2: PROFESSIONAL -->
     <div class="form-section">
       <div class="form-section-header">
         <div class="form-section-icon">
@@ -1083,7 +1079,7 @@
       </div>
     </div>
 
-    <!-- ============ SECTION 3: OTHER SYNDICATE ============ -->
+    <!-- SECTION 3: OTHER SYNDICATE -->
     <div class="form-section">
       <div class="form-section-header">
         <div class="form-section-icon">
@@ -1117,7 +1113,7 @@
       </div>
     </div>
 
-    <!-- ============ SECTION 4: HEALTH CARE ============ -->
+    <!-- SECTION 4: HEALTH CARE -->
     <div class="form-section" id="healthCareSection" style="display:none;">
       <div class="form-section-header">
         <div class="form-section-icon">
@@ -1153,7 +1149,7 @@
       </div>
     </div>
 
-    <!-- ============ SECTION 5: ATTACHMENTS ============ -->
+    <!-- SECTION 5: ATTACHMENTS -->
     <div class="form-section">
       <div class="form-section-header">
         <div class="form-section-icon">
@@ -1314,7 +1310,7 @@
       </div>
     </div>
 
-    <!-- ============ SECTION 6: INVOICE + TERMS ============ -->
+    <!-- SECTION 6: INVOICE + TERMS -->
     <div class="form-section">
       <div class="form-section-header">
         <div class="form-section-icon">
@@ -1328,7 +1324,6 @@
         </div>
       </div>
 
-      <!-- Invoice Preview -->
       <div class="invoice-preview" id="invoicePreview" style="display:none;">
         <div class="row">
           <span class="label">رسوم العضوية</span>
@@ -1354,7 +1349,7 @@
       </label>
     </div>
 
-    <!-- ============ SUBMIT ============ -->
+    <!-- SUBMIT -->
     <div class="submit-area">
       <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1376,9 +1371,7 @@
 
 </div>
 
-<!-- ============================================
-     CAMERA MODAL
-     ============================================ -->
+<!-- CAMERA MODAL -->
 <div class="camera-modal" id="cameraModal">
   <div class="camera-modal-content">
     <div class="camera-header">
@@ -1416,9 +1409,7 @@
   </div>
 </div>
 
-<!-- ============================================
-     AI ANALYSIS OVERLAY
-     ============================================ -->
+<!-- AI OVERLAY -->
 <div class="ai-overlay" id="aiOverlay">
   <div class="ai-card">
     <div class="ai-icon">
@@ -1471,20 +1462,15 @@
 <script src="js/theme-manager.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/realtime.js"></script>
+<script src="js/security.js"></script>
 <script src="js/apply.js"></script>
 
 <script>
-  /* ============================================
-     MOBILE NAV
-     ============================================ */
   window.toggleMobileNav = function () {
     const nav = document.getElementById('navLinks');
     if (nav) nav.classList.toggle('open');
   };
 
-  /* ============================================
-     NAVBAR SCROLL
-     ============================================ */
   (function () {
     const navbar = document.getElementById('navbar');
     if (!navbar) return;
@@ -1494,9 +1480,7 @@
     }, { passive: true });
   })();
 
-  /* ============================================
-     BACKGROUND PARTICLES
-     ============================================ */
+  /* Background particles */
   (function () {
     const canvas = document.getElementById('bgCanvas');
     if (!canvas) return;
@@ -1504,8 +1488,7 @@
     let W = 0, H = 0, dots = [];
 
     function accentRgb() {
-      const raw = getComputedStyle(document.documentElement)
-        .getPropertyValue('--accent-rgb').trim();
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim();
       if (raw) {
         const parts = raw.split(',').map(s => parseInt(s.trim()));
         return { r: parts[0] || 0, g: parts[1] || 240, b: parts[2] || 255 };
@@ -1515,12 +1498,9 @@
 
     function resize() {
       const dpr = window.devicePixelRatio || 1;
-      W = window.innerWidth;
-      H = window.innerHeight;
-      canvas.width = W * dpr;
-      canvas.height = H * dpr;
-      canvas.style.width = W + 'px';
-      canvas.style.height = H + 'px';
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       init();
     }
@@ -1581,9 +1561,7 @@
     loop();
   })();
 
-  /* ============================================
-     STEP INDICATOR
-     ============================================ */
+  /* Step Indicator */
   (function () {
     const sections = document.querySelectorAll('.form-section');
     const pills = document.querySelectorAll('[data-step-pill]');
@@ -1603,9 +1581,7 @@
     sections.forEach(s => observer.observe(s));
   })();
 
-  /* ============================================
-     NATIONAL ID / PHONE NUMERIC ONLY
-     ============================================ */
+  /* NATIONAL ID / PHONE NUMERIC ONLY */
   (function () {
     const nationalId = document.getElementById('national_id');
     const phone = document.getElementById('phone');
@@ -1623,9 +1599,7 @@
     }
   })();
 
-  /* ============================================
-     OTHER SYNDICATE TOGGLE
-     ============================================ */
+  /* OTHER SYNDICATE TOGGLE */
   (function () {
     const radios = document.querySelectorAll('input[name="is_other_syndicate"]');
     const field = document.getElementById('otherSyndicateField');
@@ -1645,9 +1619,7 @@
     });
   })();
 
-  /* ============================================
-     HEALTH CARE TOGGLE
-     ============================================ */
+  /* HEALTH CARE TOGGLE */
   window.toggleHealthCare = function () {
     const checkbox = document.getElementById('wantsHealthCare');
     const box = document.getElementById('healthCareBox');
