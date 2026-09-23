@@ -18,9 +18,6 @@
 <link rel="stylesheet" href="css/style.css" />
 
 <style>
-  /* ============================================
-     PAGE-SPECIFIC: ADMIN
-     ============================================ */
   body { padding: 100px 0 40px; }
 
   .admin-wrap {
@@ -31,7 +28,6 @@
     z-index: 10;
   }
 
-  /* Page header */
   .page-header {
     display: flex;
     align-items: center;
@@ -86,7 +82,6 @@
   .user-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
   .user-role { font-size: 11.5px; color: #f59e0b; letter-spacing: 0.5px; font-weight: 600; }
 
-  /* Tabs */
   .tabs-nav {
     display: flex;
     gap: 6px;
@@ -106,12 +101,12 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 11px 20px;
+    padding: 11px 18px;
     background: transparent;
     border: 1px solid transparent;
     border-radius: var(--radius-md);
     font-family: inherit;
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 700;
     color: var(--text-muted);
     cursor: pointer;
@@ -130,7 +125,7 @@
     box-shadow: var(--glow-accent);
   }
   .tab-btn svg {
-    width: 16px; height: 16px;
+    width: 15px; height: 15px;
     stroke: currentColor; fill: none;
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
     flex-shrink: 0;
@@ -144,7 +139,6 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* Settings */
   .settings-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -191,7 +185,6 @@
   }
   .settings-card-sub { font-size: 12px; color: var(--text-dim); }
 
-  /* Logo + Head photo upload areas */
   .logo-upload-area {
     display: flex;
     align-items: center;
@@ -233,7 +226,6 @@
     margin-bottom: 4px;
   }
 
-  /* Toggle */
   .toggle-row {
     display: flex;
     align-items: center;
@@ -289,7 +281,6 @@
     background: #000;
   }
 
-  /* Save bar */
   .save-bar {
     position: sticky;
     bottom: 20px;
@@ -326,7 +317,6 @@
     flex-wrap: wrap;
   }
 
-  /* Table */
   .table-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -397,8 +387,34 @@
     background: rgba(var(--danger-rgb), 0.2);
     transform: translateY(-2px);
   }
+  .row-btn.approve-btn {
+    background: rgba(var(--success-rgb), 0.08);
+    border-color: rgba(var(--success-rgb), 0.25);
+    color: var(--success);
+  }
+  .row-btn.approve-btn:hover {
+    background: rgba(var(--success-rgb), 0.2);
+    transform: translateY(-2px);
+  }
+  .row-btn.reject-btn {
+    background: rgba(var(--danger-rgb), 0.08);
+    border-color: rgba(var(--danger-rgb), 0.25);
+    color: var(--danger);
+  }
+  .row-btn.reject-btn:hover {
+    background: rgba(var(--danger-rgb), 0.2);
+    transform: translateY(-2px);
+  }
+  .row-btn.pass-btn {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.25);
+    color: #f59e0b;
+  }
+  .row-btn.pass-btn:hover {
+    background: rgba(245, 158, 11, 0.2);
+    transform: translateY(-2px);
+  }
 
-  /* Role badge */
   .role-badge {
     display: inline-flex;
     align-items: center;
@@ -453,7 +469,43 @@
     background: currentColor;
   }
 
-  /* Users filter tabs */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: 11.5px;
+    font-weight: 700;
+    border: 1.5px solid;
+    white-space: nowrap;
+  }
+  .status-badge.active {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.4);
+    color: #22c55e;
+  }
+  .status-badge.pending {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.4);
+    color: #f59e0b;
+  }
+  .status-badge.rejected {
+    background: rgba(var(--danger-rgb), 0.1);
+    border-color: rgba(var(--danger-rgb), 0.4);
+    color: var(--danger);
+  }
+  .status-badge.disabled {
+    background: rgba(107, 114, 128, 0.1);
+    border-color: rgba(107, 114, 128, 0.4);
+    color: #9ca3af;
+  }
+  .status-badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
   .users-filter-tabs {
     display: flex;
     gap: 6px;
@@ -509,7 +561,6 @@
     color: #000;
   }
 
-  /* Modal */
   .modal-content { max-height: 90vh; }
   .modal-header-custom {
     padding: 20px 24px;
@@ -555,7 +606,6 @@
     stroke-width: 2; stroke-linecap: round;
   }
 
-  /* Select optgroup */
   select optgroup {
     background: var(--bg-2);
     color: var(--accent);
@@ -569,7 +619,190 @@
     padding: 4px 8px;
   }
 
-  /* Responsive */
+  /* Committee positions grid */
+  .positions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .position-card {
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    transition: all 0.25s;
+  }
+  .position-card:hover {
+    border-color: rgba(var(--accent-rgb), 0.35);
+    background: rgba(var(--accent-rgb), 0.04);
+  }
+  .position-label {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .position-label .pos-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    background: rgba(var(--accent-rgb), 0.12);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .position-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .position-sub {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .position-empty {
+    color: var(--text-dim);
+    font-style: italic;
+    font-weight: 500;
+  }
+  .position-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 6px;
+  }
+  .position-actions button {
+    flex: 1;
+    padding: 6px 10px;
+    background: rgba(var(--accent-rgb), 0.08);
+    border: 1px solid rgba(var(--accent-rgb), 0.25);
+    border-radius: 6px;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .position-actions button:hover {
+    background: rgba(var(--accent-rgb), 0.18);
+  }
+  .position-actions button.remove {
+    background: rgba(var(--danger-rgb), 0.08);
+    border-color: rgba(var(--danger-rgb), 0.25);
+    color: var(--danger);
+  }
+  .position-actions button.remove:hover {
+    background: rgba(var(--danger-rgb), 0.18);
+  }
+
+  /* Icon picker */
+  .icon-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+    gap: 8px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .icon-pick-item {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .icon-pick-item:hover {
+    background: rgba(var(--accent-rgb), 0.1);
+    border-color: rgba(var(--accent-rgb), 0.3);
+  }
+  .icon-pick-item.selected {
+    background: rgba(var(--accent-rgb), 0.18);
+    border-color: var(--accent);
+    box-shadow: var(--glow-accent);
+  }
+  .icon-pick-item svg {
+    width: 22px; height: 22px;
+    stroke: var(--text-muted); fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .icon-pick-item.selected svg { stroke: var(--accent); }
+
+  /* Feature preview card */
+  .feature-preview-card {
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    position: relative;
+  }
+  .feature-preview-card .feat-icon {
+    width: 40px; height: 40px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-2-rgb), 0.15));
+    border: 1px solid rgba(var(--accent-rgb), 0.3);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px;
+  }
+  .feature-preview-card .feat-icon svg {
+    width: 20px; height: 20px;
+    stroke: var(--accent); fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .feature-preview-card .feat-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .feature-preview-card .feat-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .feature-preview-card .feat-actions {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 4px;
+  }
+  .feature-preview-card .feat-actions button {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    border: 1px solid;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .feature-preview-card .feat-actions button svg {
+    width: 12px; height: 12px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .feature-preview-card .feat-actions .edit-f {
+    background: rgba(var(--accent-rgb), 0.08);
+    border-color: rgba(var(--accent-rgb), 0.25);
+    color: var(--accent);
+  }
+  .feature-preview-card .feat-actions .del-f {
+    background: rgba(var(--danger-rgb), 0.08);
+    border-color: rgba(var(--danger-rgb), 0.25);
+    color: var(--danger);
+  }
+
   @media (max-width: 1024px) {
     .settings-section { grid-template-columns: 1fr; }
   }
@@ -579,7 +812,7 @@
     .page-header { flex-direction: column; align-items: stretch; }
     .user-badge { justify-content: center; }
     .tabs-nav { margin-bottom: 20px; }
-    .tab-btn { padding: 10px 14px; font-size: 12.5px; }
+    .tab-btn { padding: 10px 12px; font-size: 12px; }
     .tab-btn span.tab-label { display: none; }
     .save-bar { flex-direction: column; align-items: stretch; }
     .save-bar-actions { width: 100%; }
@@ -587,6 +820,7 @@
     .logo-upload-area { flex-direction: column; align-items: stretch; }
     #logoPreview, #headPhotoPreview { margin: 0 auto; }
     .users-filter-tab { padding: 8px 12px; font-size: 12px; }
+    .positions-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -653,7 +887,7 @@
   <div class="page-header">
     <div class="page-header-info">
       <div class="page-header-title">لوحة النقيب العام</div>
-      <div class="page-header-sub">إدارة الإعدادات، المستخدمين، الأنواع، الشعب، والمحافظات</div>
+      <div class="page-header-sub">إدارة الإعدادات، المستخدمين، الأنواع، الشعب، المحافظات، والمجالس</div>
     </div>
 
     <div class="user-badge">
@@ -706,6 +940,16 @@
       <span class="tab-label">المحافظات</span>
     </button>
 
+    <button type="button" class="tab-btn" data-tab-btn="committees">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+      <span class="tab-label">المجالس</span>
+    </button>
+
     <button type="button" class="tab-btn" data-tab-btn="types">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <rect x="2" y="7" width="20" height="14" rx="2" />
@@ -721,6 +965,14 @@
         <path d="M2 12l10 5 10-5" />
       </svg>
       <span class="tab-label">الشعب</span>
+    </button>
+
+    <button type="button" class="tab-btn" data-tab-btn="expense-categories">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+        <polyline points="17 18 23 18 23 12" />
+      </svg>
+      <span class="tab-label">تصنيفات المصروفات</span>
     </button>
 
     <button type="button" class="tab-btn" data-tab-btn="sessions">
@@ -815,7 +1067,7 @@
         </div>
       </div>
 
-      <!-- HEAD CARD — النقيب العام -->
+      <!-- HEAD CARD -->
       <div class="settings-card full-width">
         <div class="settings-card-header">
           <div class="settings-card-icon">
@@ -999,7 +1251,7 @@
         </div>
       </div>
 
-      <!-- HEALTH CARE SETTINGS -->
+      <!-- HEALTH CARE -->
       <div class="settings-card">
         <div class="settings-card-header">
           <div class="settings-card-icon">
@@ -1151,7 +1403,7 @@
   </div>
 
   <!-- ============================================
-       TAB 2: HOME PAGE SETTINGS
+       TAB 2: HOME
        ============================================ -->
   <div data-tab-content="home" style="display:none;">
 
@@ -1233,21 +1485,18 @@
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
           <div class="form-group" style="margin:0;">
-            <label for="setting_code_card_name">اسم الكارت (مثل: syndicate.js)</label>
+            <label for="setting_code_card_name">اسم الكارت</label>
             <input type="text" id="setting_code_card_name" data-setting="code_card_name" placeholder="syndicate.js" dir="ltr" style="text-align:right;" />
           </div>
           <div class="form-group" style="margin:0;">
-            <label for="setting_code_card_status">حالة الكارت (مثل: ACTIVE, LIVE)</label>
+            <label for="setting_code_card_status">حالة الكارت</label>
             <input type="text" id="setting_code_card_status" data-setting="code_card_status" placeholder="ACTIVE" dir="ltr" style="text-align:right;" />
           </div>
         </div>
 
         <div class="form-group" style="margin-top:14px;margin-bottom:0;">
           <label for="setting_code_card_content">محتوى الكارت (نص أو كود)</label>
-          <textarea id="setting_code_card_content" data-setting="code_card_content" rows="6" placeholder='const syndicate = {
-  vision: "نُنمّي المهارات",
-  mission: "نُوحّد الكفاءات"
-};' style="font-family:'JetBrains Mono',monospace;font-size:12.5px;direction:ltr;text-align:left;"></textarea>
+          <textarea id="setting_code_card_content" data-setting="code_card_content" rows="6" style="font-family:'JetBrains Mono',monospace;font-size:12.5px;direction:ltr;text-align:left;"></textarea>
         </div>
       </div>
 
@@ -1272,7 +1521,7 @@
           </button>
         </div>
 
-        <div class="features-preview-list" id="featuresPreviewList">
+        <div class="features-preview-list" id="featuresPreviewList" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));gap:14px;">
           <div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-dim);">
             لا توجد كروت بعد. اضغط "إضافة كارت" لإضافة أول كارت.
           </div>
@@ -1323,7 +1572,7 @@
         </div>
       </div>
 
-      <!-- STEPS EDITOR -->
+      <!-- STEPS -->
       <div class="settings-card full-width">
         <div class="settings-card-header">
           <div class="settings-card-icon">
@@ -1353,10 +1602,9 @@
           </div>
         </div>
 
-        <!-- Step 1 -->
-        <div class="step-editor-card" data-step-num="01">
-          <div class="step-label">
-            <span class="step-badge">1</span>
+        <div class="step-editor-card" data-step-num="01" style="padding:18px;background:rgba(0,0,0,0.25);border:1px solid var(--border-soft);border-radius:var(--radius-md);margin-bottom:14px;position:relative;">
+          <div style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#000;border-radius:50%;font-size:12px;font-weight:800;">1</span>
             <span>الخطوة الأولى</span>
           </div>
           <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;">
@@ -1371,10 +1619,9 @@
           </div>
         </div>
 
-        <!-- Step 2 -->
-        <div class="step-editor-card" data-step-num="02">
-          <div class="step-label">
-            <span class="step-badge">2</span>
+        <div class="step-editor-card" data-step-num="02" style="padding:18px;background:rgba(0,0,0,0.25);border:1px solid var(--border-soft);border-radius:var(--radius-md);margin-bottom:14px;position:relative;">
+          <div style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#000;border-radius:50%;font-size:12px;font-weight:800;">2</span>
             <span>الخطوة الثانية</span>
           </div>
           <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;">
@@ -1389,10 +1636,9 @@
           </div>
         </div>
 
-        <!-- Step 3 -->
-        <div class="step-editor-card" data-step-num="03">
-          <div class="step-label">
-            <span class="step-badge">3</span>
+        <div class="step-editor-card" data-step-num="03" style="padding:18px;background:rgba(0,0,0,0.25);border:1px solid var(--border-soft);border-radius:var(--radius-md);margin-bottom:14px;position:relative;">
+          <div style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#000;border-radius:50%;font-size:12px;font-weight:800;">3</span>
             <span>الخطوة الثالثة</span>
           </div>
           <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;">
@@ -1407,10 +1653,9 @@
           </div>
         </div>
 
-        <!-- Step 4 -->
-        <div class="step-editor-card" data-step-num="04" style="margin-bottom:0;">
-          <div class="step-label">
-            <span class="step-badge">4</span>
+        <div class="step-editor-card" data-step-num="04" style="padding:18px;background:rgba(0,0,0,0.25);border:1px solid var(--border-soft);border-radius:var(--radius-md);position:relative;">
+          <div style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#000;border-radius:50%;font-size:12px;font-weight:800;">4</span>
             <span>الخطوة الرابعة</span>
           </div>
           <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;">
@@ -1465,7 +1710,6 @@
 
     </div>
 
-    <!-- SAVE BAR -->
     <div class="save-bar">
       <div class="save-bar-info">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1515,7 +1759,6 @@
         </button>
       </div>
 
-      <!-- Users Filter Tabs -->
       <div style="padding: 0 22px 16px;">
         <div class="users-filter-tabs">
           <button type="button" class="users-filter-tab active" data-users-filter="all">
@@ -1610,7 +1853,38 @@
   </div>
 
   <!-- ============================================
-       TAB 5: TYPES
+       TAB 5: COMMITTEES (المجالس)
+       ============================================ -->
+  <div data-tab-content="committees" style="display:none;">
+    <div class="table-card" style="margin-bottom:20px;">
+      <div class="table-card-header">
+        <div class="table-card-title">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+          <span>مجالس المحافظات</span>
+        </div>
+
+        <div class="form-group" style="margin:0;min-width:220px;">
+          <select id="committeeGovSelect" style="padding:8px 14px;font-size:13px;">
+            <option value="">-- اختر المحافظة --</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="committeePositionsContainer" style="padding:20px 22px;">
+        <div style="text-align:center;padding:40px;color:var(--text-dim);">
+          اختر محافظة لعرض مجلسها
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       TAB 6: TYPES
        ============================================ -->
   <div data-tab-content="types" style="display:none;">
     <div class="table-card">
@@ -1658,7 +1932,7 @@
   </div>
 
   <!-- ============================================
-       TAB 6: BRANCHES
+       TAB 7: BRANCHES
        ============================================ -->
   <div data-tab-content="branches" style="display:none;">
     <div class="table-card">
@@ -1706,7 +1980,54 @@
   </div>
 
   <!-- ============================================
-       TAB 7: SESSIONS
+       TAB 8: EXPENSE CATEGORIES
+       ============================================ -->
+  <div data-tab-content="expense-categories" style="display:none;">
+    <div class="table-card">
+      <div class="table-card-header">
+        <div class="table-card-title">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+            <polyline points="17 18 23 18 23 12" />
+          </svg>
+          <span>تصنيفات المصروفات</span>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-sm" id="addExpCatBtn">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span>إضافة تصنيف</span>
+        </button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>الكود</th>
+              <th>الاسم</th>
+              <th>الوصف</th>
+              <th>الترتيب</th>
+              <th>الحالة</th>
+              <th style="text-align:center;">إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="expCatTableBody">
+            <tr>
+              <td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">
+                جاري التحميل...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       TAB 9: SESSIONS
        ============================================ -->
   <div data-tab-content="sessions" style="display:none;">
     <div class="table-card">
@@ -1785,7 +2106,7 @@
   </div>
 
   <!-- ============================================
-       TAB 8: AUDIT LOG
+       TAB 10: AUDIT LOG
        ============================================ -->
   <div data-tab-content="audit" style="display:none;">
     <div class="table-card">
@@ -1794,6 +2115,8 @@
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
             <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
           </svg>
           <span>سجل التدقيق</span>
         </div>
@@ -1869,20 +2192,17 @@
         <label for="userRole">الدور</label>
         <select id="userRole">
           <option value="">-- اختر الدور --</option>
-
           <optgroup label="الأدوار الأساسية">
             <option value="head">النقيب العام</option>
             <option value="vice_president">نائب رئيس النقابة</option>
             <option value="deputy">الوكيل</option>
             <option value="committee">لجنة العضوية</option>
           </optgroup>
-
           <optgroup label="المحافظات والفروع">
             <option value="governorate_head">نقيب محافظة</option>
             <option value="governorate_board">مجلس محافظة</option>
             <option value="branches_manager">مدير الفروع</option>
           </optgroup>
-
           <optgroup label="اللجان">
             <option value="social_committee_head">رئيس اللجنة الاجتماعية</option>
             <option value="social_committee_vice">نائب اللجنة الاجتماعية</option>
@@ -2181,6 +2501,66 @@
 </div>
 
 <!-- ============================================
+     EXPENSE CATEGORY MODAL
+     ============================================ -->
+<div id="expCatModal" class="modal modal-sm">
+  <div class="modal-content">
+    <div class="modal-header-custom">
+      <h3 id="expCatModalTitle">إضافة تصنيف مصروفات</h3>
+      <button type="button" class="close-btn" onclick="closeExpCatModal()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" id="expCatId" />
+
+      <div class="form-group">
+        <label for="expCatName">الاسم <span style="color:var(--danger);">*</span></label>
+        <input type="text" id="expCatName" placeholder="مثال: إيجار" />
+      </div>
+
+      <div class="form-group">
+        <label for="expCatCode">الكود (إنجليزي)</label>
+        <input type="text" id="expCatCode" placeholder="RENT" dir="ltr" style="text-align:right;text-transform:uppercase;" />
+      </div>
+
+      <div class="form-group">
+        <label for="expCatDesc">الوصف</label>
+        <textarea id="expCatDesc" rows="2" placeholder="وصف مختصر"></textarea>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label for="expCatSortOrder">الترتيب</label>
+          <input type="number" id="expCatSortOrder" placeholder="1" min="0" />
+        </div>
+        <div class="form-group">
+          <label style="display:block;margin-bottom:6px;">الحالة</label>
+          <label class="form-check" style="padding:11px 14px;background:rgba(0,0,0,0.3);border:1px solid var(--border-soft);border-radius:10px;font-size:13px;">
+            <input type="checkbox" id="expCatActive" checked />
+            <span>مفعّل</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer-custom">
+      <button type="button" class="btn btn-ghost" onclick="closeExpCatModal()">إلغاء</button>
+      <button type="button" class="btn btn-primary" id="saveExpCatBtn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        <span>حفظ</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
      CHANGE PASSWORD MODAL
      ============================================ -->
 <div id="changePasswordModal" class="modal modal-sm">
@@ -2225,6 +2605,77 @@
           <polyline points="20 6 9 17 4 12" />
         </svg>
         <span>حفظ كلمة المرور</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     POSITION MODAL (تعيين عضو في منصب مجلس)
+     ============================================ -->
+<div id="positionModal" class="modal modal-sm">
+  <div class="modal-content">
+    <div class="modal-header-custom">
+      <h3 id="positionModalTitle">تعيين عضو في منصب</h3>
+      <button type="button" class="close-btn" onclick="closePositionModal()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" id="posGovernorateId" />
+      <input type="hidden" id="posPosition" />
+
+      <div class="form-group">
+        <label>المنصب</label>
+        <input type="text" id="posPositionLabel" disabled style="opacity:0.7;" />
+      </div>
+
+      <div class="form-group">
+        <label for="posFullName">الاسم الكامل <span style="color:var(--danger);">*</span></label>
+        <input type="text" id="posFullName" placeholder="مثال: أحمد محمد" />
+      </div>
+
+      <div class="form-group">
+        <label for="posNationalId">الرقم القومي</label>
+        <input type="text" id="posNationalId" placeholder="14 رقم" dir="ltr" style="text-align:right;" maxlength="14" />
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label for="posPhone">الهاتف</label>
+          <input type="tel" id="posPhone" placeholder="01xxxxxxxxx" dir="ltr" style="text-align:right;" />
+        </div>
+        <div class="form-group">
+          <label for="posEmail">البريد</label>
+          <input type="email" id="posEmail" placeholder="user@email.com" dir="ltr" style="text-align:right;" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="posUserSelect">ربط بحساب مستخدم (اختياري)</label>
+        <select id="posUserSelect">
+          <option value="">-- بدون ربط --</option>
+        </select>
+        <span class="form-hint">لو ربطت الحساب، العضو هيدخل بلوحة التحكم الخاصة به</span>
+      </div>
+
+      <div class="form-group">
+        <label for="posNotes">ملاحظات</label>
+        <textarea id="posNotes" rows="2" placeholder="ملاحظات إضافية..."></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer-custom">
+      <button type="button" class="btn btn-ghost" onclick="closePositionModal()">إلغاء</button>
+      <button type="button" class="btn btn-primary" id="savePositionBtn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        <span>حفظ</span>
       </button>
     </div>
   </div>
