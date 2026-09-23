@@ -1,24 +1,19 @@
 /* =====================================================
    IT SYNDICATE — ADMIN LOGIC
-   Version: 3.2.0
+   Version: 3.3.0
    Path: js/admin.js
    =====================================================
    يحتوي على:
-   - Auth + Role check (head / vp / deputy)
-   - Tab management (10 tabs)
+   - Auth + Role check (head / vp / deputy / treasurer)
+   - Tab management (11 tabs)
    - Settings: تحميل + حفظ + شعار + صورة النقيب + backup
-   - ⚡ About Card: شعار + عنوان + نص + toggle
-   - Home: تحميل + حفظ إعدادات الرئيسية
-   - ⚡ Features Cards: إضافة/تعديل/حذف/معاينة
-   - Users: CRUD + فلاتر + تفعيل/تعطيل/رفض + تغيير باسورد
-   - Governorates: CRUD
-   - Committees: مجالس المحافظات
-   - Types: CRUD أنواع العضوية
-   - Branches: CRUD الشعب
-   - Expense Categories: CRUD
-   - Sessions: سجل النشاط + آخر الإجراءات
-   - Audit: سجل التدقيق
-   - Realtime على 6 جداول
+   - About Card + Features Cards
+   - Users CRUD + فلاتر
+   - Governorates + Committees
+   - ⚡ Governorate Subscriptions (NEW)
+   - Types + Branches + Expense Categories
+   - Sessions + Audit
+   - Role restrictions لأمين الصندوق
    ===================================================== */
 
 (function () {
@@ -28,10 +23,9 @@
      CONSTANTS
      ============================================ */
   const BRANDING_BUCKET = 'branding';
-  const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2 MB
+  const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
   const ALLOWED_LOGO_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml', 'image/webp'];
   const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-  const PAGE_SIZE = 50;
 
   const ROLE_LABELS = {
     head: 'النقيب العام',
@@ -46,7 +40,10 @@
     public_relations_head: 'رئيس العلاقات العامة',
     public_relations_vice: 'نائب العلاقات العامة',
     committees_manager_head: 'مدير اللجان',
-    committees_manager_vice: 'نائب مدير اللجان'
+    committees_manager_vice: 'نائب مدير اللجان',
+    // ⚡ NEW
+    treasurer: 'أمين الصندوق',
+    treasurer_assist: 'مساعد أمين الصندوق'
   };
 
   const COUNCIL_POSITIONS = [
@@ -66,27 +63,27 @@
   ];
 
   /* ============================================
-     ICONS LIBRARY
+     ICONS
      ============================================ */
   const ICONS = {
     edit: '<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
     trash: '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
     check: '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
     x: '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-    zap: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
-    shield: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
-    eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
-    clock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-    code: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
-    users: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
-    star: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
-    heart: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
-    award: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>',
-    trending: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
-    smartphone: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
-    briefcase: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
-    graduation: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
-    activity: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>'
+    zap: '<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+    shield: '<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+    eye: '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+    clock: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    code: '<svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+    users: '<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>',
+    star: '<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    heart: '<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+    award: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>',
+    trending: '<svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+    smartphone: '<svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+    briefcase: '<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+    graduation: '<svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+    activity: '<svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>'
   };
 
   /* ============================================
@@ -104,19 +101,18 @@
   let types = [];
   let branches = [];
   let expenseCategories = [];
-  let sessions = [];
-  let actions = [];
-  let auditLogs = [];
+  let featuresCards = [];
+
+  // ⚡ Governorate Subscriptions
+  let govSubscriptions = [];
+  let govSubsFilter = { governorate_id: '', status: '' };
 
   let editingUserId = null;
   let editingGovId = null;
   let editingTypeId = null;
   let editingBranchId = null;
   let editingExpCatId = null;
-  let currentCommitteeGovId = null;
-
-  // ⚡ Features
-  let featuresCards = [];
+  let editingGovSubId = null;
 
   let unsubscribeRealtime = null;
 
@@ -146,27 +142,9 @@
     } catch (e) { return '—'; }
   }
 
-  function timeAgo(dateStr) {
-    if (!dateStr) return '';
-    try {
-      const diff = Date.now() - new Date(dateStr).getTime();
-      const m = Math.floor(diff / 60000);
-      const h = Math.floor(diff / 3600000);
-      const d = Math.floor(diff / 86400000);
-      if (m < 1) return 'الآن';
-      if (m < 60) return `منذ ${m} دقيقة`;
-      if (h < 24) return `منذ ${h} ساعة`;
-      if (d < 30) return `منذ ${d} يوم`;
-      return formatDate(dateStr);
-    } catch (e) { return ''; }
-  }
-
-  function getInitials(name) {
-    if (!name) return '؟';
-    const parts = String(name).trim().split(/\s+/);
-    if (parts.length === 0) return '؟';
-    if (parts.length === 1) return parts[0].charAt(0);
-    return parts[0].charAt(0) + ' ' + parts[1].charAt(0);
+  function formatMoney(num) {
+    const n = Number(num) || 0;
+    return n.toLocaleString('ar-EG', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' ج.م';
   }
 
   function showToast(message, type = 'info') {
@@ -181,19 +159,13 @@
 
   function roleBadgeClass(r) {
     const map = {
-      head: 'head',
-      vice_president: 'vice_president',
-      deputy: 'deputy',
-      committee: 'committee',
-      governorate_head: 'governorate_head',
-      governorate_board: 'governorate_board',
-      branches_manager: 'branches_manager',
-      social_committee_head: 'social_committee_head',
-      social_committee_vice: 'social_committee_vice',
-      public_relations_head: 'public_relations_head',
-      public_relations_vice: 'public_relations_vice',
-      committees_manager_head: 'committees_manager_head',
-      committees_manager_vice: 'committees_manager_vice'
+      head: 'head', vice_president: 'vice_president', deputy: 'deputy',
+      committee: 'committee', governorate_head: 'governorate_head',
+      governorate_board: 'governorate_board', branches_manager: 'branches_manager',
+      social_committee_head: 'social_committee_head', social_committee_vice: 'social_committee_vice',
+      public_relations_head: 'public_relations_head', public_relations_vice: 'public_relations_vice',
+      committees_manager_head: 'committees_manager_head', committees_manager_vice: 'committees_manager_vice',
+      treasurer: 'treasurer', treasurer_assist: 'treasurer_assist'
     };
     return map[r] || 'committee';
   }
@@ -202,7 +174,8 @@
     const s = (status || '').toLowerCase();
     const map = {
       active:   { cls: 'active',   label: 'نشط' },
-      pending:  { cls: 'pending',  label: 'بانتظار التفعيل' },
+      pending:  { cls: 'pending',  label: 'قيد المراجعة' },
+      approved: { cls: 'active',   label: 'معتمد' },
       rejected: { cls: 'rejected', label: 'مرفوض' },
       disabled: { cls: 'disabled', label: 'معطّل' }
     };
@@ -241,10 +214,10 @@
         .maybeSingle();
 
       userRole = userData?.role || 'committee';
-      const allowedRoles = ['head', 'vice_president', 'deputy'];
+      const allowedRoles = ['head', 'vice_president', 'deputy', 'treasurer', 'treasurer_assist'];
 
       if (!allowedRoles.includes(userRole)) {
-        alert('هذه الصفحة مخصصة للنقيب العام ونوابه فقط');
+        alert('هذه الصفحة مخصصة للنقيب العام ونوابه وأمين الصندوق فقط');
         window.location.href = 'dashboard.html';
         return false;
       }
@@ -261,6 +234,32 @@
       console.error('[Admin] Auth error:', err);
       window.location.href = 'login.html';
       return false;
+    }
+  }
+
+  /* ============================================
+     ⚡ ROLE RESTRICTIONS — أمين الصندوق
+     ============================================ */
+  function applyRoleRestrictions() {
+    if (userRole !== 'treasurer' && userRole !== 'treasurer_assist') return;
+
+    // التابات المسموحة لأمين الصندوق
+    const allowedTabs = ['users', 'gov-subscriptions', 'sessions'];
+
+    // اخفي كل التابات التانية
+    $$('[data-tab-btn]').forEach(btn => {
+      const tab = btn.dataset.tabBtn;
+      if (!allowedTabs.includes(tab)) {
+        btn.style.display = 'none';
+      }
+    });
+
+    // فعّل تاب اشتراكات المحافظات افتراضيًا
+    const defaultTab = document.querySelector('[data-tab-btn="gov-subscriptions"]');
+    if (defaultTab) {
+      $$('[data-tab-btn]').forEach(b => b.classList.remove('active'));
+      defaultTab.classList.add('active');
+      switchTab('gov-subscriptions');
     }
   }
 
@@ -292,6 +291,7 @@
       case 'users':               loadUsers(); break;
       case 'governorates':        loadGovernorates(); break;
       case 'committees':          loadCommitteeGovernorates(); break;
+      case 'gov-subscriptions':   loadGovSubscriptions(); break;
       case 'types':               loadTypes(); break;
       case 'branches':            loadBranches(); break;
       case 'expense-categories':  loadExpenseCategories(); break;
@@ -311,9 +311,7 @@
       if (error) throw error;
 
       const map = {};
-      (data || []).forEach(r => {
-        map[r.key] = r.value;
-      });
+      (data || []).forEach(r => { map[r.key] = r.value; });
       settings = map;
 
       // Fill data-setting inputs
@@ -330,17 +328,10 @@
               el.value = (typeof val === 'object') ? JSON.stringify(val) : (val ?? '');
             }
           }
-        } else {
-          if (typeof val !== 'object') {
-            const str = String(val ?? '');
-            if (el.textContent.trim() !== str.trim()) {
-              el.textContent = str;
-            }
-          }
         }
       });
 
-      // ⚡ Logo preview
+      // Logo previews
       const logoUrl = map.site_logo_url || map.logo_url;
       if (logoUrl) {
         const lp = $('#logoPreview');
@@ -350,7 +341,6 @@
         }
       }
 
-      // ⚡ Head photo preview
       const headUrl = map.head_photo_url;
       if (headUrl) {
         const hp = $('#headPhotoPreview');
@@ -360,7 +350,6 @@
         }
       }
 
-      // ⚡ About logo preview
       const aboutLogo = map.about_card_logo;
       if (aboutLogo) {
         const al = $('#aboutLogoPreview');
@@ -370,7 +359,6 @@
         }
       }
 
-      // ⚡ Features cards
       loadFeaturesFromSettings();
 
     } catch (e) {
@@ -395,13 +383,7 @@
         updates.push({ key, value: val });
       });
 
-      // ⚡ Features cards JSON — احفظها دايمًا
       updates.push({ key: 'features_cards', value: featuresCards });
-
-      if (!updates.length) {
-        showToast('لا يوجد تغييرات', 'info');
-        return;
-      }
 
       const { error } = await client
         .from('settings')
@@ -409,17 +391,14 @@
 
       if (error) throw error;
 
-      // Update local cache
       updates.forEach(u => { settings[u.key] = u.value; });
 
-      // Cache in localStorage
       try {
         localStorage.setItem('its_site_settings', JSON.stringify(settings));
       } catch (e) {}
 
       showToast('تم حفظ الإعدادات بنجاح', 'success');
 
-      // Broadcast to other tabs
       if (window.Realtime) {
         window.Realtime.sendBroadcast('settings-updated', {});
       }
@@ -437,47 +416,27 @@
     const saveHomeBtn = $('#saveHomeBtn');
     if (saveHomeBtn) saveHomeBtn.addEventListener('click', saveSettings);
 
-    // Logo upload
     setupImageUpload({
-      btnId: 'uploadLogoBtn',
-      inputId: 'logoFileInput',
-      removeId: 'removeLogoBtn',
-      settingKey: 'site_logo_url',
-      previewId: 'logoPreview',
-      previewClass: 'has-logo',
-      allowedTypes: ALLOWED_LOGO_TYPES,
-      label: 'الشعار'
+      btnId: 'uploadLogoBtn', inputId: 'logoFileInput', removeId: 'removeLogoBtn',
+      settingKey: 'site_logo_url', previewId: 'logoPreview', previewClass: 'has-logo',
+      allowedTypes: ALLOWED_LOGO_TYPES, label: 'الشعار'
     });
 
-    // Head photo upload
     setupImageUpload({
-      btnId: 'uploadHeadPhotoBtn',
-      inputId: 'headPhotoInput',
-      removeId: 'removeHeadPhotoBtn',
-      settingKey: 'head_photo_url',
-      previewId: 'headPhotoPreview',
-      previewClass: 'has-photo',
-      allowedTypes: ALLOWED_PHOTO_TYPES,
-      label: 'صورة النقيب'
+      btnId: 'uploadHeadPhotoBtn', inputId: 'headPhotoInput', removeId: 'removeHeadPhotoBtn',
+      settingKey: 'head_photo_url', previewId: 'headPhotoPreview', previewClass: 'has-photo',
+      allowedTypes: ALLOWED_PHOTO_TYPES, label: 'صورة النقيب'
     });
 
-    // ⚡ About logo upload
     setupImageUpload({
-      btnId: 'uploadAboutLogoBtn',
-      inputId: 'aboutLogoFileInput',
-      removeId: 'removeAboutLogoBtn',
-      settingKey: 'about_card_logo',
-      previewId: 'aboutLogoPreview',
-      previewClass: 'has-logo',
-      allowedTypes: ALLOWED_LOGO_TYPES,
-      label: 'شعار قسم "عن النقابة"'
+      btnId: 'uploadAboutLogoBtn', inputId: 'aboutLogoFileInput', removeId: 'removeAboutLogoBtn',
+      settingKey: 'about_card_logo', previewId: 'aboutLogoPreview', previewClass: 'has-logo',
+      allowedTypes: ALLOWED_LOGO_TYPES, label: 'شعار قسم "عن النقابة"'
     });
 
-    // Backup
     const backupBtn = $('#backupBtn');
     if (backupBtn) backupBtn.addEventListener('click', exportBackup);
 
-    // ⚡ Feature buttons
     const addFeatureBtn = $('#addFeatureBtn');
     if (addFeatureBtn) addFeatureBtn.addEventListener('click', () => openFeatureModal(null));
 
@@ -506,14 +465,8 @@
 
   async function uploadBrandingImage(file, config) {
     try {
-      if (file.size > MAX_IMAGE_SIZE) {
-        showToast(`حجم الملف كبير — الحد الأقصى 2 ميجا`, 'error');
-        return;
-      }
-      if (!config.allowedTypes.includes(file.type)) {
-        showToast('صيغة غير مدعومة', 'error');
-        return;
-      }
+      if (file.size > MAX_IMAGE_SIZE) { showToast('حجم الملف كبير — الحد الأقصى 2 ميجا', 'error'); return; }
+      if (!config.allowedTypes.includes(file.type)) { showToast('صيغة غير مدعومة', 'error'); return; }
 
       const ext = (file.name.split('.').pop() || 'png').toLowerCase();
       const path = `${config.settingKey}_${Date.now()}.${ext}`;
@@ -539,15 +492,10 @@
         el.classList.add(config.previewClass);
       }
 
-      try {
-        localStorage.setItem('its_site_settings', JSON.stringify(settings));
-      } catch (e) {}
+      try { localStorage.setItem('its_site_settings', JSON.stringify(settings)); } catch (e) {}
 
       showToast(`تم رفع ${config.label} بنجاح`, 'success');
-
-      if (window.Realtime) {
-        window.Realtime.sendBroadcast('settings-updated', {});
-      }
+      if (window.Realtime) window.Realtime.sendBroadcast('settings-updated', {});
 
     } catch (e) {
       console.error('uploadBrandingImage:', e);
@@ -557,7 +505,6 @@
 
   async function removeBrandingImage(config) {
     if (!confirm(`متأكد من إزالة ${config.label}؟`)) return;
-
     try {
       const { error } = await client
         .from('settings')
@@ -565,23 +512,13 @@
       if (error) throw error;
 
       settings[config.settingKey] = '';
-
       const el = document.getElementById(config.previewId);
-      if (el) {
-        el.innerHTML = '';
-        el.classList.remove(config.previewClass);
-      }
+      if (el) { el.innerHTML = ''; el.classList.remove(config.previewClass); }
 
-      try {
-        localStorage.setItem('its_site_settings', JSON.stringify(settings));
-      } catch (e) {}
+      try { localStorage.setItem('its_site_settings', JSON.stringify(settings)); } catch (e) {}
 
       showToast('تم الحذف', 'success');
-
-      if (window.Realtime) {
-        window.Realtime.sendBroadcast('settings-updated', {});
-      }
-
+      if (window.Realtime) window.Realtime.sendBroadcast('settings-updated', {});
     } catch (e) {
       console.error('removeBrandingImage:', e);
       showToast('فشل الحذف', 'error');
@@ -589,31 +526,24 @@
   }
 
   /* ============================================
-     ⚡ FEATURES CARDS
+     FEATURES CARDS
      ============================================ */
   function loadFeaturesFromSettings() {
     try {
       const raw = settings.features_cards;
       if (raw) {
         const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-        if (Array.isArray(parsed)) {
-          featuresCards = parsed;
-        } else {
-          featuresCards = [];
-        }
+        featuresCards = Array.isArray(parsed) ? parsed : [];
       } else {
         featuresCards = [];
       }
     } catch (e) {
-      console.error('[Admin] loadFeaturesFromSettings error:', e);
       featuresCards = [];
     }
     renderFeaturesPreview();
   }
 
-  function getIconByName(name) {
-    return ICONS[name] || ICONS.check;
-  }
+  function getIconByName(name) { return ICONS[name] || ICONS.check; }
 
   function renderFeaturesPreview() {
     const list = document.getElementById('featuresPreviewList');
@@ -625,10 +555,7 @@
     }
 
     list.innerHTML = featuresCards.map((c, idx) => {
-      const iconHTML = c.logo
-        ? `<img src="${escapeHtml(c.logo)}" alt="" />`
-        : getIconByName(c.icon);
-
+      const iconHTML = c.logo ? `<img src="${escapeHtml(c.logo)}" alt="" />` : getIconByName(c.icon);
       return `
         <div class="feature-preview-card">
           <div class="feature-preview-icon">${iconHTML}</div>
@@ -638,10 +565,10 @@
           </div>
           <div class="feature-preview-actions">
             <button type="button" class="feature-action-btn edit" data-action="edit-feature" data-idx="${idx}" title="تعديل">
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </button>
             <button type="button" class="feature-action-btn delete" data-action="delete-feature" data-idx="${idx}" title="حذف">
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </button>
           </div>
         </div>
@@ -657,9 +584,6 @@
   }
 
   function openFeatureModal(index = null) {
-    const modal = document.getElementById('featureModal');
-    if (!modal) return;
-
     const isEdit = index !== null && index !== undefined && index >= 0;
     const feature = isEdit ? featuresCards[index] : null;
 
@@ -682,7 +606,6 @@
     if (iconInput) iconInput.value = isEdit ? (feature.icon || 'zap') : 'zap';
 
     buildIconPicker();
-
     openModal('featureModal');
   }
 
@@ -711,9 +634,7 @@
     });
   }
 
-  window.closeFeatureModal = function () {
-    closeModal('featureModal');
-  };
+  window.closeFeatureModal = function () { closeModal('featureModal'); };
 
   function saveFeature() {
     const index = document.getElementById('featureIndex')?.value;
@@ -722,17 +643,9 @@
     const icon = document.getElementById('featureIcon')?.value || 'zap';
     const logo = document.getElementById('featureLogo')?.value.trim();
 
-    if (!title) {
-      showToast('العنوان مطلوب', 'warning');
-      return;
-    }
+    if (!title) { showToast('العنوان مطلوب', 'warning'); return; }
 
-    const card = {
-      icon,
-      title,
-      text: text || ''
-    };
-
+    const card = { icon, title, text: text || '' };
     if (logo) card.logo = logo;
 
     if (index !== '' && index !== null && index !== undefined) {
@@ -801,9 +714,6 @@
       return;
     }
 
-    const govMap = {};
-    governorates.forEach(g => { govMap[g.id] = g.name; });
-
     tbody.innerHTML = list.map(u => {
       const isMe = u.id === currentUser.id;
       const isActive = u.is_active !== false;
@@ -812,32 +722,27 @@
                         : u.registration_source === 'admin' ? 'إضافة النقيب'
                         : (u.registration_source || '—');
 
-      let statusBadgeHTML = '';
-      if (isPending) {
-        statusBadgeHTML = '<span class="status-badge pending"><span class="dot"></span>بانتظار التفعيل</span>';
-      } else {
-        statusBadgeHTML = '<span class="status-badge active"><span class="dot"></span>نشط</span>';
-      }
+      let statusBadgeHTML = isPending
+        ? '<span class="status-badge pending"><span class="dot"></span>بانتظار التفعيل</span>'
+        : '<span class="status-badge active"><span class="dot"></span>نشط</span>';
 
-      let actionsHTML = '';
-
-      actionsHTML += `<button type="button" class="row-btn edit-btn" data-action="edit-user" data-id="${u.id}" title="تعديل">${ICONS.edit}</button>`;
+      let actionsHTML = `<button type="button" class="row-btn edit-btn" data-action="edit-user" data-id="${u.id}" title="تعديل">${ICONS.edit}</button>`;
 
       if (!isMe) {
         if (isActive) {
-          actionsHTML += `<button type="button" class="row-btn" data-action="deactivate-user" data-id="${u.id}" title="تعطيل" style="background:rgba(var(--warning-rgb),0.08);border:1px solid rgba(var(--warning-rgb),0.25);color:var(--warning);">
+          actionsHTML += `<button type="button" class="row-btn" data-action="deactivate-user" data-id="${u.id}" title="تعطيل" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);color:#f59e0b;">
             <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           </button>`;
         } else if (isPending) {
-          actionsHTML += `<button type="button" class="row-btn" data-action="activate-user" data-id="${u.id}" title="تفعيل" style="background:rgba(var(--success-rgb),0.08);border:1px solid rgba(var(--success-rgb),0.25);color:var(--success);">${ICONS.check}</button>`;
-          actionsHTML += `<button type="button" class="row-btn" data-action="reject-user" data-id="${u.id}" title="رفض" style="background:rgba(var(--danger-rgb),0.08);border:1px solid rgba(var(--danger-rgb),0.25);color:var(--danger);">${ICONS.x}</button>`;
+          actionsHTML += `<button type="button" class="row-btn" data-action="activate-user" data-id="${u.id}" title="تفعيل" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);color:#22c55e;">${ICONS.check}</button>`;
+          actionsHTML += `<button type="button" class="row-btn" data-action="reject-user" data-id="${u.id}" title="رفض" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;">${ICONS.x}</button>`;
         }
       }
 
       actionsHTML += `<button type="button" class="row-btn delete-btn" data-action="delete-user" data-id="${u.id}" title="حذف" ${isMe ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''}>${ICONS.trash}</button>`;
 
       return `
-        <tr style="border-bottom:1px solid var(--border-soft);${isPending ? 'background:rgba(var(--warning-rgb),0.03);' : ''}">
+        <tr style="border-bottom:1px solid var(--border-soft);${isPending ? 'background:rgba(245,158,11,0.03);' : ''}">
           <td style="padding:14px 12px;">
             <div style="font-weight:700;font-size:13.5px;color:var(--text);">${escapeHtml(u.full_name || '—')}</div>
             ${u.phone ? `<div style="font-size:11.5px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;direction:ltr;text-align:right;margin-top:2px;">${escapeHtml(u.phone)}</div>` : ''}
@@ -929,21 +834,14 @@
       $('#userNotes').value = u.notes || '';
       const passField = $('#passwordField');
       if (passField) passField.style.display = 'none';
-
       const needsGov = u.role === 'governorate_head' || u.role === 'governorate_board';
       const govField = $('#userGovernorateField');
       if (govField) govField.style.display = needsGov ? '' : 'none';
     } else {
       if (title) title.textContent = 'إضافة مستخدم جديد';
-      $('#userId').value = '';
-      $('#userFullName').value = '';
-      $('#userEmail').value = '';
-      $('#userPhone').value = '';
-      $('#userRole').value = '';
-      $('#userPosition').value = '';
-      $('#userGovernorate').value = '';
-      $('#userNotes').value = '';
-      $('#userPassword').value = '';
+      ['userId','userFullName','userEmail','userPhone','userRole','userPosition','userGovernorate','userNotes','userPassword'].forEach(id => {
+        const el = $('#' + id); if (el) el.value = '';
+      });
       const passField = $('#passwordField');
       if (passField) passField.style.display = '';
       const govField = $('#userGovernorateField');
@@ -967,16 +865,10 @@
     const notes = $('#userNotes').value.trim();
     const password = $('#userPassword')?.value || '';
 
-    if (!full_name || !email || !role) {
-      showToast('املأ الحقول الإلزامية', 'error');
-      return;
-    }
+    if (!full_name || !email || !role) { showToast('املأ الحقول الإلزامية', 'error'); return; }
 
     const needsGov = role === 'governorate_head' || role === 'governorate_board';
-    if (needsGov && !governorate_id) {
-      showToast('اختر المحافظة', 'error');
-      return;
-    }
+    if (needsGov && !governorate_id) { showToast('اختر المحافظة', 'error'); return; }
 
     try {
       if (id) {
@@ -988,35 +880,25 @@
         if (error) throw error;
         showToast('تم التحديث', 'success');
       } else {
-        if (!password || password.length < 6) {
-          showToast('كلمة المرور 6 أحرف على الأقل', 'error');
-          return;
-        }
+        if (!password || password.length < 6) { showToast('كلمة المرور 6 أحرف على الأقل', 'error'); return; }
 
         const tempClient = window.supabase.createClient(
-          window.SUPABASE_URL,
-          window.SUPABASE_KEY,
-          { auth: { persistSession: false } }
+          window.SUPABASE_URL, window.SUPABASE_KEY, { auth: { persistSession: false } }
         );
 
         const { data: signUpData, error: signUpErr } = await tempClient.auth.signUp({
-          email, password,
-          options: { data: { full_name } }
+          email, password, options: { data: { full_name } }
         });
-
         if (signUpErr) throw signUpErr;
 
         const newUserId = signUpData?.user?.id;
         if (!newUserId) throw new Error('فشل إنشاء المستخدم');
 
         const { error } = await client.from('users').upsert({
-          id: newUserId,
-          full_name, email, phone, role, position,
+          id: newUserId, full_name, email, phone, role, position,
           governorate_id: governorate_id ? parseInt(governorate_id) : null,
-          notes, is_active: true,
-          registration_source: 'admin'
+          notes, is_active: true, registration_source: 'admin'
         }, { onConflict: 'id' });
-
         if (error) throw error;
         showToast('تم إضافة المستخدم', 'success');
       }
@@ -1036,55 +918,34 @@
       if (error) throw error;
       showToast('تم الحذف', 'success');
       await loadUsers();
-    } catch (e) {
-      console.error('deleteUser:', e);
-      showToast('فشل الحذف', 'error');
-    }
+    } catch (e) { showToast('فشل الحذف', 'error'); }
   }
 
   async function activateUser(id) {
     if (!confirm('تفعيل هذا المستخدم؟')) return;
     try {
-      const { error } = await client.from('users').update({
-        is_active: true,
-        activated_at: new Date().toISOString()
-      }).eq('id', id);
-      if (error) throw error;
+      await client.from('users').update({ is_active: true, activated_at: new Date().toISOString() }).eq('id', id);
       showToast('تم التفعيل', 'success');
       await loadUsers();
-    } catch (e) {
-      showToast('فشل التفعيل: ' + e.message, 'error');
-    }
+    } catch (e) { showToast('فشل التفعيل: ' + e.message, 'error'); }
   }
 
   async function deactivateUser(id) {
     if (!confirm('تعطيل هذا المستخدم؟')) return;
     try {
-      const { error } = await client.from('users').update({
-        is_active: false,
-        deactivated_at: new Date().toISOString()
-      }).eq('id', id);
-      if (error) throw error;
+      await client.from('users').update({ is_active: false, deactivated_at: new Date().toISOString() }).eq('id', id);
       showToast('تم التعطيل', 'success');
       await loadUsers();
-    } catch (e) {
-      showToast('فشل التعطيل: ' + e.message, 'error');
-    }
+    } catch (e) { showToast('فشل التعطيل: ' + e.message, 'error'); }
   }
 
   async function rejectUser(id) {
     if (!confirm('رفض هذا المستخدم؟')) return;
     try {
-      const { error } = await client.from('users').update({
-        is_active: false,
-        rejected_at: new Date().toISOString()
-      }).eq('id', id);
-      if (error) throw error;
+      await client.from('users').update({ is_active: false, rejected_at: new Date().toISOString() }).eq('id', id);
       showToast('تم الرفض', 'success');
       await loadUsers();
-    } catch (e) {
-      showToast('فشل الرفض: ' + e.message, 'error');
-    }
+    } catch (e) { showToast('فشل الرفض: ' + e.message, 'error'); }
   }
 
   /* ============================================
@@ -1104,12 +965,10 @@
   async function loadGovernorates() {
     const tbody = document.getElementById('govTableBody');
     if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
-
     try {
       await ensureGovernoratesLoaded();
       renderGovernorates();
     } catch (e) {
-      console.error('loadGovernorates:', e);
       if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--danger);">فشل التحميل</td></tr>`;
     }
   }
@@ -1149,7 +1008,6 @@
   }
 
   function openGovModal(id = null) {
-    editingGovId = id;
     const title = $('#govModalTitle');
     if (id) {
       const g = governorates.find(x => String(x.id) === String(id));
@@ -1186,7 +1044,6 @@
       is_active: $('#govActive').checked
     };
     if (!payload.name) { showToast('الاسم مطلوب', 'error'); return; }
-
     try {
       if (id) {
         const { error } = await client.from('governorates').update(payload).eq('id', id);
@@ -1199,24 +1056,17 @@
       closeModal('govModal');
       governorates = [];
       await loadGovernorates();
-    } catch (e) {
-      console.error('saveGov:', e);
-      showToast('فشل الحفظ', 'error');
-    }
+    } catch (e) { showToast('فشل الحفظ', 'error'); }
   }
 
   async function deleteGov(id) {
     if (!confirm('متأكد من الحذف؟')) return;
     try {
-      const { error } = await client.from('governorates').delete().eq('id', id);
-      if (error) throw error;
+      await client.from('governorates').delete().eq('id', id);
       showToast('تم الحذف', 'success');
       governorates = [];
       await loadGovernorates();
-    } catch (e) {
-      console.error('deleteGov:', e);
-      showToast('فشل الحذف', 'error');
-    }
+    } catch (e) { showToast('فشل الحذف', 'error'); }
   }
 
   /* ============================================
@@ -1228,7 +1078,6 @@
     if (!sel) return;
     sel.innerHTML = '<option value="">-- اختر المحافظة --</option>' +
       governorates.map(g => `<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
-
     sel.onchange = () => loadCommitteePositions(sel.value);
   }
 
@@ -1273,7 +1122,6 @@
         b.addEventListener('click', () => openPositionModal(govId, b.dataset.posBtn, b.dataset.posLabel));
       });
     } catch (e) {
-      console.error('loadCommitteePositions:', e);
       container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--danger);">فشل التحميل</div>`;
     }
   }
@@ -1299,9 +1147,7 @@
     if (!full_name) { showToast('الاسم مطلوب', 'error'); return; }
 
     const payload = {
-      governorate_id: govId,
-      position,
-      full_name,
+      governorate_id: govId, position, full_name,
       national_id: $('#posNationalId').value.trim() || null,
       phone: $('#posPhone').value.trim() || null,
       email: $('#posEmail').value.trim() || null,
@@ -1317,24 +1163,346 @@
         .maybeSingle();
 
       if (existing?.id) {
-        const { error } = await client.from('governorate_committees').update(payload).eq('id', existing.id);
-        if (error) throw error;
+        await client.from('governorate_committees').update(payload).eq('id', existing.id);
       } else {
-        const { error } = await client.from('governorate_committees').insert(payload);
-        if (error) throw error;
+        await client.from('governorate_committees').insert(payload);
       }
       showToast('تم الحفظ', 'success');
       closeModal('positionModal');
       loadCommitteePositions(govId);
-    } catch (e) {
-      console.error('savePosition:', e);
-      showToast('فشل الحفظ', 'error');
-    }
+    } catch (e) { showToast('فشل الحفظ', 'error'); }
   }
 
   function initCommitteesTab() {
     const saveBtn = $('#savePositionBtn');
     if (saveBtn) saveBtn.addEventListener('click', savePosition);
+  }
+
+  /* ============================================
+     ⚡ GOVERNORATE SUBSCRIPTIONS
+     ============================================ */
+  async function loadGovSubscriptions() {
+    // 1) حمّل المحافظات لو مش محملة
+    await ensureGovernoratesLoaded();
+
+    // 2) املأ الفلاتر
+    const govFilter = $('#govSubsFilterGov');
+    if (govFilter) {
+      govFilter.innerHTML = '<option value="">كل المحافظات</option>' +
+        governorates.map(g => `<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
+    }
+
+    const govSubGovSelect = $('#govSubGovernorate');
+    if (govSubGovSelect) {
+      govSubGovSelect.innerHTML = '<option value="">-- اختر المحافظة --</option>' +
+        governorates.map(g => `<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
+    }
+
+    // 3) حمّل البيانات
+    try {
+      // Summary View
+      const { data: summaryData, error: sumErr } = await client
+        .from('v_governorate_financial_summary')
+        .select('*');
+      if (sumErr) throw sumErr;
+
+      // Financial Overview
+      const { data: overviewData, error: ovErr } = await client
+        .from('v_financial_overview')
+        .select('*')
+        .maybeSingle();
+      if (ovErr) console.warn('Overview view error:', ovErr);
+
+      // Subscriptions list
+      let query = client
+        .from('governorate_subscriptions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(200);
+
+      if (govSubsFilter.governorate_id) {
+        query = query.eq('governorate_id', parseInt(govSubsFilter.governorate_id));
+      }
+      if (govSubsFilter.status) {
+        query = query.eq('status', govSubsFilter.status);
+      }
+
+      const { data: subsData, error: subsErr } = await query;
+      if (subsErr) throw subsErr;
+
+      govSubscriptions = subsData || [];
+
+      renderGovSubsStats(overviewData, summaryData);
+      renderGovSummaryTable(summaryData);
+      renderGovSubsTable(govSubscriptions);
+
+    } catch (e) {
+      console.error('[Admin] loadGovSubscriptions:', e);
+      showToast('فشل تحميل اشتراكات المحافظات', 'error');
+    }
+  }
+
+  function renderGovSubsStats(overview, summary) {
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val;
+    };
+
+    if (overview) {
+      setVal('statTotalApproved', formatMoney(overview.total_approved_all || 0));
+      setVal('statTotalPending', formatMoney(overview.total_pending_all || 0));
+      setVal('statThisMonth', formatMoney(overview.this_month_all || 0));
+      setVal('statThisYear', formatMoney(overview.this_year_all || 0));
+      setVal('statPendingCount', overview.pending_transactions || 0);
+      setVal('statGovCount', overview.total_governorates || 0);
+    } else if (summary && summary.length) {
+      const totalApproved = summary.reduce((s, g) => s + Number(g.total_approved || 0), 0);
+      const totalPending = summary.reduce((s, g) => s + Number(g.total_pending || 0), 0);
+      const thisMonth = summary.reduce((s, g) => s + Number(g.this_month || 0), 0);
+      const thisYear = summary.reduce((s, g) => s + Number(g.this_year || 0), 0);
+      const pendingCount = summary.reduce((s, g) => s + Number(g.pending_count || 0), 0);
+      setVal('statTotalApproved', formatMoney(totalApproved));
+      setVal('statTotalPending', formatMoney(totalPending));
+      setVal('statThisMonth', formatMoney(thisMonth));
+      setVal('statThisYear', formatMoney(thisYear));
+      setVal('statPendingCount', pendingCount);
+      setVal('statGovCount', summary.length);
+    }
+  }
+
+  function renderGovSummaryTable(summary) {
+    const tbody = document.getElementById('govSummaryTableBody');
+    if (!tbody) return;
+
+    if (!summary || !summary.length) {
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-dim);">لا توجد بيانات</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = summary.map(g => `
+      <tr style="border-bottom:1px solid var(--border-soft);">
+        <td style="padding:14px 12px;font-weight:700;color:var(--text);">${escapeHtml(g.governorate_name || '—')}</td>
+        <td dir="ltr" style="padding:14px 12px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim);">${escapeHtml(g.governorate_code || '—')}</td>
+        <td style="padding:14px 12px;">${g.total_transactions || 0}</td>
+        <td style="padding:14px 12px;color:#22c55e;font-weight:700;">${g.approved_count || 0}</td>
+        <td style="padding:14px 12px;color:#f59e0b;font-weight:700;">${g.pending_count || 0}</td>
+        <td style="padding:14px 12px;font-family:'JetBrains Mono',monospace;font-weight:700;color:#22c55e;">${formatMoney(g.total_approved || 0)}</td>
+        <td style="padding:14px 12px;font-family:'JetBrains Mono',monospace;font-weight:700;color:#f59e0b;">${formatMoney(g.total_pending || 0)}</td>
+        <td style="padding:14px 12px;font-family:'JetBrains Mono',monospace;color:var(--accent);">${formatMoney(g.this_month || 0)}</td>
+        <td style="padding:14px 12px;font-size:12px;color:var(--text-dim);">${g.last_payment_at ? formatDate(g.last_payment_at) : '—'}</td>
+      </tr>
+    `).join('');
+  }
+
+  function renderGovSubsTable(subs) {
+    const tbody = document.getElementById('govSubsTableBody');
+    if (!tbody) return;
+
+    if (!subs || !subs.length) {
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-dim);">لا توجد اشتراكات</td></tr>`;
+      return;
+    }
+
+    const govMap = {};
+    governorates.forEach(g => { govMap[g.id] = g.name; });
+
+    tbody.innerHTML = subs.map(s => {
+      const govName = govMap[s.governorate_id] || '—';
+      const methodClass = s.payment_method || 'cash';
+      const methodLabel = {
+        cash: 'نقدي',
+        bank: 'تحويل بنكي',
+        online: 'أونلاين'
+      }[methodClass] || methodClass;
+
+      let statusCls = 'pending';
+      let statusLabel = 'قيد المراجعة';
+      if (s.status === 'approved') { statusCls = 'active'; statusLabel = 'معتمد'; }
+      else if (s.status === 'rejected') { statusCls = 'rejected'; statusLabel = 'مرفوض'; }
+
+      let actionsHTML = '';
+      if (s.status === 'pending') {
+        actionsHTML += `<button type="button" class="row-btn" data-action="approve-sub" data-id="${s.id}" title="اعتماد" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);color:#22c55e;">${ICONS.check}</button>`;
+        actionsHTML += `<button type="button" class="row-btn" data-action="reject-sub" data-id="${s.id}" title="رفض" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#ef4444;">${ICONS.x}</button>`;
+      }
+      actionsHTML += `<button type="button" class="row-btn edit-btn" data-action="edit-sub" data-id="${s.id}" title="تعديل">${ICONS.edit}</button>`;
+      actionsHTML += `<button type="button" class="row-btn delete-btn" data-action="delete-sub" data-id="${s.id}" title="حذف">${ICONS.trash}</button>`;
+
+      return `
+        <tr style="border-bottom:1px solid var(--border-soft);">
+          <td style="padding:14px 12px;font-weight:700;color:var(--text);font-size:13px;">${escapeHtml(govName)}</td>
+          <td style="padding:14px 12px;font-size:13px;color:var(--text);">${escapeHtml(s.member_name || '—')}</td>
+          <td dir="ltr" style="padding:14px 12px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dim);">${escapeHtml(s.member_national_id || '—')}</td>
+          <td style="padding:14px 12px;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent);">${formatMoney(s.amount)}</td>
+          <td style="padding:14px 12px;"><span class="payment-method-badge ${methodClass}">${escapeHtml(methodLabel)}</span></td>
+          <td style="padding:14px 12px;font-size:12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">${escapeHtml(s.payment_reference || '—')}</td>
+          <td style="padding:14px 12px;"><span class="status-badge ${statusCls}"><span class="dot"></span>${escapeHtml(statusLabel)}</span></td>
+          <td style="padding:14px 12px;font-size:12px;color:var(--text-dim);">${s.paid_at ? formatDate(s.paid_at) : '—'}</td>
+          <td style="padding:14px 12px;">
+            <div class="row-actions">${actionsHTML}</div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // Bind actions
+    tbody.querySelectorAll('[data-action="approve-sub"]').forEach(b => {
+      b.addEventListener('click', () => approveGovSub(b.dataset.id));
+    });
+    tbody.querySelectorAll('[data-action="reject-sub"]').forEach(b => {
+      b.addEventListener('click', () => rejectGovSub(b.dataset.id));
+    });
+    tbody.querySelectorAll('[data-action="edit-sub"]').forEach(b => {
+      b.addEventListener('click', () => openGovSubModal(b.dataset.id));
+    });
+    tbody.querySelectorAll('[data-action="delete-sub"]').forEach(b => {
+      b.addEventListener('click', () => deleteGovSub(b.dataset.id));
+    });
+  }
+
+  function initGovSubsTab() {
+    const refreshBtn = $('#refreshGovSubsBtn');
+    if (refreshBtn) refreshBtn.addEventListener('click', loadGovSubscriptions);
+
+    const addBtn = $('#addGovSubBtn');
+    if (addBtn) addBtn.addEventListener('click', () => openGovSubModal());
+
+    const saveBtn = $('#saveGovSubBtn');
+    if (saveBtn) saveBtn.addEventListener('click', saveGovSub);
+
+    const filterGov = $('#govSubsFilterGov');
+    if (filterGov) {
+      filterGov.addEventListener('change', () => {
+        govSubsFilter.governorate_id = filterGov.value;
+        loadGovSubscriptions();
+      });
+    }
+
+    const filterStatus = $('#govSubsFilterStatus');
+    if (filterStatus) {
+      filterStatus.addEventListener('change', () => {
+        govSubsFilter.status = filterStatus.value;
+        loadGovSubscriptions();
+      });
+    }
+  }
+
+  async function openGovSubModal(id = null) {
+    editingGovSubId = id;
+
+    await ensureGovernoratesLoaded();
+    const sel = $('#govSubGovernorate');
+    if (sel) {
+      sel.innerHTML = '<option value="">-- اختر المحافظة --</option>' +
+        governorates.map(g => `<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
+    }
+
+    const title = $('#govSubModalTitle');
+
+    if (id) {
+      const s = govSubscriptions.find(x => String(x.id) === String(id));
+      if (!s) return;
+      if (title) title.textContent = 'تعديل اشتراك';
+      $('#govSubId').value = s.id;
+      $('#govSubGovernorate').value = s.governorate_id || '';
+      $('#govSubMemberName').value = s.member_name || '';
+      $('#govSubMemberNationalId').value = s.member_national_id || '';
+      $('#govSubAmount').value = s.amount ?? '';
+      $('#govSubPaymentMethod').value = s.payment_method || 'cash';
+      $('#govSubPaymentRef').value = s.payment_reference || '';
+      $('#govSubStatus').value = s.status || 'pending';
+      $('#govSubNotes').value = s.notes || '';
+    } else {
+      if (title) title.textContent = 'إضافة اشتراك محافظة';
+      $('#govSubId').value = '';
+      ['govSubGovernorate','govSubMemberName','govSubMemberNationalId','govSubAmount','govSubPaymentRef','govSubNotes'].forEach(id => {
+        const el = $('#' + id); if (el) el.value = '';
+      });
+      $('#govSubPaymentMethod').value = 'cash';
+      $('#govSubStatus').value = 'pending';
+    }
+
+    openModal('govSubModal');
+  }
+
+  window.openGovSubModal = openGovSubModal;
+  window.closeGovSubModal = function () { closeModal('govSubModal'); };
+
+  async function saveGovSub() {
+    const id = $('#govSubId').value;
+    const governorate_id = $('#govSubGovernorate').value;
+    const member_name = $('#govSubMemberName').value.trim();
+    const amount = Number($('#govSubAmount').value);
+
+    if (!governorate_id || !member_name || !amount) {
+      showToast('املأ الحقول الإلزامية', 'error');
+      return;
+    }
+
+    const status = $('#govSubStatus').value;
+
+    const payload = {
+      governorate_id: parseInt(governorate_id),
+      member_name,
+      member_national_id: $('#govSubMemberNationalId').value.trim() || null,
+      amount,
+      payment_method: $('#govSubPaymentMethod').value || 'cash',
+      payment_reference: $('#govSubPaymentRef').value.trim() || null,
+      status,
+      notes: $('#govSubNotes').value.trim() || null,
+      paid_at: status === 'approved' ? new Date().toISOString() : null,
+      approved_at: status === 'approved' ? new Date().toISOString() : null,
+      approved_by: status === 'approved' ? currentUser.id : null
+    };
+
+    try {
+      if (id) {
+        await client.from('governorate_subscriptions').update(payload).eq('id', id);
+        showToast('تم التحديث', 'success');
+      } else {
+        await client.from('governorate_subscriptions').insert(payload);
+        showToast('تمت الإضافة', 'success');
+      }
+      closeModal('govSubModal');
+      await loadGovSubscriptions();
+    } catch (e) {
+      console.error('saveGovSub:', e);
+      showToast('فشل الحفظ: ' + e.message, 'error');
+    }
+  }
+
+  async function approveGovSub(id) {
+    if (!confirm('اعتماد هذا الاشتراك؟')) return;
+    try {
+      await client.from('governorate_subscriptions').update({
+        status: 'approved',
+        paid_at: new Date().toISOString(),
+        approved_at: new Date().toISOString(),
+        approved_by: currentUser.id
+      }).eq('id', id);
+      showToast('تم الاعتماد', 'success');
+      await loadGovSubscriptions();
+    } catch (e) { showToast('فشل الاعتماد', 'error'); }
+  }
+
+  async function rejectGovSub(id) {
+    if (!confirm('رفض هذا الاشتراك؟')) return;
+    try {
+      await client.from('governorate_subscriptions').update({
+        status: 'rejected'
+      }).eq('id', id);
+      showToast('تم الرفض', 'success');
+      await loadGovSubscriptions();
+    } catch (e) { showToast('فشل الرفض', 'error'); }
+  }
+
+  async function deleteGovSub(id) {
+    if (!confirm('متأكد من الحذف؟')) return;
+    try {
+      await client.from('governorate_subscriptions').delete().eq('id', id);
+      showToast('تم الحذف', 'success');
+      await loadGovSubscriptions();
+    } catch (e) { showToast('فشل الحذف', 'error'); }
   }
 
   /* ============================================
@@ -1344,15 +1512,11 @@
     const tbody = document.getElementById('typesTableBody');
     if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
     try {
-      const { data, error } = await client
-        .from('membership_types')
-        .select('*')
-        .order('sort_order', { ascending: true });
+      const { data, error } = await client.from('membership_types').select('*').order('sort_order', { ascending: true });
       if (error) throw error;
       types = data || [];
       renderTypes();
     } catch (e) {
-      console.error('loadTypes:', e);
       if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--danger);">فشل التحميل</td></tr>`;
     }
   }
@@ -1380,7 +1544,6 @@
         </td>
       </tr>
     `).join('');
-
     tbody.querySelectorAll('[data-edit-type]').forEach(b => b.addEventListener('click', () => openTypeModal(b.dataset.editType)));
     tbody.querySelectorAll('[data-del-type]').forEach(b => b.addEventListener('click', () => deleteType(b.dataset.delType)));
   }
@@ -1393,7 +1556,6 @@
   }
 
   function openTypeModal(id = null) {
-    editingTypeId = id;
     const title = $('#typeModalTitle');
     if (id) {
       const t = types.find(x => String(x.id) === String(id));
@@ -1409,12 +1571,9 @@
       $('#typeActive').checked = t.is_active !== false;
     } else {
       if (title) title.textContent = 'إضافة نوع عضوية';
-      $('#typeId').value = '';
-      $('#typeName').value = '';
-      $('#typeCode').value = '';
-      $('#typeDesc').value = '';
-      $('#typeFee').value = '';
-      $('#typeDuration').value = '';
+      ['typeId','typeName','typeCode','typeDesc','typeFee','typeDuration'].forEach(id => {
+        const el = $('#' + id); if (el) el.value = '';
+      });
       $('#typeSortOrder').value = 0;
       $('#typeActive').checked = true;
     }
@@ -1436,35 +1595,22 @@
       is_active: $('#typeActive').checked
     };
     if (!payload.name) { showToast('الاسم مطلوب', 'error'); return; }
-
     try {
-      if (id) {
-        const { error } = await client.from('membership_types').update(payload).eq('id', id);
-        if (error) throw error;
-      } else {
-        const { error } = await client.from('membership_types').insert(payload);
-        if (error) throw error;
-      }
+      if (id) await client.from('membership_types').update(payload).eq('id', id);
+      else await client.from('membership_types').insert(payload);
       showToast('تم الحفظ', 'success');
       closeModal('typeModal');
       await loadTypes();
-    } catch (e) {
-      console.error('saveType:', e);
-      showToast('فشل الحفظ: ' + e.message, 'error');
-    }
+    } catch (e) { showToast('فشل الحفظ: ' + e.message, 'error'); }
   }
 
   async function deleteType(id) {
     if (!confirm('متأكد من الحذف؟')) return;
     try {
-      const { error } = await client.from('membership_types').delete().eq('id', id);
-      if (error) throw error;
+      await client.from('membership_types').delete().eq('id', id);
       showToast('تم الحذف', 'success');
       await loadTypes();
-    } catch (e) {
-      console.error('deleteType:', e);
-      showToast('فشل الحذف', 'error');
-    }
+    } catch (e) { showToast('فشل الحذف', 'error'); }
   }
 
   /* ============================================
@@ -1474,15 +1620,11 @@
     const tbody = document.getElementById('branchesTableBody');
     if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
     try {
-      const { data, error } = await client
-        .from('branches')
-        .select('*')
-        .order('sort_order', { ascending: true });
+      const { data, error } = await client.from('branches').select('*').order('sort_order', { ascending: true });
       if (error) throw error;
       branches = data || [];
       renderBranches();
     } catch (e) {
-      console.error('loadBranches:', e);
       if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--danger);">فشل التحميل</td></tr>`;
     }
   }
@@ -1509,7 +1651,6 @@
         </td>
       </tr>
     `).join('');
-
     tbody.querySelectorAll('[data-edit-branch]').forEach(b => b.addEventListener('click', () => openBranchModal(b.dataset.editBranch)));
     tbody.querySelectorAll('[data-del-branch]').forEach(b => b.addEventListener('click', () => deleteBranch(b.dataset.delBranch)));
   }
@@ -1522,7 +1663,6 @@
   }
 
   function openBranchModal(id = null) {
-    editingBranchId = id;
     const title = $('#branchModalTitle');
     if (id) {
       const b = branches.find(x => String(x.id) === String(id));
@@ -1536,10 +1676,9 @@
       $('#branchActive').checked = b.is_active !== false;
     } else {
       if (title) title.textContent = 'إضافة شعبة';
-      $('#branchId').value = '';
-      $('#branchName').value = '';
-      $('#branchCode').value = '';
-      $('#branchDesc').value = '';
+      ['branchId','branchName','branchCode','branchDesc'].forEach(id => {
+        const el = $('#' + id); if (el) el.value = '';
+      });
       $('#branchSortOrder').value = 0;
       $('#branchActive').checked = true;
     }
@@ -1559,35 +1698,22 @@
       is_active: $('#branchActive').checked
     };
     if (!payload.name) { showToast('الاسم مطلوب', 'error'); return; }
-
     try {
-      if (id) {
-        const { error } = await client.from('branches').update(payload).eq('id', id);
-        if (error) throw error;
-      } else {
-        const { error } = await client.from('branches').insert(payload);
-        if (error) throw error;
-      }
+      if (id) await client.from('branches').update(payload).eq('id', id);
+      else await client.from('branches').insert(payload);
       showToast('تم الحفظ', 'success');
       closeModal('branchModal');
       await loadBranches();
-    } catch (e) {
-      console.error('saveBranch:', e);
-      showToast('فشل الحفظ: ' + e.message, 'error');
-    }
+    } catch (e) { showToast('فشل الحفظ: ' + e.message, 'error'); }
   }
 
   async function deleteBranch(id) {
     if (!confirm('متأكد من الحذف؟')) return;
     try {
-      const { error } = await client.from('branches').delete().eq('id', id);
-      if (error) throw error;
+      await client.from('branches').delete().eq('id', id);
       showToast('تم الحذف', 'success');
       await loadBranches();
-    } catch (e) {
-      console.error('deleteBranch:', e);
-      showToast('فشل الحذف', 'error');
-    }
+    } catch (e) { showToast('فشل الحذف', 'error'); }
   }
 
   /* ============================================
@@ -1597,15 +1723,11 @@
     const tbody = document.getElementById('expCatTableBody');
     if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
     try {
-      const { data, error } = await client
-        .from('expense_categories')
-        .select('*')
-        .order('sort_order', { ascending: true });
+      const { data, error } = await client.from('expense_categories').select('*').order('sort_order', { ascending: true });
       if (error) throw error;
       expenseCategories = data || [];
       renderExpenseCategories();
     } catch (e) {
-      console.error('loadExpenseCategories:', e);
       if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--danger);">فشل التحميل</td></tr>`;
     }
   }
@@ -1632,7 +1754,6 @@
         </td>
       </tr>
     `).join('');
-
     tbody.querySelectorAll('[data-edit-expcat]').forEach(b => b.addEventListener('click', () => openExpCatModal(b.dataset.editExpcat)));
     tbody.querySelectorAll('[data-del-expcat]').forEach(b => b.addEventListener('click', () => deleteExpCat(b.dataset.delExpcat)));
   }
@@ -1645,7 +1766,6 @@
   }
 
   function openExpCatModal(id = null) {
-    editingExpCatId = id;
     const title = $('#expCatModalTitle');
     if (id) {
       const c = expenseCategories.find(x => String(x.id) === String(id));
@@ -1659,10 +1779,9 @@
       $('#expCatActive').checked = c.is_active !== false;
     } else {
       if (title) title.textContent = 'إضافة تصنيف مصروفات';
-      $('#expCatId').value = '';
-      $('#expCatName').value = '';
-      $('#expCatCode').value = '';
-      $('#expCatDesc').value = '';
+      ['expCatId','expCatName','expCatCode','expCatDesc'].forEach(id => {
+        const el = $('#' + id); if (el) el.value = '';
+      });
       $('#expCatSortOrder').value = 0;
       $('#expCatActive').checked = true;
     }
@@ -1682,35 +1801,22 @@
       is_active: $('#expCatActive').checked
     };
     if (!payload.name) { showToast('الاسم مطلوب', 'error'); return; }
-
     try {
-      if (id) {
-        const { error } = await client.from('expense_categories').update(payload).eq('id', id);
-        if (error) throw error;
-      } else {
-        const { error } = await client.from('expense_categories').insert(payload);
-        if (error) throw error;
-      }
+      if (id) await client.from('expense_categories').update(payload).eq('id', id);
+      else await client.from('expense_categories').insert(payload);
       showToast('تم الحفظ', 'success');
       closeModal('expCatModal');
       await loadExpenseCategories();
-    } catch (e) {
-      console.error('saveExpCat:', e);
-      showToast('فشل الحفظ: ' + e.message, 'error');
-    }
+    } catch (e) { showToast('فشل الحفظ: ' + e.message, 'error'); }
   }
 
   async function deleteExpCat(id) {
     if (!confirm('متأكد من الحذف؟')) return;
     try {
-      const { error } = await client.from('expense_categories').delete().eq('id', id);
-      if (error) throw error;
+      await client.from('expense_categories').delete().eq('id', id);
       showToast('تم الحذف', 'success');
       await loadExpenseCategories();
-    } catch (e) {
-      console.error('deleteExpCat:', e);
-      showToast('فشل الحذف', 'error');
-    }
+    } catch (e) { showToast('فشل الحذف', 'error'); }
   }
 
   /* ============================================
@@ -1767,8 +1873,6 @@
       if (actionsCount) actionsCount.textContent = `${actionData.length} إجراء`;
     } catch (e) {
       console.error('loadSessions:', e);
-      if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--danger);">فشل التحميل</td></tr>`;
-      if (actionsBody) actionsBody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--danger);">فشل التحميل</td></tr>`;
     }
   }
 
@@ -1784,18 +1888,12 @@
     const tbody = document.getElementById('auditTableBody');
     if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
     try {
-      const { data, error } = await client
-        .from('audit_log')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100);
+      const { data, error } = await client.from('audit_log').select('*').order('created_at', { ascending: false }).limit(100);
       if (error) throw error;
-
       if (!data?.length) {
         tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-dim);">لا يوجد سجل</td></tr>`;
         return;
       }
-
       tbody.innerHTML = data.map(a => `
         <tr>
           <td>${escapeHtml(a.user_email || a.user_id || '—')}</td>
@@ -1806,7 +1904,6 @@
         </tr>
       `).join('');
     } catch (e) {
-      console.error('loadAudit:', e);
       if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--danger);">فشل التحميل</td></tr>`;
     }
   }
@@ -1823,26 +1920,26 @@
     try {
       showToast('جاري تجهيز النسخة...', 'info');
 
-      const [settingsRes, typesRes, branchesRes, usersRes, appsRes, govRes] = await Promise.all([
+      const [settingsRes, typesRes, branchesRes, usersRes, govRes, subsRes] = await Promise.all([
         client.from('settings').select('*'),
         client.from('membership_types').select('*'),
         client.from('branches').select('*'),
         client.from('users').select('*'),
-        client.from('applications').select('*').limit(500),
-        client.from('governorates').select('*')
+        client.from('governorates').select('*'),
+        client.from('governorate_subscriptions').select('*').limit(500)
       ]);
 
       const backup = {
         exported_at: new Date().toISOString(),
         exported_by: currentUser?.email || null,
-        version: '3.2.0',
+        version: '3.3.0',
         data: {
           settings: settingsRes.data || [],
           membership_types: typesRes.data || [],
           branches: branchesRes.data || [],
           users: usersRes.data || [],
-          applications: appsRes.data || [],
-          governorates: govRes.data || []
+          governorates: govRes.data || [],
+          governorate_subscriptions: subsRes.data || []
         }
       };
 
@@ -1855,16 +1952,12 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-
       showToast('تم تحميل النسخة', 'success');
-    } catch (e) {
-      console.error('exportBackup:', e);
-      showToast('فشل النسخ', 'error');
-    }
+    } catch (e) { showToast('فشل النسخ', 'error'); }
   }
 
   /* ============================================
-     NAVBAR / LOGOUT
+     NAVBAR
      ============================================ */
   function initNavbar() {
     const logoutBtn = $('#logoutBtn');
@@ -1881,74 +1974,40 @@
      REALTIME
      ============================================ */
   function initRealtime() {
-    if (!window.Realtime || typeof window.Realtime.watchMany !== 'function') {
-      console.warn('[Admin] Realtime not available');
-      return;
-    }
+    if (!window.Realtime || typeof window.Realtime.watchMany !== 'function') return;
 
     try {
       unsubscribeRealtime = window.Realtime.watchMany(
-        ['users', 'governorates', 'membership_types', 'branches', 'expense_categories', 'settings'],
+        ['users', 'governorates', 'membership_types', 'branches', 'expense_categories', 'settings', 'governorate_subscriptions'],
         (payload, table) => {
-          if (activeTab === 'users' && table === 'users') {
-            refreshUsersUI();
-          }
-
-          if (activeTab === 'governorates' && table === 'governorates') {
-            governorates = [];
-            loadGovernorates();
-          }
-
-          if (activeTab === 'types' && table === 'membership_types') {
-            loadTypes();
-          }
-
-          if (activeTab === 'branches' && table === 'branches') {
-            loadBranches();
-          }
-
-          if (activeTab === 'expense-categories' && table === 'expense_categories') {
-            loadExpenseCategories();
-          }
-
-          if ((activeTab === 'settings' || activeTab === 'home') && table === 'settings') {
-            refreshSettingsUI();
-          }
+          if (activeTab === 'users' && table === 'users') refreshUsersUI();
+          if (activeTab === 'governorates' && table === 'governorates') { governorates = []; loadGovernorates(); }
+          if (activeTab === 'types' && table === 'membership_types') loadTypes();
+          if (activeTab === 'branches' && table === 'branches') loadBranches();
+          if (activeTab === 'expense-categories' && table === 'expense_categories') loadExpenseCategories();
+          if (activeTab === 'gov-subscriptions' && table === 'governorate_subscriptions') loadGovSubscriptions();
+          if ((activeTab === 'settings' || activeTab === 'home') && table === 'settings') refreshSettingsUI();
         },
         { debounceMs: 800 }
       );
-    } catch (e) {
-      console.warn('Realtime init skipped:', e);
-    }
+    } catch (e) { console.warn('Realtime init skipped:', e); }
   }
 
-  /**
-   * ⚡ تحديث خفيف للمستخدمين
-   */
   async function refreshUsersUI() {
     try {
       const { data, error } = await client
         .from('users')
         .select('id, full_name, email, phone, role, position, governorate_id, is_active, registration_source, last_login_at, created_at')
         .order('created_at', { ascending: false });
-
       if (error) throw error;
-
       users = data || [];
       renderUsers();
-    } catch (e) {
-      console.error('[Admin] refreshUsersUI:', e);
-    }
+    } catch (e) { console.error('[Admin] refreshUsersUI:', e); }
   }
 
-  /**
-   * ⚡ تحديث خفيف للإعدادات
-   */
   async function refreshSettingsUI() {
     try {
-      const { data, error } = await client
-        .from('settings')
-        .select('key, value');
+      const { data, error } = await client.from('settings').select('key, value');
       if (error) throw error;
 
       const map = {};
@@ -1957,73 +2016,41 @@
       Object.keys(map).forEach(key => {
         const newVal = map[key];
         const oldVal = settings[key];
-
         if (JSON.stringify(newVal) === JSON.stringify(oldVal)) return;
-
         settings[key] = newVal;
 
         $$(`[data-setting="${key}"]`).forEach(el => {
           if (document.activeElement === el) return;
           if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
-            if (el.type === 'checkbox') {
-              el.checked = newVal === true || newVal === 'true' || newVal === '1';
-            } else {
-              el.value = (typeof newVal === 'object') ? JSON.stringify(newVal) : (newVal ?? '');
-            }
+            if (el.type === 'checkbox') el.checked = newVal === true || newVal === 'true' || newVal === '1';
+            else el.value = (typeof newVal === 'object') ? JSON.stringify(newVal) : (newVal ?? '');
           }
         });
 
-        // ⚡ Logo previews
         if (key === 'site_logo_url' || key === 'logo_url') {
           const lp = $('#logoPreview');
           if (lp) {
-            if (newVal) {
-              lp.innerHTML = `<img src="${escapeHtml(newVal)}" alt="logo" />`;
-              lp.classList.add('has-logo');
-            } else {
-              lp.innerHTML = '';
-              lp.classList.remove('has-logo');
-            }
+            if (newVal) { lp.innerHTML = `<img src="${escapeHtml(newVal)}" alt="logo" />`; lp.classList.add('has-logo'); }
+            else { lp.innerHTML = ''; lp.classList.remove('has-logo'); }
           }
         }
-
         if (key === 'head_photo_url') {
           const hp = $('#headPhotoPreview');
           if (hp) {
-            if (newVal) {
-              hp.innerHTML = `<img src="${escapeHtml(newVal)}" alt="head" />`;
-              hp.classList.add('has-photo');
-            } else {
-              hp.innerHTML = '';
-              hp.classList.remove('has-photo');
-            }
+            if (newVal) { hp.innerHTML = `<img src="${escapeHtml(newVal)}" alt="head" />`; hp.classList.add('has-photo'); }
+            else { hp.innerHTML = ''; hp.classList.remove('has-photo'); }
           }
         }
-
-        // ⚡ About logo preview
         if (key === 'about_card_logo') {
           const al = $('#aboutLogoPreview');
           if (al) {
-            if (newVal) {
-              al.innerHTML = `<img src="${escapeHtml(newVal)}" alt="" />`;
-              al.classList.add('has-logo');
-            } else {
-              al.innerHTML = '';
-              al.classList.remove('has-logo');
-            }
+            if (newVal) { al.innerHTML = `<img src="${escapeHtml(newVal)}" alt="" />`; al.classList.add('has-logo'); }
+            else { al.innerHTML = ''; al.classList.remove('has-logo'); }
           }
         }
-
-        // ⚡ Features cards
-        if (key === 'features_cards') {
-          loadFeaturesFromSettings();
-        }
+        if (key === 'features_cards') loadFeaturesFromSettings();
       });
-
-      console.log('[Admin] Settings refreshed (light)');
-    } catch (e) {
-      console.error('[Admin] refreshSettingsUI:', e);
-    }
+    } catch (e) { console.error('[Admin] refreshSettingsUI:', e); }
   }
 
   /* ============================================
@@ -2046,6 +2073,7 @@
       initUsersTab();
       initGovernoratesTab();
       initCommitteesTab();
+      initGovSubsTab();
       initTypesTab();
       initBranchesTab();
       initExpenseCategoriesTab();
@@ -2053,27 +2081,26 @@
       initAuditTab();
       initNavbar();
 
-      // Modal backdrops
-      ['userModal', 'typeModal', 'branchModal', 'govModal', 'expCatModal', 'featureModal', 'positionModal', 'changePasswordModal'].forEach(id => {
+      ['userModal', 'typeModal', 'branchModal', 'govModal', 'expCatModal', 'featureModal', 'positionModal', 'changePasswordModal', 'govSubModal'].forEach(id => {
         const m = document.getElementById(id);
-        if (m) {
-          m.addEventListener('click', (e) => {
-            if (e.target === m) closeModal(id);
-          });
-        }
+        if (m) m.addEventListener('click', (e) => { if (e.target === m) closeModal(id); });
       });
 
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-          ['userModal', 'typeModal', 'branchModal', 'govModal', 'expCatModal', 'featureModal', 'positionModal', 'changePasswordModal'].forEach(closeModal);
+          ['userModal', 'typeModal', 'branchModal', 'govModal', 'expCatModal', 'featureModal', 'positionModal', 'changePasswordModal', 'govSubModal'].forEach(closeModal);
         }
       });
 
-      // Setup realtime
       initRealtime();
 
-      // Load initial tab
-      switchTab('settings');
+      // ⚡ طبّق قيود الدور
+      applyRoleRestrictions();
+
+      // لو الدور مش أمين صندوق، افتح الإعدادات
+      if (userRole !== 'treasurer' && userRole !== 'treasurer_assist') {
+        switchTab('settings');
+      }
 
       console.log('[Admin] Ready. Role:', userRole);
     });
