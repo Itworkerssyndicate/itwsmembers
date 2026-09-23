@@ -1,14 +1,15 @@
 /* =====================================================
    IT SYNDICATE — SETTINGS MANAGER
-   Version: 3.0.0
+   Version: 3.1.0
    Path: js/settings.js
    =====================================================
    يحتوي على:
    - تحميل الإعدادات من Supabase
-   - تطبيقها على DOM (data-site-name / data-head-name ...)
+   - تطبيقها على DOM (data-site-name / data-setting / ...)
    - مزامنة Realtime
    - تخزين مؤقت في localStorage
-   - دعم الـ events
+   - دعم events + broadcast
+   - منع applyToDom المتكرر
    ===================================================== */
 
 (function () {
@@ -26,7 +27,38 @@
      ============================================ */
   let settings = {};
   let isLoaded = false;
+  let isFreshLoaded = false;
   let loadPromise = null;
+  let realtimeSetup = false;
+  let lastApplyHash = '';
+
+  /* ============================================
+     HELPERS
+     ============================================ */
+  function hashSettings(s) {
+    if (!s) return '';
+    try {
+      const keys = Object.keys(s).sort();
+      return keys.map(k => `${k}=${String(s[k] ?? '')}`).join('|');
+    } catch (e) {
+      return String(Date.now());
+    }
+  }
+
+  function setTextIfChanged(el, newText) {
+    if (!el) return;
+    const t = String(newText ?? '');
+    if (el.textContent !== t) {
+      el.textContent = t;
+    }
+  }
+
+  function setAttrIfChanged(el, attr, val) {
+    if (!el) return;
+    if (el.getAttribute(attr) !== val) {
+      el.setAttribute(attr, val);
+    }
+  }
 
   /* ============================================
      APPLY TO DOM
@@ -34,49 +66,72 @@
   function applyToDom(s) {
     if (!s) return;
 
-    // ========== Site Name ==========
+    // ⚡ منع applyToDom المتكرر بنفس القيم
+    const newHash = hashSettings(s);
+    if (newHash === lastApplyHash) {
+      // حتى لو نفس الـ hash، بس لازم نطلق event عشان الصفحات التانية
+      window.dispatchEvent(new CustomEvent('settings-applied', { detail: { settings: s } }));
+      return;
+    }
+    lastApplyHash = newHash;
+
+    /* ==========================================
+       Site Name
+       ========================================== */
     document.querySelectorAll('[data-site-name]').forEach(el => {
-      if (s.site_name) el.textContent = s.site_name;
+      if (s.site_name) setTextIfChanged(el, s.site_name);
     });
 
     document.querySelectorAll('[data-site-name-en]').forEach(el => {
-      if (s.site_name_en) el.textContent = s.site_name_en;
+      if (s.site_name_en) setTextIfChanged(el, s.site_name_en);
     });
 
-    // ========== Page Title ==========
+    /* ==========================================
+       Page Title
+       ========================================== */
     if (s.site_name) {
-      const baseTitle = document.title.split(' — ')[0].split(' - ')[0];
-      if (baseTitle && !document.title.includes(s.site_name)) {
-        document.title = `${baseTitle} — ${s.site_name}`;
+      const parts = document.title.split(' — ');
+      const baseTitle = parts[0] || document.title;
+      const newTitle = baseTitle.includes(s.site_name) ? document.title : `${baseTitle} — ${s.site_name}`;
+      if (document.title !== newTitle) {
+        document.title = newTitle;
       }
     }
 
-    // ========== Logo ==========
+    /* ==========================================
+       Logo
+       ========================================== */
     if (s.site_logo_url) {
-      // Update nav logo
+      // Nav logo
       const navImg = document.getElementById('navLogoImg');
       const navFallback = document.getElementById('navLogoFallback');
       if (navImg) {
-        navImg.onload = () => {
-          navImg.style.display = '';
-          if (navFallback) navFallback.style.display = 'none';
-        };
-        navImg.onerror = () => {
-          navImg.style.display = 'none';
-          if (navFallback) navFallback.style.display = '';
-        };
-        navImg.src = s.site_logo_url;
+        if (navImg.dataset.currentSrc !== s.site_logo_url) {
+          navImg.dataset.currentSrc = s.site_logo_url;
+          navImg.onload = () => {
+            navImg.style.display = '';
+            if (navFallback) navFallback.style.display = 'none';
+          };
+          navImg.onerror = () => {
+            navImg.style.display = 'none';
+            if (navFallback) navFallback.style.display = '';
+          };
+          navImg.src = s.site_logo_url;
+        }
       }
 
-      // Update all [data-logo]
+      // data-logo
       document.querySelectorAll('[data-logo]').forEach(el => {
         if (el.tagName === 'IMG') {
-          el.src = s.site_logo_url;
+          if (el.dataset.currentSrc !== s.site_logo_url) {
+            el.dataset.currentSrc = s.site_logo_url;
+            el.src = s.site_logo_url;
+          }
           el.style.display = '';
         }
       });
 
-      // Update all logo images by ID pattern
+      // Logo IDs
       const logoIds = [
         'logoImg', 'aboutLogoImg', 'footerLogoImg',
         'brandLogoImg', 'receiptLogoImg'
@@ -85,15 +140,18 @@
         const img = document.getElementById(id);
         const fb = document.getElementById(id.replace('Img', 'Fallback'));
         if (img) {
-          img.onload = () => {
-            img.style.display = '';
-            if (fb) fb.style.display = 'none';
-          };
-          img.onerror = () => {
-            img.style.display = 'none';
-            if (fb) fb.style.display = '';
-          };
-          img.src = s.site_logo_url;
+          if (img.dataset.currentSrc !== s.site_logo_url) {
+            img.dataset.currentSrc = s.site_logo_url;
+            img.onload = () => {
+              img.style.display = '';
+              if (fb) fb.style.display = 'none';
+            };
+            img.onerror = () => {
+              img.style.display = 'none';
+              if (fb) fb.style.display = '';
+            };
+            img.src = s.site_logo_url;
+          }
         }
       });
 
@@ -101,24 +159,28 @@
       const fav = document.getElementById('faviconLink');
       const apple = document.getElementById('appleTouchIcon');
       if (fav) {
-        fav.type = 'image/png';
-        fav.href = s.site_logo_url;
+        setAttrIfChanged(fav, 'type', 'image/png');
+        setAttrIfChanged(fav, 'href', s.site_logo_url);
       }
-      if (apple) apple.href = s.site_logo_url;
+      if (apple) {
+        setAttrIfChanged(apple, 'href', s.site_logo_url);
+      }
     }
 
-    // ========== Head Info ==========
+    /* ==========================================
+       Head Info
+       ========================================== */
     document.querySelectorAll('[data-head-name]').forEach(el => {
-      if (s.head_name) el.textContent = s.head_name;
+      if (s.head_name) setTextIfChanged(el, s.head_name);
     });
 
     document.querySelectorAll('[data-head-title]').forEach(el => {
-      if (s.head_title) el.textContent = s.head_title;
+      if (s.head_title) setTextIfChanged(el, s.head_title);
     });
 
     document.querySelectorAll('[data-head-message]').forEach(el => {
       if (s.head_message) {
-        el.textContent = s.head_message;
+        setTextIfChanged(el, s.head_message);
         el.style.display = 'block';
       }
     });
@@ -126,7 +188,10 @@
     if (s.head_photo_url) {
       document.querySelectorAll('[data-head-photo]').forEach(el => {
         if (el.tagName === 'IMG') {
-          el.src = s.head_photo_url;
+          if (el.dataset.currentSrc !== s.head_photo_url) {
+            el.dataset.currentSrc = s.head_photo_url;
+            el.src = s.head_photo_url;
+          }
           el.style.display = '';
         }
       });
@@ -134,62 +199,70 @@
       const headImg = document.getElementById('headPhotoImg');
       const headFallback = document.getElementById('headPhotoFallback');
       if (headImg) {
-        headImg.onload = () => {
-          headImg.style.display = '';
-          if (headFallback) headFallback.style.display = 'none';
-        };
-        headImg.onerror = () => {
-          headImg.style.display = 'none';
-          if (headFallback) headFallback.style.display = '';
-        };
-        headImg.src = s.head_photo_url;
+        if (headImg.dataset.currentSrc !== s.head_photo_url) {
+          headImg.dataset.currentSrc = s.head_photo_url;
+          headImg.onload = () => {
+            headImg.style.display = '';
+            if (headFallback) headFallback.style.display = 'none';
+          };
+          headImg.onerror = () => {
+            headImg.style.display = 'none';
+            if (headFallback) headFallback.style.display = '';
+          };
+          headImg.src = s.head_photo_url;
+        }
       }
     }
 
-    // ========== Contact Info ==========
+    /* ==========================================
+       Contact
+       ========================================== */
     document.querySelectorAll('[data-contact-email]').forEach(el => {
       if (s.contact_email) {
-        el.textContent = s.contact_email;
-        if (el.tagName === 'A') el.href = `mailto:${s.contact_email}`;
+        setTextIfChanged(el, s.contact_email);
+        if (el.tagName === 'A') setAttrIfChanged(el, 'href', `mailto:${s.contact_email}`);
       }
     });
 
     document.querySelectorAll('[data-contact-phone]').forEach(el => {
       if (s.contact_phone) {
-        el.textContent = s.contact_phone;
-        if (el.tagName === 'A') el.href = `tel:${s.contact_phone}`;
+        setTextIfChanged(el, s.contact_phone);
+        if (el.tagName === 'A') setAttrIfChanged(el, 'href', `tel:${s.contact_phone}`);
       }
     });
 
     document.querySelectorAll('[data-contact-address]').forEach(el => {
-      if (s.contact_address) el.textContent = s.contact_address;
+      if (s.contact_address) setTextIfChanged(el, s.contact_address);
     });
 
-    // ========== Footer ==========
+    /* ==========================================
+       Footer
+       ========================================== */
     document.querySelectorAll('[data-footer-text]').forEach(el => {
-      if (s.footer_text) el.textContent = s.footer_text;
+      if (s.footer_text) setTextIfChanged(el, s.footer_text);
     });
 
     document.querySelectorAll('[data-footer-description]').forEach(el => {
-      if (s.footer_description) el.textContent = s.footer_description;
+      if (s.footer_description) setTextIfChanged(el, s.footer_description);
     });
 
-    // Footer button
     const footerBtn = document.getElementById('footerButton');
     if (footerBtn) {
       if (s.footer_button_name && s.footer_button_url) {
-        footerBtn.textContent = s.footer_button_name;
-        footerBtn.href = s.footer_button_url;
+        setTextIfChanged(footerBtn, s.footer_button_name);
+        setAttrIfChanged(footerBtn, 'href', s.footer_button_url);
         footerBtn.style.display = 'inline-flex';
       } else {
         footerBtn.style.display = 'none';
       }
     }
 
-    // ========== Hero ==========
+    /* ==========================================
+       Hero
+       ========================================== */
     const setText = (sel, val) => {
       if (!val) return;
-      document.querySelectorAll(sel).forEach(el => el.textContent = val);
+      document.querySelectorAll(sel).forEach(el => setTextIfChanged(el, val));
     };
 
     setText('[data-hero-badge]', s.hero_badge);
@@ -197,22 +270,25 @@
     setText('[data-hero-title-2]', s.hero_title_2);
     setText('[data-hero-description]', s.hero_description);
 
-    // Hero buttons
     const heroBtn1 = document.getElementById('heroBtn1');
     const heroBtn2 = document.getElementById('heroBtn2');
-    if (heroBtn1 && s.hero_btn1_url) heroBtn1.href = s.hero_btn1_url;
-    if (heroBtn2 && s.hero_btn2_url) heroBtn2.href = s.hero_btn2_url;
+    if (heroBtn1 && s.hero_btn1_url) setAttrIfChanged(heroBtn1, 'href', s.hero_btn1_url);
+    if (heroBtn2 && s.hero_btn2_url) setAttrIfChanged(heroBtn2, 'href', s.hero_btn2_url);
 
-    // ========== Code Card ==========
+    /* ==========================================
+       Code Card
+       ========================================== */
     setText('[data-code-card-name]', s.code_card_name);
     setText('[data-code-card-status]', s.code_card_status);
 
     const codeCardBody = document.getElementById('codeCardBody');
     if (codeCardBody && s.code_card_content) {
-      codeCardBody.textContent = s.code_card_content;
+      setTextIfChanged(codeCardBody, s.code_card_content);
     }
 
-    // ========== Section Titles ==========
+    /* ==========================================
+       Section Titles
+       ========================================== */
     setText('[data-types-title]', s.types_title);
     setText('[data-types-subtitle]', s.types_subtitle);
 
@@ -224,24 +300,88 @@
       setText(`[data-step${i}-desc]`, s[`step${i}_desc`]);
     }
 
-    // ========== CTA ==========
+    /* ==========================================
+       CTA
+       ========================================== */
     setText('[data-cta-title]', s.cta_title);
     setText('[data-cta-subtitle]', s.cta_subtitle);
 
     const ctaBtn = document.getElementById('ctaBtn');
-    if (ctaBtn && s.cta_btn_url) ctaBtn.href = s.cta_btn_url;
+    if (ctaBtn && s.cta_btn_url) setAttrIfChanged(ctaBtn, 'href', s.cta_btn_url);
 
-    // ========== Terms ==========
+    /* ==========================================
+       Terms
+       ========================================== */
     setText('[data-terms-text]', s.terms_text);
 
-    // ========== Health Care ==========
+    /* ==========================================
+       ⚡ GENERIC: [data-setting] — نمط home.html
+       ========================================== */
+    document.querySelectorAll('[data-setting]').forEach(el => {
+      const key = el.dataset.setting;
+      if (!key || !(key in s)) return;
+
+      const val = s[key];
+      const tag = el.tagName;
+
+      // صور
+      if (tag === 'IMG' && (key.endsWith('_url') || key.endsWith('_logo') || key.endsWith('_photo'))) {
+        if (el.dataset.currentSrc !== val) {
+          el.dataset.currentSrc = val;
+          el.src = val;
+        }
+        return;
+      }
+
+      // Checkbox
+      if (el.type === 'checkbox') {
+        const shouldCheck = val === true || val === 'true' || val === '1';
+        if (el.checked !== shouldCheck) el.checked = shouldCheck;
+        return;
+      }
+
+      // Inputs / Textareas / Selects
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+        // متلمسش اللي المستخدم بيكتب فيه دلوقتي
+        if (document.activeElement === el) return;
+        const strVal = String(val ?? '');
+        if (el.value !== strVal) el.value = strVal;
+        return;
+      }
+
+      // عناصر نصية
+      const newText = String(val ?? '');
+      if (el.textContent.trim() !== newText.trim()) {
+        el.textContent = newText;
+      }
+    });
+
+    /* ==========================================
+       ⚡ data-site-name-en (النمط الأصلي)
+       ========================================== */
+    document.querySelectorAll('[data-site-name-en]').forEach(el => {
+      if (s.site_name_en) setTextIfChanged(el, s.site_name_en);
+    });
+
+    /* ==========================================
+       ⚡ data-setting="site_name_en" (نمط home.html)
+       ========================================== */
+    document.querySelectorAll('[data-setting="site_name_en"]').forEach(el => {
+      if (s.site_name_en) setTextIfChanged(el, s.site_name_en);
+    });
+
+    /* ==========================================
+       Health Care
+       ========================================== */
     if (s.health_care_enabled === 'false' || s.health_care_enabled === false) {
       document.querySelectorAll('[data-health-care-section]').forEach(el => {
         el.style.display = 'none';
       });
     }
 
-    // ========== Maintenance Mode ==========
+    /* ==========================================
+       Maintenance Mode
+       ========================================== */
     const isMaintenance = s.maintenance_mode === 'true' || s.maintenance_mode === true;
     if (isMaintenance) {
       const page = window.location.pathname.split('/').pop();
@@ -254,7 +394,9 @@
       }
     }
 
-    // ========== Dispatch Event ==========
+    /* ==========================================
+       Dispatch Events
+       ========================================== */
     window.dispatchEvent(new CustomEvent('settings-applied', { detail: { settings: s } }));
   }
 
@@ -272,7 +414,7 @@
 
     loadPromise = (async () => {
       try {
-        // 1) Try cache first
+        /* 1) Cache first */
         if (!force) {
           try {
             const cached = localStorage.getItem(STORAGE_KEY);
@@ -286,7 +428,7 @@
           } catch (e) {}
         }
 
-        // 2) Fetch from Supabase
+        /* 2) Fetch from Supabase */
         if (typeof window.getAllSettings !== 'function') {
           await waitForSupabase();
         }
@@ -297,13 +439,14 @@
             settings = fresh;
             applyToDom(settings);
             isLoaded = true;
+            isFreshLoaded = true;
 
-            // Cache in localStorage
+            // Cache
             try {
               localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
             } catch (e) {}
 
-            // Broadcast event
+            // ⚡ Dispatch settings-ready
             window.dispatchEvent(new CustomEvent('settings-ready', {
               detail: { settings }
             }));
@@ -352,18 +495,29 @@
      REALTIME
      ============================================ */
   function setupRealtime() {
-    if (typeof window.watch !== 'function') return;
+    if (realtimeSetup) return;
+
+    // ⚡ نستخدم window.Realtime مش window.watch
+    if (!window.Realtime || typeof window.Realtime.watch !== 'function') {
+      // حاول تاني بعد شوية
+      setTimeout(setupRealtime, 500);
+      return;
+    }
+
+    realtimeSetup = true;
 
     try {
-      window.watch('settings', async () => {
-        // Clear cache + reload
+      window.Realtime.watch('settings', async () => {
         if (typeof window.clearSettingsCache === 'function') {
           window.clearSettingsCache();
         }
+        // ⚡ force reload بس
+        isLoaded = false;
         await load(true);
-      }, { debounceMs: 500 });
+      }, { debounceMs: 800 });
     } catch (e) {
       console.warn('[Settings] Realtime setup failed:', e.message);
+      realtimeSetup = false;
     }
   }
 
@@ -371,21 +525,23 @@
      INIT
      ============================================ */
   async function init() {
-    // 1) Load immediately (from cache)
+    // 1) Load from cache أولاً
     await load();
 
-    // 2) Setup realtime
+    // 2) Realtime
     setupRealtime();
 
-    // 3) Re-sync when Supabase is ready
+    // 3) Sync from Supabase (مرة واحدة بس)
+    const doFreshLoad = () => {
+      if (!isFreshLoaded) {
+        load(true);
+      }
+    };
+
     if (typeof window.onSupabaseReady === 'function') {
-      window.onSupabaseReady(() => {
-        load(true);
-      });
+      window.onSupabaseReady(doFreshLoad);
     } else {
-      window.addEventListener('supabase-ready', () => {
-        load(true);
-      }, { once: true });
+      window.addEventListener('supabase-ready', doFreshLoad, { once: true });
     }
   }
 
@@ -397,7 +553,9 @@
     get,
     getAll,
     apply: applyToDom,
-    _settings: () => settings
+    _settings: () => settings,
+    _isLoaded: () => isLoaded,
+    _isFreshLoaded: () => isFreshLoaded
   };
 
   // Shortcut
