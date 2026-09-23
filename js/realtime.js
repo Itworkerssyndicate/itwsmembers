@@ -1,6 +1,6 @@
 /* =====================================================
    IT SYNDICATE — REALTIME ENGINE
-   Version: 3.0.0
+   Version: 3.1.0
    Path: js/realtime.js
    =====================================================
    يوفر:
@@ -11,6 +11,7 @@
    - sendBroadcast(): إرسال حدث لباقي التابات
    - onBroadcast() : الاستماع لأحداث التابات
    - Debounce ذكي لمنع refresh المتكرر
+   - دعم governorate_subscriptions تلقائيًا
    ===================================================== */
 
 (function () {
@@ -42,7 +43,6 @@
 
   function makeKey(table, filter) {
     if (!filter) return `rt:${table}`;
-    // filter object -> stable string
     const parts = Object.keys(filter)
       .sort()
       .map(k => `${k}=${safeString(filter[k])}`)
@@ -67,7 +67,6 @@
   }
 
   function log(...args) {
-    // غيّرها لـ console.log لو محتاج تشوف اللوجات
     // console.log('[Realtime]', ...args);
   }
 
@@ -96,27 +95,17 @@
 
           log('broadcast received:', eventName, data);
 
-          // استدعاء المستمعين المسجلين
           const listeners = broadcastListeners.get(eventName);
           if (listeners) {
             listeners.forEach(cb => {
-              try {
-                cb(data, eventName);
-              } catch (e) {
-                console.error('[Realtime] broadcast listener error:', e);
-              }
+              try { cb(data, eventName); } catch (e) {}
             });
           }
 
-          // استدعاء المستمعين للحدث العام
           const globalListeners = broadcastListeners.get('*');
           if (globalListeners) {
             globalListeners.forEach(cb => {
-              try {
-                cb(data, eventName);
-              } catch (e) {
-                console.error('[Realtime] global broadcast listener error:', e);
-              }
+              try { cb(data, eventName); } catch (e) {}
             });
           }
         })
@@ -135,17 +124,6 @@
   /* ============================================
      CORE: WATCH
      ============================================ */
-  /**
-   * watch(table, callback, options)
-   * @param {string} table - اسم الجدول
-   * @param {Function} callback - (payload, table) => void
-   * @param {Object} options
-   *   - event: 'INSERT' | 'UPDATE' | 'DELETE' | '*' (default: '*')
-   *   - filter: { column: value }  (optional)
-   *   - debounceMs: number (default: 400)
-   *   - key: string (custom key, default auto)
-   * @returns {Function} unsubscribe function
-   */
   function watch(table, callback, options = {}) {
     if (!table || typeof callback !== 'function') {
       warn('watch: invalid args');
@@ -153,7 +131,6 @@
     }
 
     if (!client) {
-      // حاول تاني بعد شوية
       setTimeout(() => watch(table, callback, options), 150);
       return () => {};
     }
@@ -165,7 +142,7 @@
 
     const key = customKey || makeKey(table, filter);
 
-    // لو موجود بالفعل، هنعيد استخدامه ونضيف الـ callback
+    // لو موجود بالفعل، أضف الـ callback
     if (channels.has(key)) {
       const existing = channels.get(key);
       existing.callbacks.add(callback);
@@ -175,29 +152,22 @@
     // إنشاء channel جديد
     let channel;
     try {
-      // اسم القناة لازم يكون فريد ومقبول من Supabase
       const channelName = `rt-${table}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       channel = client.channel(channelName);
 
       const callbacks = new Set([callback]);
 
       const handler = (payload) => {
-        // Debounce عشان نمنع refresh المتكرر
         debounce(key, () => {
           log(`change on ${table}:`, payload?.eventType);
           callbacks.forEach(cb => {
-            try {
-              cb(payload, table);
-            } catch (e) {
-              console.error(`[Realtime] watch callback error (${table}):`, e);
-            }
+            try { cb(payload, table); } catch (e) {}
           });
         }, debounceMs);
       };
 
       // بناء الـ on() حسب event و filter
       if (filter && typeof filter === 'object') {
-        // filter: { column: value } — Supabase بياخد string "column=eq.value"
         const filterStr = Object.keys(filter)
           .map(col => `${col}=eq.${filter[col]}`)
           .join('&');
@@ -223,12 +193,7 @@
       });
 
       channels.set(key, {
-        channel,
-        table,
-        callbacks,
-        event,
-        filter,
-        debounceMs
+        channel, table, callbacks, event, filter, debounceMs
       });
 
       log('watching:', key);
@@ -249,7 +214,6 @@
 
     if (callback) {
       entry.callbacks.delete(callback);
-      // لو مفيش callbacks تانية، اقفل القناة
       if (entry.callbacks.size === 0) {
         closeChannel(key);
       }
@@ -270,7 +234,6 @@
       warn('closeChannel error:', e);
     }
 
-    // امسح الـ debounce timer
     if (debounceTimers.has(key)) {
       clearTimeout(debounceTimers.get(key));
       debounceTimers.delete(key);
@@ -289,9 +252,7 @@
     Array.from(channels.keys()).forEach(closeChannel);
 
     if (broadcastChannel) {
-      try {
-        broadcastChannel.unsubscribe();
-      } catch (e) {}
+      try { broadcastChannel.unsubscribe(); } catch (e) {}
       broadcastChannel = null;
     }
 
@@ -303,13 +264,6 @@
   /* ============================================
      WATCH MANY
      ============================================ */
-  /**
-   * watchMany(tables, callback, options)
-   * @param {string[]} tables
-   * @param {Function} callback - (payload, table) => void
-   * @param {Object} options
-   * @returns {Function} unsubscribe function
-   */
   function watchMany(tables, callback, options = {}) {
     if (!Array.isArray(tables) || !tables.length) {
       warn('watchMany: invalid tables');
@@ -320,9 +274,7 @@
       return () => {};
     }
 
-    const unsubscribers = tables.map(t =>
-      watch(t, callback, options)
-    );
+    const unsubscribers = tables.map(t => watch(t, callback, options));
 
     return () => {
       unsubscribers.forEach(fn => {
@@ -334,13 +286,9 @@
   /* ============================================
      BROADCAST API
      ============================================ */
-  /**
-   * إرسال حدث لكل التابات المفتوحة
-   */
   function sendBroadcast(event, payload = {}) {
     if (!event) return false;
 
-    // إرسال عبر Supabase Broadcast
     const ch = initBroadcast();
     if (ch) {
       try {
@@ -354,14 +302,12 @@
       }
     }
 
-    // إرسال محلي في نفس التاب (لأي listeners محليين)
     try {
       window.dispatchEvent(new CustomEvent('broadcast-' + event, {
         detail: payload || {}
       }));
     } catch (e) {}
 
-    // إرسال event عام
     try {
       window.dispatchEvent(new CustomEvent('broadcast', {
         detail: { event, payload: payload || {} }
@@ -371,9 +317,6 @@
     return true;
   }
 
-  /**
-   * الاستماع لأحداث Broadcast
-   */
   function onBroadcast(event, callback) {
     if (!event || typeof callback !== 'function') return () => {};
 
@@ -382,7 +325,6 @@
     }
     broadcastListeners.get(event).add(callback);
 
-    // تأكد إن الـ broadcast channel شغال
     initBroadcast();
 
     return () => {
@@ -415,7 +357,6 @@
       isReady = true;
       log('Realtime ready');
 
-      // جهّز الـ broadcast channel
       initBroadcast();
     });
   }
@@ -431,7 +372,6 @@
     sendBroadcast,
     onBroadcast,
 
-    // معلومات
     get isReady() { return isReady; },
     get activeCount() { return channels.size; },
     getChannelKeys() { return Array.from(channels.keys()); }
