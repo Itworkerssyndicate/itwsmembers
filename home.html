@@ -1719,16 +1719,19 @@
     renderSiteNameEn(settings);
   }
 
-  /* ⚡ تطبيق الثيم الافتراضي */
-  function applyDefaultTheme(settings) {
-    if (!settings || !settings.default_theme) return;
-    if (!window.ThemeManager) return;
+/* ⚡ تطبيق الثيم الافتراضي */
+function applyDefaultTheme(settings) {
+  if (!settings || !settings.default_theme) return;
+  if (!window.ThemeManager) return;
 
-    if (typeof window.ThemeManager.applyDefault === 'function') {
-      window.ThemeManager.applyDefault(settings.default_theme);
-    }
+  // ⚡ استخدم applyDefault الجديدة
+  if (typeof window.ThemeManager.applyDefault === 'function') {
+    window.ThemeManager.applyDefault(settings.default_theme);
+  } else if (typeof window.ThemeManager.setGlobalDefault === 'function') {
+    // Fallback للنسخ القديمة
+    window.ThemeManager.setGlobalDefault(settings.default_theme, { apply: true });
   }
-
+}
   /* INIT */
   function init() {
     renderFeatures([]);
