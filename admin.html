@@ -606,6 +606,215 @@
     padding: 4px 8px;
   }
 
+  /* ============================================
+     FEATURES PREVIEW GRID
+     ============================================ */
+  .features-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+    padding: 6px 0;
+  }
+
+  .feature-preview-card {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    padding: 14px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    transition: all 0.25s;
+    overflow: hidden;
+  }
+
+  .feature-preview-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.04), transparent);
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
+  }
+
+  .feature-preview-card:hover {
+    border-color: rgba(var(--accent-rgb), 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  .feature-preview-card:hover::before { opacity: 1; }
+
+  .feature-preview-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-2-rgb), 0.15));
+    border: 1px solid rgba(var(--accent-rgb), 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .feature-preview-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--accent);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .feature-preview-icon img {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+  }
+
+  .feature-preview-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .feature-preview-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .feature-preview-text {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .feature-preview-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .feature-action-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+  }
+
+  .feature-action-btn svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .feature-action-btn.edit {
+    background: rgba(var(--success-rgb), 0.08);
+    border-color: rgba(var(--success-rgb), 0.25);
+    color: var(--success);
+  }
+
+  .feature-action-btn.edit:hover {
+    background: rgba(var(--success-rgb), 0.2);
+    transform: translateY(-1px);
+  }
+
+  .feature-action-btn.delete {
+    background: rgba(var(--danger-rgb), 0.08);
+    border-color: rgba(var(--danger-rgb), 0.25);
+    color: var(--danger);
+  }
+
+  .feature-action-btn.delete:hover {
+    background: rgba(var(--danger-rgb), 0.2);
+    transform: translateY(-1px);
+  }
+
+  /* ============================================
+     ICON PICKER
+     ============================================ */
+  .icon-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    gap: 8px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .icon-option {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1.5px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .icon-option:hover {
+    border-color: rgba(var(--accent-rgb), 0.5);
+    transform: scale(1.05);
+  }
+
+  .icon-option.active {
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.2), rgba(var(--accent-2-rgb), 0.2));
+    border-color: var(--accent);
+    box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.4);
+  }
+
+  .icon-option svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--text-muted);
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .icon-option.active svg { stroke: var(--accent); }
+  .icon-option:hover svg { stroke: var(--accent); }
+
+  /* ============================================
+     FEATURE MODAL
+     ============================================ */
+  #featureModal .modal-content {
+    max-width: 520px;
+  }
+
   /* Responsive */
   @media (max-width: 1024px) {
     .settings-section { grid-template-columns: 1fr; }
@@ -624,6 +833,7 @@
     .logo-upload-area { flex-direction: column; align-items: stretch; }
     #logoPreview, #headPhotoPreview { margin: 0 auto; }
     .users-filter-tab { padding: 8px 12px; font-size: 12px; }
+    .features-preview-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -1301,6 +1511,49 @@
         <div class="form-group" style="margin-top:14px;margin-bottom:0;">
           <label for="setting_code_card_content">محتوى الكارت (نص أو كود)</label>
           <textarea id="setting_code_card_content" data-setting="code_card_content" rows="6" style="font-family:'JetBrains Mono',monospace;font-size:12.5px;direction:ltr;text-align:left;"></textarea>
+        </div>
+      </div>
+
+      <!-- ⚡ FEATURES CARDS — كروت المميزات -->
+      <div class="settings-card full-width">
+        <div class="settings-card-header">
+          <div class="settings-card-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+          </div>
+          <div style="flex:1;">
+            <div class="settings-card-title">كروت المميزات</div>
+            <div class="settings-card-sub">
+              تظهر في الصفحة الرئيسية — قسم "لماذا منصتنا؟" (فوق أنواع العضوية)
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" id="addFeatureBtn">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>إضافة كارت</span>
+          </button>
+        </div>
+
+        <!-- عناوين القسم -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+          <div class="form-group" style="margin:0;">
+            <label for="setting_features_title">عنوان القسم</label>
+            <input type="text" id="setting_features_title" data-setting="features_title" placeholder="لماذا منصتنا؟" />
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label for="setting_features_subtitle">وصف القسم</label>
+            <input type="text" id="setting_features_subtitle" data-setting="features_subtitle" placeholder="منظومة متكاملة صُمّمت خصيصًا لنقابة تكنولوجيا المعلومات" />
+          </div>
+        </div>
+
+        <!-- معاينة الكروت -->
+        <div id="featuresPreviewList" class="features-preview-grid">
+          <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);">
+            جاري التحميل...
+          </div>
         </div>
       </div>
 
@@ -2261,6 +2514,64 @@
     <div class="modal-footer-custom">
       <button type="button" class="btn btn-ghost" onclick="closeExpCatModal()">إلغاء</button>
       <button type="button" class="btn btn-primary" id="saveExpCatBtn">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        <span>حفظ</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     ⚡ FEATURE MODAL — إضافة/تعديل كارت مميزات
+     ============================================ -->
+<div id="featureModal" class="modal modal-sm">
+  <div class="modal-content" style="max-width:520px;">
+    <div class="modal-header-custom">
+      <h3 id="featureModalTitle">إضافة كارت مميزات</h3>
+      <button type="button" class="close-btn" onclick="closeFeatureModal()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" id="featureIndex" />
+
+      <!-- Icon Picker -->
+      <div class="form-group">
+        <label>الأيقونة</label>
+        <input type="hidden" id="featureIcon" value="zap" />
+        <div id="iconPicker" class="icon-picker"></div>
+        <span class="form-hint">اختر أيقونة مناسبة للكارت</span>
+      </div>
+
+      <!-- Title -->
+      <div class="form-group">
+        <label for="featureTitle">العنوان <span style="color:var(--danger);">*</span></label>
+        <input type="text" id="featureTitle" placeholder="مثال: تقديم سريع" maxlength="40" />
+      </div>
+
+      <!-- Text -->
+      <div class="form-group">
+        <label for="featureText">الوصف</label>
+        <textarea id="featureText" rows="2" placeholder="وصف مختصر للميزة..." maxlength="120"></textarea>
+      </div>
+
+      <!-- Logo (اختياري) -->
+      <div class="form-group" style="margin-bottom:0;">
+        <label for="featureLogo">رابط صورة مخصصة (اختياري)</label>
+        <input type="url" id="featureLogo" placeholder="https://..." dir="ltr" style="text-align:right;" />
+        <span class="form-hint">لو حطيت رابط، هيظهر بدل الأيقونة</span>
+      </div>
+    </div>
+
+    <div class="modal-footer-custom">
+      <button type="button" class="btn btn-ghost" onclick="closeFeatureModal()">إلغاء</button>
+      <button type="button" class="btn btn-primary" id="saveFeatureBtn">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <polyline points="20 6 9 17 4 12" />
         </svg>
