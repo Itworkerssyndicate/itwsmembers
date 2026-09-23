@@ -1,5 +1,18 @@
 /* =====================================================
-   IT SYNDICATE — Public Relations Logic
+   IT SYNDICATE — PUBLIC RELATIONS LOGIC
+   Version: 3.0.0
+   Path: js/public-relations.js
+   =====================================================
+   يحتوي على:
+   - Auth + Role check (public_relations_head / vice)
+   - 4 كروت إحصائية (إجمالي / محافظات / لهم موبايل / لهم بريد)
+   - 2 تابات:
+     1. الأعضاء (بيانات التواصل)
+     2. تقرير المحافظات
+   - Copy to Clipboard (موبايل + بريد)
+   - Member Detail Modal
+   - Realtime على members
+   - Export CSV
    ===================================================== */
 
 (function () {
@@ -76,9 +89,19 @@
     return b?.name || '—';
   }
 
-  function getMembershipTypeName(typeId) {
+  function getTypeName(typeId) {
     const t = membershipTypes.find(x => String(x.id) === String(typeId));
     return t?.name || '—';
+  }
+
+  function getCardStatusLabel(status) {
+    const map = {
+      'not_issued': 'لم يتم الإصدار',
+      'processing': 'جاري التجهيز',
+      'ready': 'جاهز',
+      'delivered': 'تم الاستلام'
+    };
+    return map[status] || 'غير محدد';
   }
 
   /* ============================================
@@ -319,24 +342,20 @@
         .select('*', { count: 'exact' })
         .eq('is_active', true);
 
-      // Governorate
       if (filters.governorate && filters.governorate !== 'all') {
         query = query.eq('governorate', filters.governorate);
       }
 
-      // Branch
       if (filters.branch && filters.branch !== 'all') {
         query = query.eq('branch_id', parseInt(filters.branch));
       }
 
-      // Contact filter
       if (filters.contact === 'phone') {
         query = query.not('phone', 'is', null);
       } else if (filters.contact === 'email') {
         query = query.not('email', 'is', null);
       }
 
-      // Search
       if (filters.search) {
         const s = filters.search.trim();
         query = query.or(
@@ -480,6 +499,7 @@
       tr.addEventListener('mouseleave', () => { tr.style.background = ''; });
     });
 
+    // View buttons
     tbody.querySelectorAll('.row-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -603,7 +623,7 @@
       if (error || !m) throw new Error('لم يتم العثور على العضو');
 
       const branchName = getBranchName(m.branch_id);
-      const typeName = getMembershipTypeName(m.membership_type_id);
+      const typeName = getTypeName(m.membership_type_id);
 
       body.innerHTML = `
         <div style="animation:fadeUp 0.3s;">
@@ -630,7 +650,7 @@
 
             ${m.phone ? `
               <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(249,115,22,0.05);border:1px solid rgba(249,115,22,0.2);border-radius:12px;">
-                <div style="width:36px;height:36px;border-radius:8px;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <div style="width:36px;height:36px;border-radius:8px;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#f97316;">
                   ${ICONS.phone}
                 </div>
                 <div style="flex:1;min-width:0;">
@@ -804,7 +824,6 @@
      LISTENERS
      ============================================ */
   function setupListeners() {
-    // Branch filter
     const branchFilter = document.getElementById('branchFilter');
     if (branchFilter) {
       branchFilter.addEventListener('change', (e) => {
@@ -814,7 +833,6 @@
       });
     }
 
-    // Gov filter
     const govFilter = document.getElementById('govFilter');
     if (govFilter) {
       govFilter.addEventListener('change', (e) => {
@@ -824,7 +842,6 @@
       });
     }
 
-    // Contact filter
     const contactFilter = document.getElementById('contactFilter');
     if (contactFilter) {
       contactFilter.addEventListener('change', (e) => {
@@ -834,7 +851,6 @@
       });
     }
 
-    // Search
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
       let t = null;
@@ -848,7 +864,6 @@
       });
     }
 
-    // Refresh
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) {
       refreshBtn.addEventListener('click', async () => {
@@ -861,11 +876,9 @@
       });
     }
 
-    // Export
     const exportBtn = document.getElementById('exportBtn');
     if (exportBtn) exportBtn.addEventListener('click', exportCSV);
 
-    // Logout
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
@@ -875,7 +888,6 @@
       });
     }
 
-    // Modal backdrop
     const modal = document.getElementById('memberModal');
     if (modal) {
       modal.addEventListener('click', (e) => {
