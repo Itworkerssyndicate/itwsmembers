@@ -31,7 +31,6 @@
     z-index: 10;
   }
 
-  /* Page header */
   .page-header {
     display: flex;
     align-items: center;
@@ -58,7 +57,6 @@
   @keyframes shine { to { background-position: 200% center; } }
   .page-header-sub { font-size: 13.5px; color: var(--text-muted); }
 
-  /* Tabs */
   .tabs-nav {
     display: flex;
     gap: 6px;
@@ -125,7 +123,6 @@
     color: #000;
   }
 
-  /* Summary cards */
   .summary-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -149,23 +146,16 @@
     border-color: var(--border-strong);
   }
   .summary-icon {
-    width: 52px;
-    height: 52px;
+    width: 52px; height: 52px;
     border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
     border: 1px solid;
   }
   .summary-icon svg {
-    width: 24px;
-    height: 24px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    width: 24px; height: 24px;
+    stroke: currentColor; fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
   }
   .summary-info { min-width: 0; }
   .summary-value {
@@ -175,12 +165,8 @@
     line-height: 1;
     margin-bottom: 6px;
   }
-  .summary-label {
-    font-size: 12.5px;
-    color: var(--text-muted);
-  }
+  .summary-label { font-size: 12.5px; color: var(--text-muted); }
 
-  /* Filters */
   .filters-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -244,7 +230,6 @@
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
 
-  /* Actions row */
   .actions-row {
     display: flex;
     gap: 10px;
@@ -252,7 +237,6 @@
     margin-bottom: 20px;
   }
 
-  /* Table */
   .table-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -301,12 +285,7 @@
     -webkit-backdrop-filter: blur(10px);
   }
 
-  /* Member cell */
-  .member-cell {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+  .member-cell { display: flex; align-items: center; gap: 10px; }
   .member-avatar {
     width: 38px; height: 38px;
     border-radius: var(--radius-sm);
@@ -335,7 +314,6 @@
     color: var(--text-dim);
   }
 
-  /* MNO badge */
   .mno-badge {
     display: inline-block;
     padding: 4px 12px;
@@ -349,7 +327,6 @@
     white-space: nowrap;
   }
 
-  /* Days cell */
   .days-cell {
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
@@ -360,7 +337,6 @@
   .days-soon { color: var(--warning); }
   .days-expired { color: var(--danger); }
 
-  /* Status badge */
   .status-badge {
     display: inline-flex;
     align-items: center;
@@ -393,7 +369,6 @@
     color: var(--danger);
   }
 
-  /* Actions */
   .row-actions {
     display: flex;
     gap: 6px;
@@ -431,25 +406,11 @@
     transform: translateY(-2px);
   }
 
-  /* Empty state */
-  .empty-state {
-    padding: 60px 20px;
-    text-align: center;
-    color: var(--text-dim);
-  }
-  .empty-state svg {
-    width: 48px; height: 48px;
-    stroke: var(--text-dim);
-    fill: none;
-    stroke-width: 1.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    margin: 0 auto 16px;
-    display: block;
-    opacity: 0.5;
+  #paginationBox {
+    padding: 16px 22px;
+    border-top: 1px solid var(--border-soft);
   }
 
-  /* Renew Modal */
   .modal-content { max-height: 90vh; }
   .modal-header-custom {
     padding: 20px 24px;
@@ -495,17 +456,9 @@
     stroke-width: 2; stroke-linecap: round;
   }
 
-  /* Pagination */
-  #paginationBox {
-    padding: 16px 22px;
-    border-top: 1px solid var(--border-soft);
-  }
-
-  /* Responsive */
   @media (max-width: 1024px) {
     .filters-grid { grid-template-columns: 1fr 1fr; }
   }
-
   @media (max-width: 768px) {
     body { padding: 90px 0 30px; }
     .subs-wrap { padding: 0 16px; }
@@ -518,7 +471,6 @@
     .tab-btn .tab-label { display: none; }
   }
 
-  /* Print */
   @media print {
     .navbar, .actions-row, .filters-card, .tabs-nav,
     .row-actions, .footer, .bg-grid, .bg-glow, .bg-layer {
@@ -600,7 +552,6 @@
 <!-- MAIN -->
 <div class="subs-wrap">
 
-  <!-- HEADER -->
   <div class="page-header">
     <div class="page-header-info">
       <div class="page-header-title">إدارة الاشتراكات</div>
@@ -674,7 +625,7 @@
         <polyline points="22 4 12 14.01 9 11.01" />
       </svg>
       <span class="tab-label">نشطة</span>
-      <span class="tab-count" data-count="active">0</span>
+      <span class="tab-count" id="countActive">0</span>
     </button>
 
     <button type="button" class="tab-btn" data-tab-btn="soon">
@@ -683,7 +634,7 @@
         <polyline points="12 6 12 12 16 14" />
       </svg>
       <span class="tab-label">تنتهي قريبًا</span>
-      <span class="tab-count" data-count="soon">0</span>
+      <span class="tab-count" id="countSoon">0</span>
     </button>
 
     <button type="button" class="tab-btn" data-tab-btn="expired">
@@ -693,7 +644,7 @@
         <line x1="9" y1="9" x2="15" y2="15" />
       </svg>
       <span class="tab-label">منتهية</span>
-      <span class="tab-count" data-count="expired">0</span>
+      <span class="tab-count" id="countExpired">0</span>
     </button>
 
     <button type="button" class="tab-btn" data-tab-btn="all">
@@ -706,7 +657,7 @@
         <line x1="3" y1="18" x2="3.01" y2="18" />
       </svg>
       <span class="tab-label">الكل</span>
-      <span class="tab-count" data-count="all">0</span>
+      <span class="tab-count" id="countAll">0</span>
     </button>
   </div>
 
@@ -839,9 +790,7 @@
 
 </div>
 
-<!-- ============================================
-     RENEW MODAL
-     ============================================ -->
+<!-- RENEW MODAL -->
 <div id="renewModal" class="modal modal-sm">
   <div class="modal-content">
     <div class="modal-header-custom">
@@ -896,9 +845,7 @@
   </div>
 </div>
 
-<!-- ============================================
-     BULK RENEW MODAL
-     ============================================ -->
+<!-- BULK RENEW MODAL -->
 <div id="bulkRenewModal" class="modal modal-sm">
   <div class="modal-content">
     <div class="modal-header-custom">
@@ -958,6 +905,7 @@
 <script src="js/theme-manager.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/realtime.js"></script>
+<script src="js/security.js"></script>
 <script src="js/subscriptions.js"></script>
 
 <script>
@@ -966,7 +914,6 @@
     if (nav) nav.classList.toggle('open');
   };
 
-  /* Background particles */
   (function () {
     const canvas = document.getElementById('bgCanvas');
     if (!canvas) return;
