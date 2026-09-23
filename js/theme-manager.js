@@ -1,6 +1,6 @@
 /* =====================================================
    IT SYNDICATE — THEME MANAGER
-   Version: 3.0.0
+   Version: 3.1.0
    Path: js/theme-manager.js
    =====================================================
    يحتوي على:
@@ -11,6 +11,7 @@
    - Auto-detect (prefers-color-scheme)
    - Theme Toggle (light/dark)
    - Events + Broadcast
+   - applyDefault() للاستدعاء من الصفحات الخارجية
    ===================================================== */
 
 (function () {
@@ -238,13 +239,60 @@
     return theme;
   }
 
-  function setGlobalDefault(theme) {
+  /**
+   * ⚡ setGlobalDefault — تحفظ الثيم الافتراضي وتطبّقه فورًا
+   * لو المستخدم ماختارش ثيم بنفسه
+   */
+  function setGlobalDefault(theme, options) {
+    const opts = options || {};
     if (!isValidTheme(theme)) return null;
+
     globalDefaultTheme = theme;
+
     try {
       localStorage.setItem(DEFAULT_THEME_KEY, theme);
     } catch (e) {}
+
+    // ⚡ طبّق فورًا لو المستخدم ماختارش
+    const userChoice = getStoredTheme();
+    if (!userChoice && opts.apply !== false) {
+      if (currentTheme !== theme) {
+        applyTheme(theme, { animate: false });
+      }
+    }
+
     return theme;
+  }
+
+  /**
+   * ⚡ applyDefault — API بسيط للصفحات الخارجية
+   * بيتحقق من اختيار المستخدم أولاً
+   */
+  function applyDefault(themeName) {
+    if (!isValidTheme(themeName)) return false;
+
+    // لو المستخدم اختار ثيم بنفسه، احترم اختياره
+    const userChoice = getStoredTheme();
+    if (userChoice) {
+      // بس حدّث الـ global default عشان لو رجع للافتراضي
+      globalDefaultTheme = themeName;
+      try {
+        localStorage.setItem(DEFAULT_THEME_KEY, themeName);
+      } catch (e) {}
+      return false;
+    }
+
+    // المستخدم ماختارش → طبّق الافتراضي
+    globalDefaultTheme = themeName;
+    try {
+      localStorage.setItem(DEFAULT_THEME_KEY, themeName);
+    } catch (e) {}
+
+    if (currentTheme !== themeName) {
+      applyTheme(themeName, { animate: false });
+    }
+
+    return true;
   }
 
   function resetTheme() {
@@ -253,7 +301,7 @@
       localStorage.removeItem(LEGACY_KEY);
     } catch (e) {}
 
-    const fallback = globalDefaultTheme || detectSystemPreference();
+    const fallback = globalDefaultTheme || getGlobalDefault() || detectSystemPreference();
     applyTheme(fallback);
     return fallback;
   }
@@ -297,7 +345,6 @@
     }
 
     if (currentInfo.type === 'dark') {
-      // Switch to matching light theme
       const lightPairs = {
         'neon-dark': 'neon-light',
         'patriot': 'minimal',
@@ -308,7 +355,6 @@
       };
       setTheme(lightPairs[current] || 'neon-light');
     } else {
-      // Switch to matching dark theme
       const darkPairs = {
         'neon-light': 'neon-dark',
         'minimal': 'patriot'
@@ -458,28 +504,37 @@
      ============================================ */
   async function syncWithSettings() {
     try {
+      let remoteTheme = null;
+
       // 1) Try localStorage first
       const cached = localStorage.getItem('its_site_settings');
       if (cached) {
         try {
           const settings = JSON.parse(cached);
           if (settings.default_theme && isValidTheme(settings.default_theme)) {
-            setGlobalDefault(settings.default_theme);
+            remoteTheme = settings.default_theme;
           }
         } catch (e) {}
       }
 
       // 2) Try Supabase
       if (window.supabaseClient) {
-        const { data } = await window.supabaseClient
-          .from('settings')
-          .select('value')
-          .eq('key', 'default_theme')
-          .maybeSingle();
+        try {
+          const { data } = await window.supabaseClient
+            .from('settings')
+            .select('value')
+            .eq('key', 'default_theme')
+            .maybeSingle();
 
-        if (data?.value && isValidTheme(data.value)) {
-          setGlobalDefault(data.value);
-        }
+          if (data?.value && isValidTheme(data.value)) {
+            remoteTheme = data.value;
+          }
+        } catch (e) {}
+      }
+
+      // 3) Apply
+      if (remoteTheme) {
+        setGlobalDefault(remoteTheme, { apply: true });
       }
     } catch (e) {
       console.warn('[ThemeManager] Settings sync failed:', e.message);
@@ -496,7 +551,7 @@
         applyTheme(e.newValue);
       }
       if (e.key === DEFAULT_THEME_KEY && e.newValue && isValidTheme(e.newValue)) {
-        setGlobalDefault(e.newValue);
+        setGlobalDefault(e.newValue, { apply: true });
       }
     });
 
@@ -505,7 +560,6 @@
       const mq = window.matchMedia('(prefers-color-scheme: light)');
       if (mq && mq.addEventListener) {
         mq.addEventListener('change', (e) => {
-          // Only auto-switch if user hasn't explicitly chosen
           if (!getStoredTheme()) {
             applyTheme(e.matches ? 'neon-light' : 'neon-dark');
           }
@@ -513,9 +567,17 @@
       }
     } catch (e) {}
 
-    // Listen for settings-updated broadcast
+    // Listen for settings updates
     window.addEventListener('settings-updated', () => {
       syncWithSettings();
+    });
+
+    // ⚡ Listen for settings-ready event
+    window.addEventListener('settings-ready', (e) => {
+      const s = e.detail?.settings || null;
+      if (s?.default_theme && isValidTheme(s.default_theme)) {
+        applyDefault(s.default_theme);
+      }
     });
   }
 
@@ -523,11 +585,9 @@
      AUTO-INIT
      ============================================ */
   function autoInit() {
-    // Apply initial theme immediately (before paint)
     const initial = resolveInitialTheme();
     applyTheme(initial, { animate: false });
 
-    // Setup listeners
     setupListeners();
 
     // Sync with settings (async)
@@ -544,6 +604,11 @@
     reset: resetTheme,
     toggle: toggleTheme,
 
+    // ⚡ Global default
+    setGlobalDefault,
+    getGlobalDefault,
+    applyDefault,
+
     // Getters
     get: getTheme,
     getAll: getThemes,
@@ -552,10 +617,6 @@
     isLight,
     isValid: isValidTheme,
 
-    // Global default
-    setGlobalDefault,
-    getGlobalDefault,
-
     // UI builders
     buildPicker: buildThemePicker,
     buildSelect: buildThemeSelect,
@@ -563,7 +624,7 @@
     // Sync
     sync: syncWithSettings,
 
-    // Internals (for debugging)
+    // Internals
     _themes: THEMES,
     _storageKey: STORAGE_KEY
   };
@@ -572,7 +633,7 @@
      START
      ============================================ */
   if (document.readyState === 'loading') {
-    // Apply theme ASAP (before DOM ready to avoid flash)
+    // Apply theme ASAP (before paint)
     try {
       const initial = resolveInitialTheme();
       document.documentElement.setAttribute('data-theme', initial);
