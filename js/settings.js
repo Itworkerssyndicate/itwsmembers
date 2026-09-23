@@ -1,452 +1,392 @@
 /* =====================================================
    IT SYNDICATE — SETTINGS MANAGER
    Version: 3.0.0
+   Path: js/settings.js
    =====================================================
    يحتوي على:
-   - تحميل كل الإعدادات من Supabase
-   - Cache في localStorage
-   - تطبيق الإعدادات على الصفحة (data-setting)
-   - تطبيق اللوجو + الاسم + الاسم الإنجليزي
-   - تطبيق الإعدادات على meta tags + title
-   - Realtime sync
-   - Events (settings-ready / settings-updated)
+   - تحميل الإعدادات من Supabase
+   - تطبيقها على DOM (data-site-name / data-head-name ...)
+   - مزامنة Realtime
+   - تخزين مؤقت في localStorage
+   - دعم الـ events
    ===================================================== */
 
 (function () {
   'use strict';
 
   /* ============================================
-     CONSTANTS
+     CONFIG
      ============================================ */
-  const CACHE_KEY = 'its_site_settings';
+  const STORAGE_KEY = 'its_site_settings';
   const LOGO_KEY = 'its_logo_url';
-  const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 ساعة
+  const HEAD_PHOTO_KEY = 'its_head_photo_url';
 
   /* ============================================
      STATE
      ============================================ */
-  let client = null;
   let settings = {};
   let isLoaded = false;
   let loadPromise = null;
-  let unsubscribeRealtime = null;
 
   /* ============================================
-     HELPERS
+     APPLY TO DOM
      ============================================ */
-  function log(...args) {
-    if (window.ITS_DEBUG) console.log('[Settings]', ...args);
-  }
+  function applyToDom(s) {
+    if (!s) return;
 
-  function warn(...args) {
-    console.warn('[Settings]', ...args);
-  }
+    // ========== Site Name ==========
+    document.querySelectorAll('[data-site-name]').forEach(el => {
+      if (s.site_name) el.textContent = s.site_name;
+    });
 
-  function getCachedSettings() {
-    try {
-      const raw = localStorage.getItem(CACHE_KEY);
-      if (!raw) return null;
+    document.querySelectorAll('[data-site-name-en]').forEach(el => {
+      if (s.site_name_en) el.textContent = s.site_name_en;
+    });
 
-      const parsed = JSON.parse(raw);
-      if (!parsed || typeof parsed !== 'object') return null;
+    // ========== Page Title ==========
+    if (s.site_name) {
+      const baseTitle = document.title.split(' — ')[0].split(' - ')[0];
+      if (baseTitle && !document.title.includes(s.site_name)) {
+        document.title = `${baseTitle} — ${s.site_name}`;
+      }
+    }
 
-      // Check TTL
-      if (parsed.__cachedAt) {
-        const age = Date.now() - parsed.__cachedAt;
-        if (age > CACHE_TTL) {
-          localStorage.removeItem(CACHE_KEY);
-          return null;
-        }
+    // ========== Logo ==========
+    if (s.site_logo_url) {
+      // Update nav logo
+      const navImg = document.getElementById('navLogoImg');
+      const navFallback = document.getElementById('navLogoFallback');
+      if (navImg) {
+        navImg.onload = () => {
+          navImg.style.display = '';
+          if (navFallback) navFallback.style.display = 'none';
+        };
+        navImg.onerror = () => {
+          navImg.style.display = 'none';
+          if (navFallback) navFallback.style.display = '';
+        };
+        navImg.src = s.site_logo_url;
       }
 
-      return parsed;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function setCachedSettings(data) {
-    try {
-      const toSave = Object.assign({}, data, { __cachedAt: Date.now() });
-      localStorage.setItem(CACHE_KEY, JSON.stringify(toSave));
-    } catch (e) {}
-  }
-
-  /* ============================================
-     FETCH FROM SUPABASE
-     ============================================ */
-  async function fetchSettings() {
-    if (!client) {
-      warn('Supabase client not available');
-      return {};
-    }
-
-    try {
-      const { data, error } = await client
-        .from('settings')
-        .select('key, value');
-
-      if (error) throw error;
-
-      const map = {};
-      (data || []).forEach(row => {
-        if (row.key) map[row.key] = row.value ?? '';
-      });
-
-      return map;
-    } catch (err) {
-      warn('Fetch failed:', err.message);
-      return {};
-    }
-  }
-
-  /* ============================================
-     APPLY SETTINGS TO PAGE
-     ============================================ */
-  function applyToPage(data) {
-    if (!data || typeof data !== 'object') return;
-
-    // 1) Apply data-setting attributes
-    document.querySelectorAll('[data-setting]').forEach(el => {
-      const key = el.dataset.setting;
-      if (!(key in data)) return;
-
-      const value = data[key] ?? '';
-
-      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
-        if (el.type === 'checkbox') {
-          el.checked = value === 'true' || value === true;
-        } else {
-          el.value = value;
-        }
-      } else if (el.tagName === 'IMG') {
-        if (value) {
-          el.src = value;
+      // Update all [data-logo]
+      document.querySelectorAll('[data-logo]').forEach(el => {
+        if (el.tagName === 'IMG') {
+          el.src = s.site_logo_url;
           el.style.display = '';
         }
+      });
+
+      // Update all logo images by ID pattern
+      const logoIds = [
+        'logoImg', 'aboutLogoImg', 'footerLogoImg',
+        'brandLogoImg', 'receiptLogoImg'
+      ];
+      logoIds.forEach(id => {
+        const img = document.getElementById(id);
+        const fb = document.getElementById(id.replace('Img', 'Fallback'));
+        if (img) {
+          img.onload = () => {
+            img.style.display = '';
+            if (fb) fb.style.display = 'none';
+          };
+          img.onerror = () => {
+            img.style.display = 'none';
+            if (fb) fb.style.display = '';
+          };
+          img.src = s.site_logo_url;
+        }
+      });
+
+      // Favicon
+      const fav = document.getElementById('faviconLink');
+      const apple = document.getElementById('appleTouchIcon');
+      if (fav) {
+        fav.type = 'image/png';
+        fav.href = s.site_logo_url;
+      }
+      if (apple) apple.href = s.site_logo_url;
+    }
+
+    // ========== Head Info ==========
+    document.querySelectorAll('[data-head-name]').forEach(el => {
+      if (s.head_name) el.textContent = s.head_name;
+    });
+
+    document.querySelectorAll('[data-head-title]').forEach(el => {
+      if (s.head_title) el.textContent = s.head_title;
+    });
+
+    document.querySelectorAll('[data-head-message]').forEach(el => {
+      if (s.head_message) {
+        el.textContent = s.head_message;
+        el.style.display = 'block';
+      }
+    });
+
+    if (s.head_photo_url) {
+      document.querySelectorAll('[data-head-photo]').forEach(el => {
+        if (el.tagName === 'IMG') {
+          el.src = s.head_photo_url;
+          el.style.display = '';
+        }
+      });
+
+      const headImg = document.getElementById('headPhotoImg');
+      const headFallback = document.getElementById('headPhotoFallback');
+      if (headImg) {
+        headImg.onload = () => {
+          headImg.style.display = '';
+          if (headFallback) headFallback.style.display = 'none';
+        };
+        headImg.onerror = () => {
+          headImg.style.display = 'none';
+          if (headFallback) headFallback.style.display = '';
+        };
+        headImg.src = s.head_photo_url;
+      }
+    }
+
+    // ========== Contact Info ==========
+    document.querySelectorAll('[data-contact-email]').forEach(el => {
+      if (s.contact_email) {
+        el.textContent = s.contact_email;
+        if (el.tagName === 'A') el.href = `mailto:${s.contact_email}`;
+      }
+    });
+
+    document.querySelectorAll('[data-contact-phone]').forEach(el => {
+      if (s.contact_phone) {
+        el.textContent = s.contact_phone;
+        if (el.tagName === 'A') el.href = `tel:${s.contact_phone}`;
+      }
+    });
+
+    document.querySelectorAll('[data-contact-address]').forEach(el => {
+      if (s.contact_address) el.textContent = s.contact_address;
+    });
+
+    // ========== Footer ==========
+    document.querySelectorAll('[data-footer-text]').forEach(el => {
+      if (s.footer_text) el.textContent = s.footer_text;
+    });
+
+    document.querySelectorAll('[data-footer-description]').forEach(el => {
+      if (s.footer_description) el.textContent = s.footer_description;
+    });
+
+    // Footer button
+    const footerBtn = document.getElementById('footerButton');
+    if (footerBtn) {
+      if (s.footer_button_name && s.footer_button_url) {
+        footerBtn.textContent = s.footer_button_name;
+        footerBtn.href = s.footer_button_url;
+        footerBtn.style.display = 'inline-flex';
       } else {
-        // For text content - handle terms text carefully
-        if (key === 'terms_text' || key === 'footer_description' || key === 'hero_description' || key === 'about_card_text') {
-          el.textContent = value;
-        } else {
-          el.textContent = value;
-        }
-      }
-    });
-
-    // 2) Apply site name
-    if (data.site_name) {
-      document.querySelectorAll('[data-site-name]').forEach(el => {
-        el.textContent = data.site_name;
-      });
-
-      // Update title
-      if (data.site_name && document.title) {
-        const currentTitle = document.title;
-        const parts = currentTitle.split('—');
-        if (parts.length > 1) {
-          document.title = `${parts[0].trim()} — ${data.site_name}`;
-        }
+        footerBtn.style.display = 'none';
       }
     }
 
-    // 3) Apply site name (English)
-    if (data.site_name_en) {
-      document.querySelectorAll('[data-site-name-en]').forEach(el => {
-        el.textContent = data.site_name_en;
+    // ========== Hero ==========
+    const setText = (sel, val) => {
+      if (!val) return;
+      document.querySelectorAll(sel).forEach(el => el.textContent = val);
+    };
+
+    setText('[data-hero-badge]', s.hero_badge);
+    setText('[data-hero-title-1]', s.hero_title_1);
+    setText('[data-hero-title-2]', s.hero_title_2);
+    setText('[data-hero-description]', s.hero_description);
+
+    // Hero buttons
+    const heroBtn1 = document.getElementById('heroBtn1');
+    const heroBtn2 = document.getElementById('heroBtn2');
+    if (heroBtn1 && s.hero_btn1_url) heroBtn1.href = s.hero_btn1_url;
+    if (heroBtn2 && s.hero_btn2_url) heroBtn2.href = s.hero_btn2_url;
+
+    // ========== Code Card ==========
+    setText('[data-code-card-name]', s.code_card_name);
+    setText('[data-code-card-status]', s.code_card_status);
+
+    const codeCardBody = document.getElementById('codeCardBody');
+    if (codeCardBody && s.code_card_content) {
+      codeCardBody.textContent = s.code_card_content;
+    }
+
+    // ========== Section Titles ==========
+    setText('[data-types-title]', s.types_title);
+    setText('[data-types-subtitle]', s.types_subtitle);
+
+    setText('[data-steps-title]', s.steps_title);
+    setText('[data-steps-subtitle]', s.steps_subtitle);
+
+    for (let i = 1; i <= 4; i++) {
+      setText(`[data-step${i}-title]`, s[`step${i}_title`]);
+      setText(`[data-step${i}-desc]`, s[`step${i}_desc`]);
+    }
+
+    // ========== CTA ==========
+    setText('[data-cta-title]', s.cta_title);
+    setText('[data-cta-subtitle]', s.cta_subtitle);
+
+    const ctaBtn = document.getElementById('ctaBtn');
+    if (ctaBtn && s.cta_btn_url) ctaBtn.href = s.cta_btn_url;
+
+    // ========== Terms ==========
+    setText('[data-terms-text]', s.terms_text);
+
+    // ========== Health Care ==========
+    if (s.health_care_enabled === 'false' || s.health_care_enabled === false) {
+      document.querySelectorAll('[data-health-care-section]').forEach(el => {
+        el.style.display = 'none';
       });
     }
 
-    // 4) Apply head name
-    if (data.head_name) {
-      document.querySelectorAll('[data-head-name]').forEach(el => {
-        el.textContent = data.head_name;
-      });
-    }
-
-    // 5) Apply head title
-    if (data.head_title) {
-      document.querySelectorAll('[data-head-title]').forEach(el => {
-        el.textContent = data.head_title;
-      });
-    }
-
-    // 6) Apply VP name
-    if (data.vice_president_name) {
-      document.querySelectorAll('[data-vp-name]').forEach(el => {
-        el.textContent = data.vice_president_name;
-      });
-    }
-
-    // 7) Apply VP title
-    if (data.vice_president_title) {
-      document.querySelectorAll('[data-vp-title]').forEach(el => {
-        el.textContent = data.vice_president_title;
-      });
-    }
-
-    // 8) Apply contact info
-    if (data.contact_email) {
-      document.querySelectorAll('[data-contact-email]').forEach(el => {
-        el.textContent = data.contact_email;
-        if (el.tagName === 'A') el.href = `mailto:${data.contact_email}`;
-      });
-    }
-
-    if (data.contact_phone) {
-      document.querySelectorAll('[data-contact-phone]').forEach(el => {
-        el.textContent = data.contact_phone;
-        if (el.tagName === 'A') el.href = `tel:${data.contact_phone}`;
-      });
-    }
-
-    if (data.contact_address) {
-      document.querySelectorAll('[data-contact-address]').forEach(el => {
-        el.textContent = data.contact_address;
-      });
-    }
-
-    // 9) Apply footer text
-    if (data.footer_text) {
-      document.querySelectorAll('[data-footer-text]').forEach(el => {
-        el.textContent = data.footer_text;
-      });
-    }
-
-    // 10) Apply terms text
-    if (data.terms_text) {
-      document.querySelectorAll('[data-terms-text]').forEach(el => {
-        el.textContent = data.terms_text;
-      });
-    }
-
-    // 11) Apply logo
-    if (data.site_logo_url) {
-      applyLogo(data.site_logo_url);
-    }
-
-    // 12) Apply meta description
-    if (data.site_description) {
-      const metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc) metaDesc.setAttribute('content', data.site_description);
-    }
-
-    // 13) Apply OG tags
-    if (data.site_name) {
-      const ogTitle = document.querySelector('meta[property="og:title"]');
-      if (ogTitle) ogTitle.setAttribute('content', data.site_name);
-
-      const ogSite = document.querySelector('meta[property="og:site_name"]');
-      if (ogSite) ogSite.setAttribute('content', data.site_name);
-
-      const twTitle = document.querySelector('meta[name="twitter:title"]');
-      if (twTitle) twTitle.setAttribute('content', data.site_name);
-    }
-
-    if (data.site_description) {
-      const ogDesc = document.querySelector('meta[property="og:description"]');
-      if (ogDesc) ogDesc.setAttribute('content', data.site_description);
-    }
-
-    if (data.site_logo_url) {
-      const ogImage = document.querySelector('meta[property="og:image"]');
-      if (ogImage) ogImage.setAttribute('content', data.site_logo_url);
-
-      const twImage = document.querySelector('meta[name="twitter:image"]');
-      if (twImage) twImage.setAttribute('content', data.site_logo_url);
-    }
-
-    log('Applied to page');
-  }
-
-  /* ============================================
-     APPLY LOGO
-     ============================================ */
-  function applyLogo(url) {
-    if (!url) return;
-
-    // Update all logo images
-    const logoImgs = document.querySelectorAll(
-      '#navLogoImg, #footerLogoImg, #brandLogoImg, #receiptLogoImg, #aboutLogoImg, #logoImg, [data-logo]'
-    );
-
-    logoImgs.forEach(img => {
-      img.onload = () => {
-        img.style.display = '';
-        const fallback = img.parentElement?.querySelector('.logo-fallback');
-        if (fallback) fallback.style.display = 'none';
-      };
-      img.onerror = () => {
-        img.style.display = 'none';
-        const fallback = img.parentElement?.querySelector('.logo-fallback');
-        if (fallback) fallback.style.display = '';
-      };
-      img.src = url;
-    });
-
-    // Update favicon
-    const favicon = document.getElementById('faviconLink');
-    if (favicon) {
-      favicon.type = url.endsWith('.svg') ? 'image/svg+xml' : 'image/png';
-      favicon.href = url;
-    }
-
-    const appleIcon = document.getElementById('appleTouchIcon');
-    if (appleIcon) appleIcon.href = url;
-
-    // Cache
-    try {
-      localStorage.setItem(LOGO_KEY, url);
-    } catch (e) {}
-
-    log('Logo applied:', url);
-  }
-
-  /* ============================================
-     APPLY CACHED LOGO IMMEDIATELY
-     ============================================ */
-  function applyCachedLogo() {
-    try {
-      const cachedLogo = localStorage.getItem(LOGO_KEY);
-      if (cachedLogo) {
-        applyLogo(cachedLogo);
-        log('Cached logo applied');
+    // ========== Maintenance Mode ==========
+    const isMaintenance = s.maintenance_mode === 'true' || s.maintenance_mode === true;
+    if (isMaintenance) {
+      const page = window.location.pathname.split('/').pop();
+      const isPublicPage = ['index.html', 'home.html', ''].includes(page);
+      const isStaff = window.currentUserRole && window.currentUserRole !== 'anon';
+      if (isPublicPage && !isStaff) {
+        document.querySelectorAll('[data-maintenance-banner]').forEach(el => {
+          el.style.display = 'block';
+        });
       }
-    } catch (e) {}
+    }
+
+    // ========== Dispatch Event ==========
+    window.dispatchEvent(new CustomEvent('settings-applied', { detail: { settings: s } }));
   }
 
   /* ============================================
-     MAIN LOAD
+     LOAD SETTINGS
      ============================================ */
-  async function load(options) {
-    const opts = options || {};
+  async function load(force = false) {
+    if (!force && isLoaded && Object.keys(settings).length > 0) {
+      return settings;
+    }
 
-    if (loadPromise && !opts.force) {
+    if (loadPromise && !force) {
       return loadPromise;
     }
 
     loadPromise = (async () => {
       try {
-        // 1) Apply cached first (instant)
-        const cached = getCachedSettings();
-        if (cached) {
-          settings = Object.assign({}, cached);
-          delete settings.__cachedAt;
-          applyToPage(settings);
-          log('Cached settings applied');
+        // 1) Try cache first
+        if (!force) {
+          try {
+            const cached = localStorage.getItem(STORAGE_KEY);
+            if (cached) {
+              const parsed = JSON.parse(cached);
+              if (parsed && typeof parsed === 'object') {
+                settings = parsed;
+                applyToDom(settings);
+              }
+            }
+          } catch (e) {}
         }
 
         // 2) Fetch from Supabase
-        const fresh = await fetchSettings();
-
-        if (fresh && Object.keys(fresh).length > 0) {
-          settings = Object.assign({}, settings, fresh);
-          setCachedSettings(settings);
-          applyToPage(settings);
-          log('Fresh settings applied');
+        if (typeof window.getAllSettings !== 'function') {
+          await waitForSupabase();
         }
 
-        isLoaded = true;
+        if (typeof window.getAllSettings === 'function') {
+          const fresh = await window.getAllSettings();
+          if (fresh && Object.keys(fresh).length > 0) {
+            settings = fresh;
+            applyToDom(settings);
+            isLoaded = true;
 
-        // 3) Dispatch event
-        window.dispatchEvent(new CustomEvent('settings-ready', {
-          detail: { settings: settings }
-        }));
+            // Cache in localStorage
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+            } catch (e) {}
 
-        // 4) Broadcast for other modules
-        window.dispatchEvent(new CustomEvent('broadcast-settings', {
-          detail: { settings: settings }
-        }));
+            // Broadcast event
+            window.dispatchEvent(new CustomEvent('settings-ready', {
+              detail: { settings }
+            }));
+          }
+        }
 
         return settings;
-      } catch (err) {
-        warn('Load failed:', err.message);
-        isLoaded = true;
+      } catch (e) {
+        console.warn('[Settings] Load failed:', e.message);
         return settings;
+      } finally {
+        loadPromise = null;
       }
     })();
 
     return loadPromise;
   }
 
+  function waitForSupabase() {
+    return new Promise((resolve) => {
+      if (window.supabaseClient) {
+        resolve();
+        return;
+      }
+      if (typeof window.onSupabaseReady === 'function') {
+        window.onSupabaseReady(() => resolve());
+      } else {
+        window.addEventListener('supabase-ready', () => resolve(), { once: true });
+        setTimeout(resolve, 3000);
+      }
+    });
+  }
+
   /* ============================================
      GETTERS
      ============================================ */
-  function get(key, fallback) {
-    if (!key) return fallback ?? null;
-    if (!(key in settings)) return fallback ?? null;
-    return settings[key];
+  function get(key, fallback = null) {
+    return (key in settings) ? settings[key] : fallback;
   }
 
   function getAll() {
-    return Object.assign({}, settings);
-  }
-
-  function getBool(key, fallback) {
-    const val = get(key);
-    if (val === null || val === undefined) return fallback ?? false;
-    if (typeof val === 'boolean') return val;
-    return String(val).toLowerCase() === 'true' || val === '1' || val === 'yes';
-  }
-
-  function getNumber(key, fallback) {
-    const val = get(key);
-    if (val === null || val === undefined || val === '') return fallback ?? 0;
-    const num = parseFloat(val);
-    return isNaN(num) ? (fallback ?? 0) : num;
+    return { ...settings };
   }
 
   /* ============================================
-     UPDATE (local, for admin usage)
-     ============================================ */
-  function update(updates) {
-    if (!updates || typeof updates !== 'object') return settings;
-
-    settings = Object.assign({}, settings, updates);
-    setCachedSettings(settings);
-    applyToPage(updates);
-
-    window.dispatchEvent(new CustomEvent('settings-updated', {
-      detail: { updates, settings }
-    }));
-
-    return settings;
-  }
-
-  /* ============================================
-     REALTIME SYNC
+     REALTIME
      ============================================ */
   function setupRealtime() {
-    if (!client || !window.Realtime) return;
+    if (typeof window.watch !== 'function') return;
 
     try {
-      unsubscribeRealtime = window.Realtime.watch('settings', (payload) => {
-        log('Realtime update:', payload);
-        // Refetch fresh
-        load({ force: true });
-      });
+      window.watch('settings', async () => {
+        // Clear cache + reload
+        if (typeof window.clearSettingsCache === 'function') {
+          window.clearSettingsCache();
+        }
+        await load(true);
+      }, { debounceMs: 500 });
     } catch (e) {
-      warn('Realtime setup failed:', e.message);
+      console.warn('[Settings] Realtime setup failed:', e.message);
     }
   }
 
   /* ============================================
-     LISTEN FOR BROADCASTS
+     INIT
      ============================================ */
-  function setupListeners() {
-    // Listen for settings-updated broadcast (from admin)
-    window.addEventListener('broadcast-notification', (e) => {
-      if (e.detail?.type === 'settings-updated') {
-        load({ force: true });
-      }
-    });
+  async function init() {
+    // 1) Load immediately (from cache)
+    await load();
 
-    // Listen for logo-updated
-    window.addEventListener('broadcast-notification', (e) => {
-      if (e.detail?.type === 'logo-updated' && e.detail?.url) {
-        applyLogo(e.detail.url);
-      }
-    });
+    // 2) Setup realtime
+    setupRealtime();
+
+    // 3) Re-sync when Supabase is ready
+    if (typeof window.onSupabaseReady === 'function') {
+      window.onSupabaseReady(() => {
+        load(true);
+      });
+    } else {
+      window.addEventListener('supabase-ready', () => {
+        load(true);
+      }, { once: true });
+    }
   }
 
   /* ============================================
@@ -456,48 +396,20 @@
     load,
     get,
     getAll,
-    getBool,
-    getNumber,
-    update,
-    applyLogo,
-    applyToPage,
-    isLoaded: () => isLoaded,
+    apply: applyToDom,
     _settings: () => settings
   };
+
+  // Shortcut
+  window.getSiteSetting = get;
 
   /* ============================================
      START
      ============================================ */
-  function start(c) {
-    client = c;
-
-    // Apply cached logo immediately
-    applyCachedLogo();
-
-    // Load settings
-    load().then(() => {
-      setupRealtime();
-      setupListeners();
-      log('Ready');
-    });
-  }
-
-  // Wait for Supabase
-  if (typeof window.onSupabaseReady === 'function') {
-    window.onSupabaseReady(start);
-  } else if (window.supabaseClient) {
-    start(window.supabaseClient);
-  } else {
-    window.addEventListener('supabase-ready', (e) => {
-      start(e.detail?.client || window.supabaseClient);
-    }, { once: true });
-  }
-
-  // Fallback: apply cached logo even before Supabase is ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', applyCachedLogo);
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    applyCachedLogo();
+    init();
   }
 
 })();
