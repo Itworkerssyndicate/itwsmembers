@@ -31,7 +31,6 @@
     z-index: 10;
   }
 
-  /* Page header */
   .page-header {
     display: flex;
     align-items: center;
@@ -116,7 +115,7 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* ============ BIG TOTAL CARDS ============ */
+  /* Totals */
   .totals-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -153,22 +152,14 @@
   .total-card::before {
     content: '';
     position: absolute;
-    top: -80px;
-    left: -80px;
-    width: 240px;
-    height: 240px;
+    top: -80px; left: -80px;
+    width: 240px; height: 240px;
     border-radius: 50%;
     pointer-events: none;
   }
-  .total-card.revenue::before {
-    background: radial-gradient(circle, rgba(var(--success-rgb), 0.15), transparent 70%);
-  }
-  .total-card.expenses::before {
-    background: radial-gradient(circle, rgba(var(--danger-rgb), 0.15), transparent 70%);
-  }
-  .total-card.net::before {
-    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.15), transparent 70%);
-  }
+  .total-card.revenue::before { background: radial-gradient(circle, rgba(var(--success-rgb), 0.15), transparent 70%); }
+  .total-card.expenses::before { background: radial-gradient(circle, rgba(var(--danger-rgb), 0.15), transparent 70%); }
+  .total-card.net::before { background: radial-gradient(circle, rgba(var(--accent-rgb), 0.15), transparent 70%); }
 
   .total-card-inner {
     position: relative;
@@ -180,12 +171,7 @@
     flex-wrap: wrap;
   }
 
-  .total-label {
-    font-size: 13.5px;
-    color: var(--text-muted);
-    margin-bottom: 8px;
-    letter-spacing: 1px;
-  }
+  .total-label { font-size: 13.5px; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 1px; }
 
   .total-value {
     font-family: 'JetBrains Mono', monospace;
@@ -200,24 +186,13 @@
   .total-card.net .total-value { color: var(--accent); text-shadow: 0 0 30px rgba(var(--accent-rgb), 0.5); }
   .total-card.net.negative .total-value { color: var(--danger); text-shadow: 0 0 30px rgba(var(--danger-rgb), 0.5); }
 
-  .total-value small {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-muted);
-  }
-
-  .total-sub {
-    font-size: 12.5px;
-    color: var(--text-dim);
-  }
+  .total-value small { font-size: 16px; font-weight: 600; color: var(--text-muted); }
+  .total-sub { font-size: 12.5px; color: var(--text-dim); }
 
   .total-icon {
-    width: 72px;
-    height: 72px;
+    width: 72px; height: 72px;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
 
@@ -238,13 +213,9 @@
   }
 
   .total-icon svg {
-    width: 34px;
-    height: 34px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    width: 34px; height: 34px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
 
   .total-card.revenue .total-icon svg { stroke: var(--success); }
@@ -252,7 +223,7 @@
   .total-card.net .total-icon svg { stroke: var(--accent); }
   .total-card.net.negative .total-icon svg { stroke: var(--danger); }
 
-  /* ============ QUICK STATS ============ */
+  /* Quick stats */
   .quick-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -293,12 +264,9 @@
     line-height: 1;
     margin-bottom: 4px;
   }
-  .quick-stat-label {
-    font-size: 12px;
-    color: var(--text-muted);
-  }
+  .quick-stat-label { font-size: 12px; color: var(--text-muted); }
 
-  /* ============ FILTERS ============ */
+  /* Filters */
   .filters-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -346,7 +314,6 @@
     font-size: 13.5px;
   }
 
-  /* Quick date buttons */
   .quick-dates {
     display: flex;
     gap: 8px;
@@ -375,7 +342,6 @@
     box-shadow: var(--glow-accent);
   }
 
-  /* Actions row */
   .actions-row {
     display: flex;
     gap: 10px;
@@ -383,7 +349,7 @@
     margin-bottom: 20px;
   }
 
-  /* ============ TABLES GRID ============ */
+  /* Tables grid */
   .tables-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -443,7 +409,6 @@
     -webkit-backdrop-filter: blur(10px);
   }
 
-  /* Amount cell */
   .amount-cell {
     font-family: 'JetBrains Mono', monospace;
     font-size: 14px;
@@ -457,7 +422,6 @@
     text-shadow: 0 0 10px rgba(var(--danger-rgb), 0.3);
   }
 
-  /* Member cell */
   .member-cell {
     display: flex;
     align-items: center;
@@ -485,13 +449,8 @@
     text-overflow: ellipsis;
     max-width: 160px;
   }
-  .member-nid {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10.5px;
-    color: var(--text-dim);
-  }
 
-  /* Governorate card */
+  /* Gov card */
   .gov-card {
     padding: 16px;
     background: rgba(0, 0, 0, 0.3);
@@ -506,22 +465,14 @@
     border-color: rgba(var(--accent-rgb), 0.4);
     background: rgba(var(--accent-rgb), 0.05);
   }
-  .gov-name {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--text);
-  }
+  .gov-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
   .gov-stats {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
   }
-  .gov-count {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11.5px;
-    color: var(--text-muted);
-  }
+  .gov-count { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--text-muted); }
   .gov-amount {
     font-family: 'JetBrains Mono', monospace;
     font-size: 14px;
@@ -537,7 +488,6 @@
     padding: 20px;
   }
 
-  /* Category card */
   .cat-card {
     padding: 16px;
     background: rgba(0, 0, 0, 0.3);
@@ -552,22 +502,14 @@
     border-color: rgba(var(--danger-rgb), 0.4);
     background: rgba(var(--danger-rgb), 0.05);
   }
-  .cat-name {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--text);
-  }
+  .cat-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
   .cat-stats {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
   }
-  .cat-count {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11.5px;
-    color: var(--text-muted);
-  }
+  .cat-count { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--text-muted); }
   .cat-amount {
     font-family: 'JetBrains Mono', monospace;
     font-size: 14px;
@@ -576,34 +518,6 @@
     text-shadow: 0 0 10px rgba(var(--danger-rgb), 0.3);
   }
 
-  /* Empty state */
-  .empty-state {
-    padding: 60px 20px;
-    text-align: center;
-    color: var(--text-dim);
-  }
-  .empty-state svg {
-    width: 48px; height: 48px;
-    stroke: var(--text-dim);
-    fill: none;
-    stroke-width: 1.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    margin: 0 auto 16px;
-    display: block;
-    opacity: 0.5;
-  }
-  .empty-state-title {
-    font-size: 15px;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-  }
-  .empty-state-sub {
-    font-size: 13px;
-    color: var(--text-dim);
-  }
-
-  /* Status badge */
   .status-badge {
     display: inline-flex;
     align-items: center;
@@ -615,28 +529,11 @@
     border: 1.5px solid;
     white-space: nowrap;
   }
-  .status-badge .dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: currentColor;
-  }
-  .status-confirmed {
-    background: rgba(var(--success-rgb), 0.1);
-    border-color: var(--success);
-    color: var(--success);
-  }
-  .status-pending {
-    background: rgba(var(--warning-rgb), 0.1);
-    border-color: var(--warning);
-    color: var(--warning);
-  }
-  .status-rejected {
-    background: rgba(var(--danger-rgb), 0.1);
-    border-color: var(--danger);
-    color: var(--danger);
-  }
+  .status-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .status-confirmed { background: rgba(var(--success-rgb), 0.1); border-color: var(--success); color: var(--success); }
+  .status-pending { background: rgba(var(--warning-rgb), 0.1); border-color: var(--warning); color: var(--warning); }
+  .status-rejected { background: rgba(var(--danger-rgb), 0.1); border-color: var(--danger); color: var(--danger); }
 
-  /* Method badge */
   .method-badge {
     display: inline-block;
     padding: 4px 10px;
@@ -649,12 +546,55 @@
     white-space: nowrap;
   }
 
-  /* Responsive */
+  .modal-content { max-height: 90vh; }
+  .modal-header-custom {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.04), transparent);
+  }
+  .modal-header-custom h3 {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .modal-footer-custom {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-soft);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .close-btn {
+    width: 32px; height: 32px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .close-btn:hover {
+    background: rgba(var(--danger-rgb), 0.15);
+    border-color: rgba(var(--danger-rgb), 0.4);
+    color: var(--danger);
+  }
+  .close-btn svg {
+    width: 14px; height: 14px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round;
+  }
+
   @media (max-width: 1024px) {
     .tables-grid { grid-template-columns: 1fr; }
     .filters-grid { grid-template-columns: 1fr 1fr; }
   }
-
   @media (max-width: 768px) {
     body { padding: 90px 0 30px; }
     .revenue-wrap { padding: 0 16px; }
@@ -668,7 +608,6 @@
     .quick-stats { grid-template-columns: 1fr; }
   }
 
-  /* Print */
   @media print {
     .navbar, .actions-row, .filters-card, .quick-dates,
     .footer, .bg-grid, .bg-glow, .bg-layer, .tabs-nav {
@@ -752,7 +691,6 @@
 <!-- MAIN -->
 <div class="revenue-wrap">
 
-  <!-- HEADER -->
   <div class="page-header">
     <div class="page-header-info">
       <div class="page-header-title">التقارير المالية</div>
@@ -788,9 +726,7 @@
     </button>
   </div>
 
-  <!-- ============================================
-       TAB 1: OVERVIEW
-       ============================================ -->
+  <!-- ============ TAB 1: OVERVIEW ============ -->
   <div data-tab-content="overview">
 
     <!-- TOTALS -->
@@ -992,7 +928,7 @@
       </button>
     </div>
 
-    <!-- GOVERNORATE REPORT -->
+    <!-- GOV REPORT -->
     <div class="table-card full" style="margin-bottom:20px;">
       <div class="table-card-header">
         <div class="table-card-title">
@@ -1012,7 +948,7 @@
       </div>
     </div>
 
-    <!-- EXPENSE CATEGORIES REPORT -->
+    <!-- CAT REPORT -->
     <div class="table-card full">
       <div class="table-card-header">
         <div class="table-card-title">
@@ -1036,12 +972,9 @@
 
   </div>
 
-  <!-- ============================================
-       TAB 2: PAYMENTS
-       ============================================ -->
+  <!-- ============ TAB 2: PAYMENTS ============ -->
   <div data-tab-content="payments" style="display:none;">
 
-    <!-- FILTERS (same) -->
     <div class="filters-card">
       <div class="filters-header">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1093,7 +1026,6 @@
       </div>
     </div>
 
-    <!-- PAYMENTS TABLE -->
     <div class="table-card full">
       <div class="table-card-header">
         <div class="table-card-title">
@@ -1132,12 +1064,9 @@
 
   </div>
 
-  <!-- ============================================
-       TAB 3: EXPENSES
-       ============================================ -->
+  <!-- ============ TAB 3: EXPENSES ============ -->
   <div data-tab-content="expenses" style="display:none;">
 
-    <!-- EXPENSES SUMMARY -->
     <div class="quick-stats" style="margin-bottom:24px;">
       <div class="quick-stat">
         <div class="quick-stat-icon" style="background:rgba(var(--danger-rgb),0.08);border-color:rgba(var(--danger-rgb),0.25);">
@@ -1183,7 +1112,6 @@
       </div>
     </div>
 
-    <!-- ACTIONS -->
     <div class="actions-row">
       <button type="button" class="btn btn-primary" id="addExpenseBtn">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1203,7 +1131,6 @@
       </button>
     </div>
 
-    <!-- EXPENSES TABLE -->
     <div class="table-card full">
       <div class="table-card-header">
         <div class="table-card-title">
@@ -1243,9 +1170,7 @@
 
 </div>
 
-<!-- ============================================
-     ADD EXPENSE MODAL
-     ============================================ -->
+<!-- ADD EXPENSE MODAL -->
 <div id="expenseModal" class="modal modal-sm">
   <div class="modal-content">
 
@@ -1330,6 +1255,7 @@
 <script src="js/theme-manager.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/realtime.js"></script>
+<script src="js/security.js"></script>
 <script src="js/revenue.js"></script>
 
 <script>
@@ -1338,7 +1264,20 @@
     if (nav) nav.classList.toggle('open');
   };
 
-  /* Background particles */
+  (function () {
+    document.querySelectorAll('[data-tab-btn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tabBtn;
+        document.querySelectorAll('[data-tab-btn]').forEach(b => {
+          b.classList.toggle('active', b === btn);
+        });
+        document.querySelectorAll('[data-tab-content]').forEach(el => {
+          el.style.display = el.dataset.tabContent === tab ? 'block' : 'none';
+        });
+      });
+    });
+  })();
+
   (function () {
     const canvas = document.getElementById('bgCanvas');
     if (!canvas) return;
@@ -1412,21 +1351,6 @@
 
     resize();
     loop();
-  })();
-
-  /* Tabs */
-  (function () {
-    document.querySelectorAll('[data-tab-btn]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tab = btn.dataset.tabBtn;
-        document.querySelectorAll('[data-tab-btn]').forEach(b => {
-          b.classList.toggle('active', b === btn);
-        });
-        document.querySelectorAll('[data-tab-content]').forEach(el => {
-          el.style.display = el.dataset.tabContent === tab ? 'block' : 'none';
-        });
-      });
-    });
   })();
 </script>
 
