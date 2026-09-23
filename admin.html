@@ -31,7 +31,6 @@
     z-index: 10;
   }
 
-  /* Page header */
   .page-header {
     display: flex;
     align-items: center;
@@ -86,7 +85,6 @@
   .user-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
   .user-role { font-size: 11.5px; color: #f59e0b; letter-spacing: 0.5px; font-weight: 600; }
 
-  /* Tabs */
   .tabs-nav {
     display: flex;
     gap: 6px;
@@ -144,7 +142,6 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* Settings */
   .settings-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -191,7 +188,6 @@
   }
   .settings-card-sub { font-size: 12px; color: var(--text-dim); }
 
-  /* Logo upload */
   .logo-upload-area {
     display: flex;
     align-items: center;
@@ -229,7 +225,6 @@
     margin-bottom: 4px;
   }
 
-  /* Toggle */
   .toggle-row {
     display: flex;
     align-items: center;
@@ -285,7 +280,6 @@
     background: #000;
   }
 
-  /* Save bar */
   .save-bar {
     position: sticky;
     bottom: 20px;
@@ -322,7 +316,6 @@
     flex-wrap: wrap;
   }
 
-  /* Table */
   .table-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -394,7 +387,6 @@
     transform: translateY(-2px);
   }
 
-  /* Role badge */
   .role-badge {
     display: inline-flex;
     align-items: center;
@@ -449,7 +441,6 @@
     background: currentColor;
   }
 
-  /* Feature card preview */
   .features-preview-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -542,7 +533,6 @@
     background: rgba(var(--danger-rgb), 0.15);
   }
 
-  /* Icon picker */
   .icon-picker {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
@@ -573,7 +563,6 @@
     stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
   }
 
-  /* Session/log table */
   .session-duration {
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px;
@@ -593,8 +582,7 @@
     font-weight: 700;
   }
   .session-active .dot {
-    width: 6px;
-    height: 6px;
+    width: 6px; height: 6px;
     border-radius: 50%;
     background: var(--success);
     animation: pulseDot 1.5s ease-in-out infinite;
@@ -604,7 +592,6 @@
     50%      { transform: scale(1.4); opacity: 0.6; }
   }
 
-  /* Modal */
   .modal-content { max-height: 90vh; }
   .modal-header-custom {
     padding: 20px 24px;
@@ -650,24 +637,10 @@
     stroke-width: 2; stroke-linecap: round;
   }
 
-  /* Select optgroup */
-  select optgroup {
-    background: var(--bg-2);
-    color: var(--accent);
-    font-weight: 700;
-    font-size: 12px;
-    padding: 4px;
-  }
-  select option {
-    background: var(--bg-2);
-    color: var(--text);
-    padding: 4px 8px;
-  }
-
-  /* Responsive */
   @media (max-width: 1024px) {
     .settings-section { grid-template-columns: 1fr; }
   }
+
   @media (max-width: 768px) {
     body { padding: 90px 0 30px; }
     .admin-wrap { padding: 0 16px; }
@@ -746,7 +719,7 @@
   <div class="page-header">
     <div class="page-header-info">
       <div class="page-header-title">لوحة النقيب العام</div>
-      <div class="page-header-sub">إدارة الإعدادات، المستخدمين، الأنواع، الشعب، واللجان</div>
+      <div class="page-header-sub">إدارة الإعدادات، المستخدمين، الأنواع، الشعب، المحافظات واللجان</div>
     </div>
 
     <div class="user-badge">
@@ -1028,7 +1001,16 @@
 
         <div class="form-group">
           <label for="defaultThemeSelect">الثيم الافتراضي</label>
-          <select id="defaultThemeSelect" data-setting="default_theme"></select>
+          <select id="defaultThemeSelect" data-setting="default_theme">
+            <option value="neon-dark">نيون داكن — سماوي وبنفسجي (افتراضي)</option>
+            <option value="neon-light">نيون فاتح — أزرق وبنفسجي</option>
+            <option value="cyberpunk">سايبربانك — ماجنتا وأصفر</option>
+            <option value="emerald">زمردي — أخضر وذهبي</option>
+            <option value="royal">ملكي — بنفسجي وسماوي</option>
+            <option value="patriot">وطني أحمر — أحمر وأسود (هوية النقابة)</option>
+            <option value="tech-cairo">تك كايرو — أحمر وذهبي</option>
+            <option value="minimal">مينيمال — فاتح احترافي</option>
+          </select>
         </div>
 
         <div class="form-group" style="margin-bottom:0;">
@@ -1087,83 +1069,6 @@
         <div class="form-group" style="margin-bottom:0;">
           <label for="setting_membership_no_prefix">بادئة رقم العضوية</label>
           <input type="text" id="setting_membership_no_prefix" data-setting="membership_no_prefix" placeholder="MEM" dir="ltr" style="text-align:right;" />
-        </div>
-      </div>
-
-      <!-- HEALTH CARE -->
-      <div class="settings-card">
-        <div class="settings-card-header">
-          <div class="settings-card-icon">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-            </svg>
-          </div>
-          <div>
-            <div class="settings-card-title">الرعاية الصحية</div>
-            <div class="settings-card-sub">بند اختياري على الكارنية</div>
-          </div>
-        </div>
-
-        <div class="toggle-row">
-          <div class="toggle-row-info">
-            <div class="toggle-row-label">تفعيل الرعاية الصحية</div>
-            <div class="toggle-row-desc">سيظهر للعضو كخيار في الفورم</div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="setting_health_care_enabled" data-setting="health_care_enabled" />
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="form-group" style="margin-top:18px;">
-          <label for="setting_health_care_label">الاسم الظاهر للعضو</label>
-          <input type="text" id="setting_health_care_label" data-setting="health_care_label" placeholder="رعاية صحية على الكارنية" />
-        </div>
-
-        <div class="form-group" style="margin-bottom:0;">
-          <label for="setting_health_care_price">الرسوم (جنيه / سنة)</label>
-          <input type="number" id="setting_health_care_price" data-setting="health_care_price" placeholder="150" min="0" step="10" />
-        </div>
-      </div>
-
-      <!-- PAYMENT -->
-      <div class="settings-card">
-        <div class="settings-card-header">
-          <div class="settings-card-icon">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <line x1="12" y1="1" x2="12" y2="23" />
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
-          </div>
-          <div>
-            <div class="settings-card-title">بيانات الدفع</div>
-            <div class="settings-card-sub">تظهر للعضو في شاشة التتبع</div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="setting_payment_bank_name">اسم البنك</label>
-          <input type="text" id="setting_payment_bank_name" data-setting="payment_bank_name" placeholder="البنك الأهلي المصري" />
-        </div>
-
-        <div class="form-group">
-          <label for="setting_payment_account_name">اسم صاحب الحساب</label>
-          <input type="text" id="setting_payment_account_name" data-setting="payment_account_name" placeholder="نقابة تكنولوجيا المعلومات" />
-        </div>
-
-        <div class="form-group">
-          <label for="setting_payment_account_number">رقم الحساب / IBAN</label>
-          <input type="text" id="setting_payment_account_number" data-setting="payment_account_number" placeholder="" dir="ltr" style="text-align:right;" />
-        </div>
-
-        <div class="form-group">
-          <label for="setting_payment_instapay">إنستاباي</label>
-          <input type="text" id="setting_payment_instapay" data-setting="payment_instapay" placeholder="" dir="ltr" style="text-align:right;" />
-        </div>
-
-        <div class="form-group" style="margin-bottom:0;">
-          <label for="setting_payment_notes">ملاحظات الدفع</label>
-          <textarea id="setting_payment_notes" data-setting="payment_notes" rows="2" placeholder="يرجى تحويل المبلغ على الحساب أعلاه ورفع صورة الإيصال"></textarea>
         </div>
       </div>
 
@@ -1228,7 +1133,6 @@
         </button>
       </div>
     </div>
-
   </div>
 
   <!-- ============================================
@@ -1551,7 +1455,6 @@
               <th>الاسم</th>
               <th>البريد</th>
               <th>الدور</th>
-              <th>الصفة</th>
               <th>آخر تسجيل دخول</th>
               <th>الحالة</th>
               <th style="text-align:center;">إجراءات</th>
@@ -1559,7 +1462,7 @@
           </thead>
           <tbody id="usersTableBody">
             <tr>
-              <td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">
+              <td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">
                 جاري التحميل...
               </td>
             </tr>
@@ -1570,7 +1473,7 @@
   </div>
 
   <!-- ============================================
-       TAB 4: GOVERNORATES
+       TAB 4: GOVERNORATES ✅ (جديد)
        ============================================ -->
   <div data-tab-content="governorates" style="display:none;">
     <div class="table-card">
@@ -1757,7 +1660,6 @@
       </div>
     </div>
 
-    <!-- Actions Log -->
     <div class="table-card" style="margin-top:20px;">
       <div class="table-card-header">
         <div class="table-card-title">
@@ -1877,17 +1779,20 @@
         <label for="userRole">الدور</label>
         <select id="userRole">
           <option value="">-- اختر الدور --</option>
+
           <optgroup label="الأدوار الأساسية">
             <option value="head">النقيب العام</option>
             <option value="vice_president">نائب رئيس النقابة</option>
             <option value="deputy">الوكيل</option>
             <option value="committee">لجنة العضوية</option>
           </optgroup>
+
           <optgroup label="المحافظات والفروع">
             <option value="governorate_head">نقيب محافظة</option>
             <option value="governorate_board">مجلس محافظة</option>
             <option value="branches_manager">مدير الفروع</option>
           </optgroup>
+
           <optgroup label="اللجان">
             <option value="social_committee_head">رئيس اللجنة الاجتماعية</option>
             <option value="social_committee_vice">نائب اللجنة الاجتماعية</option>
@@ -1906,10 +1811,11 @@
       </div>
 
       <div class="form-group" id="userGovernorateField" style="display:none;">
-        <label for="userGovernorate">المحافظة</label>
+        <label for="userGovernorate">المحافظة <span style="color:var(--danger);">*</span></label>
         <select id="userGovernorate">
           <option value="">-- اختر المحافظة --</option>
         </select>
+        <span class="form-hint">مطلوب لأدوار نقيب ومجلس المحافظة</span>
       </div>
 
       <div class="form-group" id="passwordField">
@@ -2068,7 +1974,7 @@
 </div>
 
 <!-- ============================================
-     GOVERNORATE MODAL
+     GOVERNORATE MODAL ✅ (جديد)
      ============================================ -->
 <div id="govModal" class="modal modal-sm">
   <div class="modal-content">
@@ -2086,12 +1992,12 @@
       <input type="hidden" id="govId" />
 
       <div class="form-group">
-        <label for="govName">اسم المحافظة</label>
+        <label for="govName">اسم المحافظة <span style="color:var(--danger);">*</span></label>
         <input type="text" id="govName" placeholder="مثال: القاهرة" />
       </div>
 
       <div class="form-group">
-        <label for="govCode">الكود</label>
+        <label for="govCode">الكود (إنجليزي)</label>
         <input type="text" id="govCode" placeholder="CAI" dir="ltr" style="text-align:right;text-transform:uppercase;" />
       </div>
 
