@@ -1,6 +1,7 @@
 /* =====================================================
    IT SYNDICATE — DASHBOARD LOGIC (Committee)
    Version: 3.0.0
+   Path: js/dashboard.js
    =====================================================
    يحتوي على:
    - Auth + Role check
@@ -968,7 +969,6 @@
 
       if (error) throw error;
 
-      // Log status history
       try {
         await client.from('status_history').insert([{
           application_id: currentStatusAppId,
