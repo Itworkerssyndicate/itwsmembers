@@ -86,7 +86,7 @@
   .user-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
   .user-role { font-size: 11.5px; color: #22c55e; letter-spacing: 0.5px; font-weight: 600; }
 
-  /* Governorate Hero */
+  /* Gov Hero */
   .gov-hero {
     display: flex;
     align-items: center;
@@ -169,7 +169,6 @@
   }
   .stat-label { font-size: 12px; color: var(--text-muted); }
 
-  /* Tabs */
   .tabs-nav {
     display: flex;
     gap: 6px;
@@ -217,6 +216,14 @@
     stroke: currentColor; fill: none;
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
     flex-shrink: 0;
+  }
+
+  [data-tab-content] {
+    animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   .filters-card {
@@ -327,7 +334,7 @@
   }
 
   .table-wrap { overflow-x: auto; max-height: 70vh; }
-  table { width: 100%; min-width: 1300px; }
+  table { width: 100%; min-width: 1200px; }
   table th {
     position: sticky;
     top: 0;
@@ -485,7 +492,6 @@
     border-top: 1px solid var(--border-soft);
   }
 
-  /* Report grid */
   .report-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -520,7 +526,6 @@
     text-shadow: var(--glow-accent);
   }
 
-  /* Modal */
   .modal-content { max-height: 90vh; }
   .modal-header-custom {
     padding: 20px 24px;
@@ -670,7 +675,6 @@
 <!-- MAIN -->
 <div class="gov-wrap">
 
-  <!-- HEADER -->
   <div class="page-header">
     <div class="page-header-info">
       <div class="page-header-title">لوحة المحافظة</div>
@@ -985,20 +989,6 @@
   };
 
   (function () {
-    document.querySelectorAll('[data-tab-btn]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tab = btn.dataset.tabBtn;
-        document.querySelectorAll('[data-tab-btn]').forEach(b => {
-          b.classList.toggle('active', b === btn);
-        });
-        document.querySelectorAll('[data-tab-content]').forEach(el => {
-          el.style.display = el.dataset.tabContent === tab ? 'block' : 'none';
-        });
-      });
-    });
-  })();
-
-  (function () {
     const canvas = document.getElementById('bgCanvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -1071,6 +1061,20 @@
 
     resize();
     loop();
+  })();
+
+  (function () {
+    document.querySelectorAll('[data-tab-btn]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tabBtn;
+        document.querySelectorAll('[data-tab-btn]').forEach(b => {
+          b.classList.toggle('active', b === btn);
+        });
+        document.querySelectorAll('[data-tab-content]').forEach(el => {
+          el.style.display = el.dataset.tabContent === tab ? 'block' : 'none';
+        });
+      });
+    });
   })();
 </script>
 
