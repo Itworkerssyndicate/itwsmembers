@@ -1,6 +1,7 @@
 /* =====================================================
    IT SYNDICATE — SIGNUP LOGIC
    Version: 1.0.0
+   Path: js/signup.js
    =====================================================
    يحتوي على:
    - تحميل قايمة المحافظات
@@ -304,14 +305,13 @@
         .upsert([userPayload], { onConflict: 'id' });
 
       if (insertErr) {
-        // لو فشل إدخال في users، نحاول نحذف المستخدم من auth
         try {
           await tempClient.auth.admin.deleteUser(newUserId);
         } catch (e) {}
         throw new Error('فشل حفظ البيانات: ' + insertErr.message);
       }
 
-      // 5) تسجيل الإجراء في user_actions (best effort)
+      // 5) تسجيل الإجراء في user_actions
       try {
         await client.from('user_actions').insert([{
           user_id: newUserId,
@@ -333,13 +333,10 @@
       if (successState) successState.classList.add('show');
       if (loginLink) loginLink.style.display = 'none';
 
-      // إخفاء معلومات التنبيهات
       if (window.clearSignupAlert) window.clearSignupAlert();
 
-      // Scroll to top
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
-      // إطلاق confetti بسيطة
       launchConfetti();
 
       console.log('[Signup] Success — User ID:', newUserId);
@@ -427,7 +424,7 @@
         form.addEventListener('submit', submitForm);
       }
 
-      // Realtime للمحافظات (لو اتضافت محافظة جديدة أثناء التسجيل)
+      // Realtime للمحافظات
       if (window.Realtime) {
         window.Realtime.watch('governorates', function() {
           loadGovernorates();
