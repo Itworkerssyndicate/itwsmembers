@@ -194,7 +194,8 @@
     gap: 20px;
     flex-wrap: wrap;
   }
-  #logoPreview {
+  #logoPreview,
+  #headPhotoPreview {
     width: 120px; height: 120px;
     border-radius: var(--radius-lg);
     background: rgba(0, 0, 0, 0.4);
@@ -204,12 +205,15 @@
     flex-shrink: 0;
     transition: all 0.25s;
   }
-  #logoPreview.has-logo {
+  #headPhotoPreview { border-radius: 50%; }
+  #logoPreview.has-logo,
+  #headPhotoPreview.has-photo {
     border-style: solid;
     border-color: var(--accent);
     box-shadow: var(--glow-accent);
   }
   #logoPreview img { max-width: 90%; max-height: 90%; object-fit: contain; }
+  #headPhotoPreview img { width: 100%; height: 100%; object-fit: cover; }
 
   .logo-actions {
     flex: 1;
@@ -441,6 +445,49 @@
     background: currentColor;
   }
 
+  /* Steps editor */
+  .step-editor-card {
+    padding: 18px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .step-editor-card::before {
+    content: attr(data-step-num);
+    position: absolute;
+    top: 12px;
+    left: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 32px;
+    font-weight: 800;
+    color: rgba(var(--accent-rgb), 0.12);
+    line-height: 1;
+    pointer-events: none;
+  }
+  .step-editor-card .step-label {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step-editor-card .step-label .step-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px; height: 24px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #000;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
   .features-preview-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -653,7 +700,7 @@
     .save-bar-actions { width: 100%; }
     .save-bar-actions .btn { flex: 1; }
     .logo-upload-area { flex-direction: column; align-items: stretch; }
-    #logoPreview { margin: 0 auto; }
+    #logoPreview, #headPhotoPreview { margin: 0 auto; }
     .icon-picker { grid-template-columns: repeat(6, 1fr); }
   }
 </style>
@@ -881,8 +928,8 @@
         </div>
       </div>
 
-      <!-- HEAD -->
-      <div class="settings-card">
+      <!-- HEAD CARD — النقيب العام (جديد) -->
+      <div class="settings-card full-width">
         <div class="settings-card-header">
           <div class="settings-card-icon">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -892,18 +939,63 @@
           </div>
           <div>
             <div class="settings-card-title">النقيب العام</div>
-            <div class="settings-card-sub">بيانات النقيب التي تظهر في الصفحات</div>
+            <div class="settings-card-sub">الاسم + اللقب + الصورة + كلمة النقيب — تظهر في الصفحة الرئيسية</div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="setting_head_name">اسم النقيب</label>
-          <input type="text" id="setting_head_name" data-setting="head_name" placeholder="م / محمود جميل" />
+        <div class="logo-upload-area" style="margin-bottom:20px;">
+          <div id="headPhotoPreview">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text-dim);">
+              <svg viewBox="0 0 24 24" style="width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <span style="font-size:11px;">صورة النقيب</span>
+            </div>
+          </div>
+
+          <div class="logo-actions">
+            <div class="logo-hint">
+              ارفع صورة النقيب العام (PNG, JPG, WEBP) — حد أقصى 2 ميجا. ستظهر بشكل دائري تحت قسم "عن النقابة".
+            </div>
+            <input type="file" id="headPhotoInput" accept="image/png,image/jpeg,image/jpg,image/webp" style="display:none;" />
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button type="button" class="btn btn-primary" id="uploadHeadPhotoBtn">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <span>اختر صورة</span>
+              </button>
+
+              <button type="button" class="btn btn-outline" id="removeHeadPhotoBtn">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+                <span>إزالة</span>
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="form-group" style="margin-bottom:0;">
-          <label for="setting_head_title">اللقب</label>
-          <input type="text" id="setting_head_title" data-setting="head_title" placeholder="النقيب العام" />
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group" style="margin:0;">
+            <label for="setting_head_name">اسم النقيب</label>
+            <input type="text" id="setting_head_name" data-setting="head_name" placeholder="م / محمود جميل" />
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label for="setting_head_title">اللقب</label>
+            <input type="text" id="setting_head_title" data-setting="head_title" placeholder="النقيب العام" />
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:14px;margin-bottom:0;">
+          <label for="setting_head_message">كلمة النقيب العام (تظهر في الصفحة الرئيسية)</label>
+          <textarea id="setting_head_message" data-setting="head_message" rows="4" placeholder="اكتب كلمة قصيرة عن النقابة ورؤيتها..."></textarea>
+          <span class="form-hint">نص حر يظهر تحت الاسم — اتركه فاضي لو مش عايزه يظهر</span>
         </div>
       </div>
 
@@ -1308,53 +1400,105 @@
         </div>
       </div>
 
-      <!-- SECTION LABELS -->
+      <!-- STEPS EDITOR (جديد) -->
       <div class="settings-card full-width">
         <div class="settings-card-header">
           <div class="settings-card-icon">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <line x1="4" y1="9" x2="20" y2="9" />
-              <line x1="4" y1="15" x2="20" y2="15" />
-              <line x1="10" y1="3" x2="8" y2="21" />
-              <line x1="16" y1="3" x2="14" y2="21" />
+              <line x1="8" y1="6" x2="21" y2="6" />
+              <line x1="8" y1="12" x2="21" y2="12" />
+              <line x1="8" y1="18" x2="21" y2="18" />
+              <line x1="3" y1="6" x2="3.01" y2="6" />
+              <line x1="3" y1="12" x2="3.01" y2="12" />
+              <line x1="3" y1="18" x2="3.01" y2="18" />
             </svg>
           </div>
           <div>
-            <div class="settings-card-title">عناوين الأقسام</div>
-            <div class="settings-card-sub">العناوين الفرعية للصفحة الرئيسية</div>
+            <div class="settings-card-title">خطوات التقديم (4 خطوات)</div>
+            <div class="settings-card-sub">تعديل عناوين ووصف الخطوات الظاهرة في الصفحة الرئيسية</div>
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
           <div class="form-group" style="margin:0;">
-            <label for="setting_features_title">عنوان قسم المميزات</label>
-            <input type="text" id="setting_features_title" data-setting="features_title" placeholder="لماذا منصتنا؟" />
-          </div>
-          <div class="form-group" style="margin:0;">
-            <label for="setting_features_subtitle">وصف قسم المميزات</label>
-            <input type="text" id="setting_features_subtitle" data-setting="features_subtitle" placeholder="منظومة متكاملة..." />
-          </div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
-          <div class="form-group" style="margin:0;">
-            <label for="setting_types_title">عنوان قسم العضويات</label>
-            <input type="text" id="setting_types_title" data-setting="types_title" placeholder="أنواع العضوية" />
-          </div>
-          <div class="form-group" style="margin:0;">
-            <label for="setting_types_subtitle">وصف قسم العضويات</label>
-            <input type="text" id="setting_types_subtitle" data-setting="types_subtitle" placeholder="اختر النوع المناسب..." />
-          </div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
-          <div class="form-group" style="margin:0;">
-            <label for="setting_steps_title">عنوان قسم الخطوات</label>
+            <label for="setting_steps_title">عنوان القسم</label>
             <input type="text" id="setting_steps_title" data-setting="steps_title" placeholder="كيف تقدم؟" />
           </div>
           <div class="form-group" style="margin:0;">
-            <label for="setting_steps_subtitle">وصف قسم الخطوات</label>
-            <input type="text" id="setting_steps_subtitle" data-setting="steps_subtitle" placeholder="4 خطوات بسيطة..." />
+            <label for="setting_steps_subtitle">وصف القسم</label>
+            <input type="text" id="setting_steps_subtitle" data-setting="steps_subtitle" placeholder="4 خطوات بسيطة تفصلك عن عضويتك" />
+          </div>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="step-editor-card" data-step-num="01">
+          <div class="step-label">
+            <span class="step-badge">1</span>
+            <span>الخطوة الأولى</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;">
+            <div class="form-group" style="margin:0;">
+              <label for="setting_step1_title">العنوان</label>
+              <input type="text" id="setting_step1_title" data-setting="step1_title" placeholder="املأ الفورم" />
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label for="setting_step1_desc">الوصف</label>
+              <input type="text" id="setting_step1_desc" data-setting="step1_desc" placeholder="بياناتك الأساسية والمهنية في دقائق" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-editor-card" data-step-num="02">
+          <div class="step-label">
+            <span class="step-badge">2</span>
+            <span>الخطوة الثانية</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;">
+            <div class="form-group" style="margin:0;">
+              <label for="setting_step2_title">العنوان</label>
+              <input type="text" id="setting_step2_title" data-setting="step2_title" placeholder="ارفع المرفقات" />
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label for="setting_step2_desc">الوصف</label>
+              <input type="text" id="setting_step2_desc" data-setting="step2_desc" placeholder="بطاقة + شهادة + صورة شخصية" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-editor-card" data-step-num="03">
+          <div class="step-label">
+            <span class="step-badge">3</span>
+            <span>الخطوة الثالثة</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;">
+            <div class="form-group" style="margin:0;">
+              <label for="setting_step3_title">العنوان</label>
+              <input type="text" id="setting_step3_title" data-setting="step3_title" placeholder="فحص تلقائي" />
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label for="setting_step3_desc">الوصف</label>
+              <input type="text" id="setting_step3_desc" data-setting="step3_desc" placeholder="تحقق فوري من صحة وجودة المستندات" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step-editor-card" data-step-num="04" style="margin-bottom:0;">
+          <div class="step-label">
+            <span class="step-badge">4</span>
+            <span>الخطوة الرابعة</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;">
+            <div class="form-group" style="margin:0;">
+              <label for="setting_step4_title">العنوان</label>
+              <input type="text" id="setting_step4_title" data-setting="step4_title" placeholder="استلم إيصالك" />
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label for="setting_step4_desc">الوصف</label>
+              <input type="text" id="setting_step4_desc" data-setting="step4_desc" placeholder="رقم تتبع + QR لمتابعة الطلب" />
+            </div>
           </div>
         </div>
       </div>
@@ -1473,7 +1617,7 @@
   </div>
 
   <!-- ============================================
-       TAB 4: GOVERNORATES ✅ (جديد)
+       TAB 4: GOVERNORATES
        ============================================ -->
   <div data-tab-content="governorates" style="display:none;">
     <div class="table-card">
@@ -1974,7 +2118,7 @@
 </div>
 
 <!-- ============================================
-     GOVERNORATE MODAL ✅ (جديد)
+     GOVERNORATE MODAL
      ============================================ -->
 <div id="govModal" class="modal modal-sm">
   <div class="modal-content">
@@ -2112,7 +2256,6 @@
     if (nav) nav.classList.toggle('open');
   };
 
-  /* Background particles */
   (function () {
     const canvas = document.getElementById('bgCanvas');
     if (!canvas) return;
