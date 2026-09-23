@@ -1,12 +1,19 @@
 /* =====================================================
    IT SYNDICATE — THEMES SYSTEM
    Version: 3.0.0
+   Path: css/themes.css
    =====================================================
    يحتوي على:
-   - 8 ثيمات (5 قديمة + 3 جديدة بهوية النقابة)
+   - Reset & Base
+   - 8 ثيمات كاملة
    - متغيرات CSS شاملة
-   - دعم RTL/LTR
-   - Responsive
+   - Typography
+   - Selection + Scrollbar
+   - Focus states
+   - Accessibility
+   - Print
+   - High Contrast
+   - Dark mode preference
    ===================================================== */
 
 /* =====================================================
@@ -296,7 +303,7 @@ ul, ol {
 }
 
 /* =====================================================
-   THEME 6: PATRIOT RED (هوية النقابة — أحمر + أسود)
+   THEME 6: PATRIOT RED (أحمر + أسود — هوية النقابة)
    ===================================================== */
 [data-theme="patriot"] {
   --accent: #e62e2e;
@@ -368,7 +375,7 @@ ul, ol {
 }
 
 /* =====================================================
-   THEME 8: MODERN MINIMAL (فاتح احترافي — للطباعة)
+   THEME 8: MODERN MINIMAL (فاتح احترافي)
    ===================================================== */
 [data-theme="minimal"] {
   --accent: #e62e2e;
@@ -470,7 +477,6 @@ code, pre, .mono {
   background: rgba(var(--accent-rgb), 0.5);
 }
 
-/* Firefox */
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(var(--accent-rgb), 0.3) var(--bg-2);
