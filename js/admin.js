@@ -1,19 +1,19 @@
 /* =====================================================
    IT SYNDICATE — ADMIN PANEL LOGIC
-   Version: 3.1.0
+   Version: 3.2.0
    =====================================================
    يحتوي على:
-   - Auth + Role check (head فقط)
-   - الإعدادات العامة (الشعار + الاسم + النقيب + تواصل + نظام + نصوص)
-   - إعدادات الرئيسية (Hero + Code Card + Features + About Card)
-   - المستخدمون (CRUD كامل)
+   - Auth + Role check (head / vp / deputy)
+   - الإعدادات العامة
+   - إعدادات الرئيسية
+   - المستخدمون (CRUD)
+   - المحافظات ✅ (CRUD كامل جديد)
    - أنواع العضوية (CRUD)
    - الشعب (CRUD)
    - المميزات (Editor تفاعلي)
-   - سجل النشاط + سجل التدقيق
-   - Backup
-   - Realtime
-   - ✅ إصلاح قائمة الثيمات (buildSelect بدل buildThemeSelect)
+   - سجل النشاط + التدقيق
+   - Backup + Realtime
+   - ✅ إصلاح قائمة الثيمات (buildSelect)
    ===================================================== */
 
 (function () {
@@ -23,7 +23,6 @@
      CONSTANTS
      ============================================ */
   const LOGO_BUCKET = 'branding';
-  const LOGO_FILE_NAME = 'logo';
   const MAX_LOGO_SIZE = 2 * 1024 * 1024;
   const ALLOWED_LOGO_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml', 'image/webp'];
   const AUDIT_TABLE = 'audit_log';
@@ -73,6 +72,7 @@
   let users = [];
   let membershipTypes = [];
   let branches = [];
+  let governorates = [];
   let featuresCards = [];
   let sessions = [];
   let actions = [];
@@ -167,7 +167,6 @@
 
       const role = userData?.role || 'committee';
 
-      // الأدوار المسموح لها بالدخول
       const allowedRoles = ['head', 'vice_president', 'deputy'];
       if (!allowedRoles.includes(role)) {
         alert('هذه الصفحة مخصصة للنقيب العام ونوابه فقط');
@@ -210,9 +209,6 @@
     }
   }
 
-  /* ============================================
-     LOG USER ACTION
-     ============================================ */
   async function logAction(action, entity, entityId, details) {
     try {
       await client.from('user_actions').insert([{
@@ -246,6 +242,7 @@
 
     // Lazy load
     if (tabId === 'users' && users.length === 0) loadUsers();
+    if (tabId === 'governorates' && governorates.length === 0) loadGovernorates();
     if (tabId === 'types' && membershipTypes.length === 0) loadTypes();
     if (tabId === 'branches' && branches.length === 0) loadBranches();
     if (tabId === 'sessions') loadSessions();
@@ -281,7 +278,7 @@
 
       applySettingsToForm();
       applyLogoPreview();
-      buildThemeSelect();  // ✅ الدالة المعدلة
+      buildThemeSelect();
       loadFeaturesFromSettings();
 
     } catch (err) {
@@ -337,11 +334,10 @@
 
     const currentValue = settings.default_theme || 'neon-dark';
 
-    // ✅ الخيار 1: استخدم ThemeManager لو عنده الدالة الصح
+    // ✅ الخيار 1: استخدم ThemeManager.buildSelect
     if (window.ThemeManager && typeof window.ThemeManager.buildSelect === 'function') {
       try {
         window.ThemeManager.buildSelect('defaultThemeSelect', currentValue);
-        // أضف listener للمعاينة
         attachThemePreviewListener(select);
         return;
       } catch (e) {
@@ -349,7 +345,7 @@
       }
     }
 
-    // ✅ الخيار 2: ابنِها يدويًا (Fallback)
+    // ✅ الخيار 2: Fallback يدوي (8 ثيمات)
     select.innerHTML = '';
 
     Object.entries(THEMES_LIST).forEach(([key, info]) => {
@@ -367,7 +363,6 @@
     if (!select || select.dataset.listenerAttached === 'true') return;
 
     select.addEventListener('change', () => {
-      // معاينة مباشرة بدون حفظ
       if (window.ThemeManager && typeof window.ThemeManager.apply === 'function') {
         window.ThemeManager.apply(select.value, { persist: false });
       }
@@ -401,7 +396,6 @@
         }
       });
 
-      // Add features_cards
       if (featuresCards.length > 0 || 'features_cards' in settings) {
         updates.features_cards = JSON.stringify(featuresCards);
       }
@@ -615,7 +609,16 @@
         head: { label: 'النقيب العام', cls: 'head' },
         vice_president: { label: 'نائب الرئيس', cls: 'vice_president' },
         deputy: { label: 'الوكيل', cls: 'deputy' },
-        committee: { label: 'لجنة العضوية', cls: 'committee' }
+        committee: { label: 'لجنة العضوية', cls: 'committee' },
+        governorate_head: { label: 'نقيب محافظة', cls: 'governorate_head' },
+        governorate_board: { label: 'مجلس محافظة', cls: 'governorate_board' },
+        branches_manager: { label: 'مدير الفروع', cls: 'branches_manager' },
+        social_committee_head: { label: 'رئيس اللجنة الاجتماعية', cls: 'social_committee_head' },
+        social_committee_vice: { label: 'نائب اللجنة الاجتماعية', cls: 'social_committee_vice' },
+        public_relations_head: { label: 'رئيس العلاقات العامة', cls: 'public_relations_head' },
+        public_relations_vice: { label: 'نائب العلاقات العامة', cls: 'public_relations_vice' },
+        committees_manager_head: { label: 'مدير اللجان', cls: 'committees_manager_head' },
+        committees_manager_vice: { label: 'نائب مدير اللجان', cls: 'committees_manager_vice' }
       }[u.role] || { label: u.role, cls: 'committee' };
 
       return `
@@ -669,7 +672,7 @@
     });
   }
 
-  window.openUserModal = function (userId) {
+  window.openUserModal = async function (userId) {
     const modal = document.getElementById('userModal');
     if (!modal) return;
 
@@ -686,19 +689,48 @@
     document.getElementById('userPassword').value = '';
     document.getElementById('userPassword').parentElement.style.display = isEdit ? 'none' : 'block';
     document.getElementById('userNotes').value = isEdit ? (user.notes || '') : '';
+    document.getElementById('userPosition').value = isEdit ? (user.position || '') : '';
 
-    // Position field
-    const posField = document.getElementById('userPosition');
-    if (posField) posField.value = isEdit ? (user.position || '') : '';
-
-    // Governorate field
-    const govField = document.getElementById('userGovernorateField');
+    // Load governorates select
     const govSelect = document.getElementById('userGovernorate');
-    if (govField && govSelect) {
-      govSelect.value = isEdit ? (user.governorate_id || '') : '';
-      const role = isEdit ? user.role : 'committee';
-      const needsGov = ['governorate_head', 'governorate_board'].includes(role);
-      govField.style.display = needsGov ? 'block' : 'none';
+    if (govSelect) {
+      // جلب المحافظات لو مش محملة
+      if (governorates.length === 0) {
+        try {
+          const { data } = await client
+            .from('governorates')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order', { ascending: true });
+          governorates = data || [];
+        } catch (e) {}
+      }
+
+      govSelect.innerHTML = '<option value="">-- اختر المحافظة --</option>';
+      governorates.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g.id;
+        opt.textContent = g.name;
+        if (isEdit && String(user.governorate_id) === String(g.id)) opt.selected = true;
+        govSelect.appendChild(opt);
+      });
+    }
+
+    // Show/hide governorate field
+    const govField = document.getElementById('userGovernorateField');
+    const role = isEdit ? user.role : 'committee';
+    const needsGov = ['governorate_head', 'governorate_board'].includes(role);
+    if (govField) govField.style.display = needsGov ? 'block' : 'none';
+
+    // Role change → show/hide gov field
+    const roleSelect = document.getElementById('userRole');
+    if (roleSelect && !roleSelect.dataset.govListenerAttached) {
+      roleSelect.addEventListener('change', () => {
+        const r = roleSelect.value;
+        const needs = ['governorate_head', 'governorate_board'].includes(r);
+        if (govField) govField.style.display = needs ? 'block' : 'none';
+      });
+      roleSelect.dataset.govListenerAttached = 'true';
     }
 
     modal.classList.add('open');
@@ -724,6 +756,13 @@
 
     if (!email || !fullName) {
       showToast('البريد والاسم مطلوبان', 'warning');
+      return;
+    }
+
+    // Validation للمحافظة
+    const needsGov = ['governorate_head', 'governorate_board'].includes(role);
+    if (needsGov && !governorateId) {
+      showToast('اختر المحافظة (مطلوبة لهذا الدور)', 'warning');
       return;
     }
 
@@ -820,6 +859,202 @@
       showToast('تم حذف المستخدم', 'success');
       await loadUsers();
     } catch (err) {
+      showToast('فشل الحذف: ' + err.message, 'error');
+    }
+  }
+
+  /* ============================================
+     ✅ GOVERNORATES (جديد كامل)
+     ============================================ */
+  async function loadGovernorates() {
+    const tbody = document.getElementById('govTableBody');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-dim);">جاري التحميل...</td></tr>`;
+
+    try {
+      const { data, error } = await client
+        .from('governorates')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+
+      governorates = data || [];
+      renderGovTable();
+    } catch (err) {
+      console.error('[Admin] Load governorates error:', err);
+      if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--danger);">${escapeHtml(err.message)}</td></tr>`;
+    }
+  }
+
+  function renderGovTable() {
+    const tbody = document.getElementById('govTableBody');
+    if (!tbody) return;
+
+    if (!governorates.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">
+            لا توجد محافظات. اضغط "إضافة محافظة" لبدء الإضافة.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = governorates.map(g => {
+      const structureLabel = g.structure_type === 'council' ? 'مجلس كامل' : 'وكيل + مساعدين';
+      const structureColor = g.structure_type === 'council' ? '#22c55e' : '#f97316';
+
+      return `
+        <tr style="border-bottom:1px solid var(--border-soft);">
+          <td style="padding:14px 12px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);font-weight:600;">${escapeHtml(g.code || '—')}</td>
+          <td style="padding:14px 12px;font-weight:700;font-size:13.5px;color:var(--text);">${escapeHtml(g.name || '—')}</td>
+          <td style="padding:14px 12px;">
+            <span style="display:inline-block;padding:4px 12px;background:${structureColor}15;border:1px solid ${structureColor};border-radius:100px;font-size:11.5px;color:${structureColor};font-weight:700;white-space:nowrap;">
+              ${structureLabel}
+            </span>
+          </td>
+          <td style="padding:14px 12px;font-size:12.5px;color:var(--text-muted);">${g.sort_order || 0}</td>
+          <td style="padding:14px 12px;">
+            ${g.is_active !== false
+              ? `<span class="session-active" style="font-size:11px;"><span class="dot"></span>مفعّلة</span>`
+              : `<span style="font-size:11.5px;color:var(--text-dim);">معطّلة</span>`}
+          </td>
+          <td style="padding:14px 12px;">
+            <div class="row-actions">
+              <button class="row-btn edit-btn" data-action="edit-gov" data-id="${g.id}" title="تعديل">
+                ${ICONS.edit}
+              </button>
+              <button class="row-btn delete-btn" data-action="delete-gov" data-id="${g.id}" title="حذف">
+                ${ICONS.trash}
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    tbody.querySelectorAll('[data-action="edit-gov"]').forEach(btn => {
+      btn.addEventListener('click', () => openGovModal(btn.dataset.id));
+    });
+
+    tbody.querySelectorAll('[data-action="delete-gov"]').forEach(btn => {
+      btn.addEventListener('click', () => deleteGov(btn.dataset.id));
+    });
+  }
+
+  window.openGovModal = function (govId) {
+    const modal = document.getElementById('govModal');
+    if (!modal) return;
+
+    const isEdit = !!govId;
+    const gov = isEdit ? governorates.find(g => String(g.id) === String(govId)) : null;
+
+    document.getElementById('govModalTitle').textContent = isEdit ? 'تعديل محافظة' : 'إضافة محافظة';
+    document.getElementById('govId').value = isEdit ? gov.id : '';
+    document.getElementById('govName').value = isEdit ? (gov.name || '') : '';
+    document.getElementById('govCode').value = isEdit ? (gov.code || '') : '';
+    document.getElementById('govCode').disabled = isEdit;
+    document.getElementById('govStructureType').value = isEdit ? (gov.structure_type || 'council') : 'council';
+    document.getElementById('govSortOrder').value = isEdit ? (gov.sort_order || 1) : (governorates.length + 1);
+    document.getElementById('govActive').checked = isEdit ? (gov.is_active !== false) : true;
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeGovModal = function () {
+    const modal = document.getElementById('govModal');
+    if (modal) modal.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  async function saveGov() {
+    const govId = document.getElementById('govId').value;
+    const name = document.getElementById('govName').value.trim();
+    const code = document.getElementById('govCode').value.trim().toUpperCase();
+    const structureType = document.getElementById('govStructureType').value || 'council';
+    const sortOrder = parseInt(document.getElementById('govSortOrder').value) || 0;
+    const isActive = document.getElementById('govActive').checked;
+
+    if (!name) {
+      showToast('اسم المحافظة مطلوب', 'warning');
+      return;
+    }
+
+    if (!code) {
+      showToast('كود المحافظة مطلوب', 'warning');
+      return;
+    }
+
+    const btn = document.getElementById('saveGovBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>جاري الحفظ...</span>';
+    }
+
+    try {
+      const payload = {
+        name,
+        code,
+        structure_type: structureType,
+        sort_order: sortOrder,
+        is_active: isActive
+      };
+
+      if (govId) {
+        const { error } = await client.from('governorates').update(payload).eq('id', govId);
+        if (error) throw error;
+        await logAudit('update', 'governorate', govId, null, payload);
+        await logAction('update_governorate', 'governorate', govId, `تحديث ${name}`);
+      } else {
+        const { error } = await client.from('governorates').insert([payload]);
+        if (error) throw error;
+        await logAudit('create', 'governorate', null, null, payload);
+        await logAction('create_governorate', 'governorate', null, `إضافة ${name}`);
+      }
+
+      showToast('تم الحفظ بنجاح', 'success');
+      closeGovModal();
+      await loadGovernorates();
+
+      if (window.Realtime) {
+        window.Realtime.sendBroadcast('governorate-updated', {});
+      }
+
+    } catch (err) {
+      console.error('[Admin] Save governorate error:', err);
+      showToast('فشل: ' + err.message, 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `${ICONS.check}<span>حفظ</span>`;
+      }
+    }
+  }
+
+  async function deleteGov(govId) {
+    const gov = governorates.find(g => String(g.id) === String(govId));
+    if (!gov) return;
+
+    if (!confirm(`هل أنت متأكد من حذف محافظة "${gov.name}"؟\n\nتحذير: أي مستخدمين مرتبطين بهذه المحافظة سيفقدون الربط.`)) return;
+
+    try {
+      const { error } = await client.from('governorates').delete().eq('id', govId);
+      if (error) throw error;
+
+      await logAudit('delete', 'governorate', govId, gov, null);
+      await logAction('delete_governorate', 'governorate', govId, `حذف ${gov.name}`);
+
+      showToast('تم حذف المحافظة', 'success');
+      await loadGovernorates();
+
+      if (window.Realtime) {
+        window.Realtime.sendBroadcast('governorate-updated', {});
+      }
+
+    } catch (err) {
+      console.error('[Admin] Delete governorate error:', err);
       showToast('فشل الحذف: ' + err.message, 'error');
     }
   }
@@ -1349,7 +1584,10 @@
       'upload_logo': 'رفع شعار',
       'create_user': 'إنشاء مستخدم',
       'update_user': 'تعديل مستخدم',
-      'delete_user': 'حذف مستخدم'
+      'delete_user': 'حذف مستخدم',
+      'create_governorate': 'إضافة محافظة',
+      'update_governorate': 'تعديل محافظة',
+      'delete_governorate': 'حذف محافظة'
     };
 
     tbody.innerHTML = actions.map(a => `
@@ -1435,24 +1673,26 @@
     try {
       showToast('جاري تحضير النسخة الاحتياطية...', 'info');
 
-      const [settingsRes, typesRes, branchesRes, usersRes, appsRes] = await Promise.all([
+      const [settingsRes, typesRes, branchesRes, usersRes, appsRes, govRes] = await Promise.all([
         client.from('settings').select('*'),
         client.from('membership_types').select('*'),
         client.from('branches').select('*'),
         client.from('users').select('*'),
-        client.from('applications').select('*')
+        client.from('applications').select('*'),
+        client.from('governorates').select('*')
       ]);
 
       const backup = {
         exported_at: new Date().toISOString(),
         exported_by: currentUser?.email,
-        version: '3.1.0',
+        version: '3.2.0',
         data: {
           settings: settingsRes.data || [],
           membership_types: typesRes.data || [],
           branches: branchesRes.data || [],
           users: usersRes.data || [],
-          applications: appsRes.data || []
+          applications: appsRes.data || [],
+          governorates: govRes.data || []
         }
       };
 
@@ -1496,7 +1736,6 @@
       });
     }
 
-    // Remove logo
     const removeBtn = document.getElementById('removeLogoBtn');
     if (removeBtn) removeBtn.addEventListener('click', removeLogo);
 
@@ -1504,15 +1743,20 @@
     const addUserBtn = document.getElementById('addUserBtn');
     if (addUserBtn) addUserBtn.addEventListener('click', () => openUserModal(null));
 
-    // Save user
     const saveUserBtn = document.getElementById('saveUserBtn');
     if (saveUserBtn) saveUserBtn.addEventListener('click', saveUser);
+
+    // ✅ Add governorate
+    const addGovBtn = document.getElementById('addGovBtn');
+    if (addGovBtn) addGovBtn.addEventListener('click', () => openGovModal(null));
+
+    const saveGovBtn = document.getElementById('saveGovBtn');
+    if (saveGovBtn) saveGovBtn.addEventListener('click', saveGov);
 
     // Add type
     const addTypeBtn = document.getElementById('addTypeBtn');
     if (addTypeBtn) addTypeBtn.addEventListener('click', () => openTypeModal(null));
 
-    // Save type
     const saveTypeBtn = document.getElementById('saveTypeBtn');
     if (saveTypeBtn) saveTypeBtn.addEventListener('click', saveType);
 
@@ -1520,7 +1764,6 @@
     const addBranchBtn = document.getElementById('addBranchBtn');
     if (addBranchBtn) addBranchBtn.addEventListener('click', () => openBranchModal(null));
 
-    // Save branch
     const saveBranchBtn = document.getElementById('saveBranchBtn');
     if (saveBranchBtn) saveBranchBtn.addEventListener('click', saveBranch);
 
@@ -1528,7 +1771,6 @@
     const addFeatureBtn = document.getElementById('addFeatureBtn');
     if (addFeatureBtn) addFeatureBtn.addEventListener('click', () => openFeatureModal(null));
 
-    // Save feature
     const saveFeatureBtn = document.getElementById('saveFeatureBtn');
     if (saveFeatureBtn) saveFeatureBtn.addEventListener('click', saveFeature);
 
@@ -1566,7 +1808,7 @@
     }
 
     // Modal backdrops
-    ['userModal', 'typeModal', 'branchModal', 'featureModal'].forEach(id => {
+    ['userModal', 'typeModal', 'branchModal', 'featureModal', 'govModal'].forEach(id => {
       const modal = document.getElementById(id);
       if (!modal) return;
       modal.addEventListener('click', (e) => {
@@ -1575,6 +1817,7 @@
           else if (id === 'typeModal') window.closeTypeModal();
           else if (id === 'branchModal') window.closeBranchModal();
           else if (id === 'featureModal') window.closeFeatureModal();
+          else if (id === 'govModal') window.closeGovModal();
         }
       });
     });
@@ -1585,6 +1828,7 @@
         window.closeTypeModal();
         window.closeBranchModal();
         window.closeFeatureModal();
+        window.closeGovModal();
       }
     });
   }
@@ -1596,12 +1840,13 @@
     if (!window.Realtime) return;
 
     unsubscribeRealtime = window.Realtime.watchManyAndReload(
-      ['settings', 'membership_types', 'branches', 'users'],
+      ['settings', 'membership_types', 'branches', 'users', 'governorates'],
       async () => {
         if (activeTab === 'settings' || activeTab === 'home') await loadSettings();
         if (activeTab === 'types') await loadTypes();
         if (activeTab === 'branches') await loadBranches();
         if (activeTab === 'users') await loadUsers();
+        if (activeTab === 'governorates') await loadGovernorates();
       },
       { debounceMs: 500, immediate: false }
     );
@@ -1635,16 +1880,16 @@
 
       // Pre-load حسب التاب الحالي
       if (activeTab === 'users') loadUsers();
+      if (activeTab === 'governorates') loadGovernorates();
       if (activeTab === 'types') loadTypes();
       if (activeTab === 'branches') loadBranches();
       if (activeTab === 'sessions') loadSessions();
       if (activeTab === 'audit') loadAuditLog();
 
-      console.log('[Admin] Ready.');
+      console.log('[Admin] Ready. Version 3.2.0');
     });
   }
 
-  // Expose
   window.switchTab = switchTab;
   window.saveFeature = saveFeature;
 
