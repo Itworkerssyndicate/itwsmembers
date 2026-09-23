@@ -1,5 +1,16 @@
 /* =====================================================
-   IT SYNDICATE — Branches Manager Logic
+   IT SYNDICATE — BRANCHES MANAGER LOGIC
+   Version: 3.0.0
+   Path: js/branches.js
+   =====================================================
+   يحتوي على:
+   - Auth + Role check (branches_manager / head / vp / deputy)
+   - 5 كروت إحصائية
+   - جدول الأعضاء حسب المحافظة والشعبة
+   - 4 فلاتر
+   - Member Detail Modal
+   - Export CSV
+   - Realtime
    ===================================================== */
 
 (function () {
@@ -105,8 +116,18 @@
     return 'days-active';
   }
 
+  function getCardStatusLabel(status) {
+    const map = {
+      'not_issued': 'لم يتم الإصدار',
+      'processing': 'جاري التجهيز',
+      'ready': 'جاهز',
+      'delivered': 'تم الاستلام'
+    };
+    return map[status] || 'غير محدد';
+  }
+
   /* ============================================
-     SVG ICONS
+     ICONS
      ============================================ */
   const ICONS = {
     eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
@@ -117,7 +138,7 @@
   };
 
   /* ============================================
-     AUTH CHECK
+     AUTH
      ============================================ */
   async function checkAuth() {
     try {
@@ -137,6 +158,8 @@
         .maybeSingle();
 
       userRole = userData?.role || 'committee';
+      window.currentUserRole = userRole;
+      window.currentUserName = userData?.full_name || currentUser.email || 'موظف';
 
       const allowedRoles = ['branches_manager', 'head', 'vice_president', 'deputy'];
       if (!allowedRoles.includes(userRole)) {
@@ -144,9 +167,6 @@
         window.location.href = 'dashboard.html';
         return false;
       }
-
-      window.currentUserRole = userRole;
-      window.currentUserName = userData?.full_name || currentUser.email || 'مدير الفروع';
 
       document.querySelectorAll('[data-user-name]').forEach(el => {
         el.textContent = window.currentUserName;
@@ -161,7 +181,7 @@
   }
 
   /* ============================================
-     LOAD LOOKUPS
+     LOOKUPS
      ============================================ */
   async function loadLookups() {
     try {
@@ -175,7 +195,6 @@
       governorates = govRes.data || [];
       membershipTypes = typesRes.data || [];
 
-      // Fill gov filter
       const govFilter = document.getElementById('govFilter');
       if (govFilter) {
         govFilter.innerHTML = '<option value="all">كل المحافظات</option>';
@@ -187,7 +206,6 @@
         });
       }
 
-      // Fill branch filter
       const branchFilter = document.getElementById('branchFilter');
       if (branchFilter) {
         branchFilter.innerHTML = '<option value="all">كل الشعب</option>';
@@ -198,14 +216,13 @@
           branchFilter.appendChild(opt);
         });
       }
-
     } catch (err) {
       console.error('[Branches] Lookups error:', err);
     }
   }
 
   /* ============================================
-     LOAD STATS
+     STATS
      ============================================ */
   async function loadStats() {
     try {
@@ -238,7 +255,6 @@
       set('statSoon', soon);
       set('statExpired', expired);
       set('statGovs', govSet.size);
-
     } catch (e) {
       console.error('[Branches] Stats error:', e);
     }
@@ -268,17 +284,14 @@
         .select('*', { count: 'exact' })
         .eq('is_active', true);
 
-      // Governorate
       if (filters.governorate && filters.governorate !== 'all') {
         query = query.eq('governorate', filters.governorate);
       }
 
-      // Branch
       if (filters.branch && filters.branch !== 'all') {
         query = query.eq('branch_id', parseInt(filters.branch));
       }
 
-      // Search
       if (filters.search) {
         const s = filters.search.trim();
         query = query.or(
@@ -286,13 +299,8 @@
         );
       }
 
-      // Sub status filter (client-side only - can't filter by date range easily)
-      // We'll handle it after fetch
-
-      // Sort
       query = query.order('created_at', { ascending: false });
 
-      // Pagination
       const from = (currentPage - 1) * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
       query = query.range(from, to);
@@ -301,25 +309,20 @@
 
       if (error) throw error;
 
-      let allMembers = data || [];
+      let list = data || [];
 
-      // Client-side filter for subscription status
       if (filters.subStatus && filters.subStatus !== 'all') {
-        allMembers = allMembers.filter(m => {
-          const st = getSubStatus(m.membership_end);
-          return st.key === filters.subStatus;
-        });
+        list = list.filter(m => getSubStatus(m.membership_end).key === filters.subStatus);
       }
 
-      members = allMembers;
-      totalCount = filters.subStatus !== 'all' ? allMembers.length : (count || 0);
+      members = list;
+      totalCount = filters.subStatus !== 'all' ? list.length : (count || 0);
 
       renderTable();
       renderPagination();
 
       const countEl = document.getElementById('tableCount');
       if (countEl) countEl.textContent = `${members.length} عضو`;
-
     } catch (err) {
       console.error('[Branches] Load error:', err);
       if (tbody) {
@@ -421,7 +424,6 @@
       `;
     }).join('');
 
-    // Row click
     tbody.querySelectorAll('tr[data-id]').forEach(tr => {
       tr.addEventListener('click', (e) => {
         if (e.target.closest('.row-btn')) return;
@@ -431,7 +433,6 @@
       tr.addEventListener('mouseleave', () => { tr.style.background = ''; });
     });
 
-    // Buttons
     tbody.querySelectorAll('.row-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -570,9 +571,7 @@
             </div>
           </div>
 
-          <h4 style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
-            البيانات الشخصية
-          </h4>
+          <h4 style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">البيانات الشخصية</h4>
           <div class="detail-grid" style="margin-bottom:20px;">
             ${renderDetailItem('الرقم القومي', m.national_id, true)}
             ${renderDetailItem('الموبايل', m.phone, true)}
@@ -581,21 +580,16 @@
             ${renderDetailItem('العنوان', m.address || '—')}
           </div>
 
-          <h4 style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">
-            البيانات المهنية
-          </h4>
+          <h4 style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">البيانات المهنية</h4>
           <div class="detail-grid" style="margin-bottom:20px;">
             ${renderDetailItem('نوع العضوية', typeName)}
             ${renderDetailItem('الشعبة', branchName)}
             ${renderDetailItem('المؤهل', m.qualification || '—')}
-            ${renderDetailItem('سنة التخرج', m.graduation_year || '—')}
             ${renderDetailItem('جهة العمل', m.employer || '—')}
             ${renderDetailItem('المسمى الوظيفي', m.job_title || '—')}
           </div>
 
-          <h4 style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">
-            بيانات العضوية
-          </h4>
+          <h4 style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">بيانات العضوية</h4>
           <div class="detail-grid" style="margin-bottom:20px;">
             ${renderDetailItem('بداية العضوية', formatDate(m.membership_start))}
             ${renderDetailItem('نهاية العضوية', formatDate(m.membership_end))}
@@ -614,10 +608,8 @@
               ${renderDetailItem('مبلغ الرعاية', (parseFloat(m.health_care_amount) || 0).toLocaleString('ar-EG') + ' ج', true)}
             </div>
           ` : ''}
-
         </div>
       `;
-
     } catch (err) {
       console.error('[Branches] Detail error:', err);
       body.innerHTML = `
@@ -637,16 +629,6 @@
         </div>
       </div>
     `;
-  }
-
-  function getCardStatusLabel(status) {
-    const map = {
-      'not_issued': 'لم يتم الإصدار',
-      'processing': 'جاري التجهيز',
-      'ready': 'جاهز',
-      'delivered': 'تم الاستلام'
-    };
-    return map[status] || 'غير محدد';
   }
 
   window.closeMemberModal = function () {
@@ -726,7 +708,6 @@
      LISTENERS
      ============================================ */
   function setupListeners() {
-    // Gov filter
     const govFilter = document.getElementById('govFilter');
     if (govFilter) {
       govFilter.addEventListener('change', (e) => {
@@ -736,7 +717,6 @@
       });
     }
 
-    // Branch filter
     const branchFilter = document.getElementById('branchFilter');
     if (branchFilter) {
       branchFilter.addEventListener('change', (e) => {
@@ -746,7 +726,6 @@
       });
     }
 
-    // Sub status filter
     const subFilter = document.getElementById('subFilter');
     if (subFilter) {
       subFilter.addEventListener('change', (e) => {
@@ -756,13 +735,12 @@
       });
     }
 
-    // Search
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
-      let searchTimer = null;
+      let t = null;
       searchInput.addEventListener('input', () => {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(() => {
+        clearTimeout(t);
+        t = setTimeout(() => {
           filters.search = searchInput.value;
           currentPage = 1;
           loadMembers();
@@ -770,7 +748,6 @@
       });
     }
 
-    // Refresh
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) {
       refreshBtn.addEventListener('click', async () => {
@@ -782,11 +759,9 @@
       });
     }
 
-    // Export
     const exportBtn = document.getElementById('exportBtn');
     if (exportBtn) exportBtn.addEventListener('click', exportCSV);
 
-    // Logout
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
@@ -796,7 +771,6 @@
       });
     }
 
-    // Modal backdrop
     const modal = document.getElementById('memberModal');
     if (modal) {
       modal.addEventListener('click', (e) => {
