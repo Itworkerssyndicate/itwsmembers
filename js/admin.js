@@ -1,6 +1,6 @@
 /* =====================================================
    IT SYNDICATE — ADMIN PANEL LOGIC
-   Version: 3.2.1
+   Version: 3.3.0
    ===================================================== */
 
 (function () {
@@ -10,8 +10,11 @@
      CONSTANTS
      ============================================ */
   const LOGO_BUCKET = 'branding';
+  const HEAD_PHOTO_BUCKET = 'branding';
   const MAX_LOGO_SIZE = 2 * 1024 * 1024;
+  const MAX_PHOTO_SIZE = 2 * 1024 * 1024;
   const ALLOWED_LOGO_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml', 'image/webp'];
+  const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   const AUDIT_TABLE = 'audit_log';
 
   /* ============================================
@@ -264,6 +267,7 @@
 
       applySettingsToForm();
       applyLogoPreview();
+      applyHeadPhotoPreview();
       buildThemeSelect();
       loadFeaturesFromSettings();
 
@@ -302,6 +306,21 @@
     }
   }
 
+  /* ✅ NEW: صورة النقيب */
+  function applyHeadPhotoPreview() {
+    const preview = document.getElementById('headPhotoPreview');
+    if (!preview) return;
+
+    const url = settings.head_photo_url;
+    if (url) {
+      preview.innerHTML = '<img src="' + escapeHtml(url) + '" alt="Head Photo" />';
+      preview.classList.add('has-photo');
+    } else {
+      preview.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text-dim);"><svg viewBox="0 0 24 24" style="width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg><span style="font-size:11px;">صورة النقيب</span></div>';
+      preview.classList.remove('has-photo');
+    }
+  }
+
   /* ============================================
      BUILD THEME SELECT
      ============================================ */
@@ -311,7 +330,6 @@
 
     const currentValue = settings.default_theme || 'neon-dark';
 
-    // Option 1: ThemeManager
     if (window.ThemeManager && typeof window.ThemeManager.buildSelect === 'function') {
       try {
         window.ThemeManager.buildSelect('defaultThemeSelect', currentValue);
@@ -322,7 +340,6 @@
       }
     }
 
-    // Option 2: Manual fallback
     select.innerHTML = '';
 
     Object.keys(THEMES_LIST).forEach(function(key) {
@@ -403,6 +420,7 @@
       try {
         localStorage.setItem('its_site_settings', JSON.stringify(settings));
         if (settings.site_logo_url) localStorage.setItem('its_logo_url', settings.site_logo_url);
+        if (settings.head_photo_url) localStorage.setItem('its_head_photo_url', settings.head_photo_url);
         if (settings.default_theme) localStorage.setItem('its_global_default_theme', settings.default_theme);
       } catch (e) {}
 
@@ -550,6 +568,121 @@
       await logAudit('delete', 'logo', null, null, null);
 
       showToast('تم إزالة الشعار', 'success');
+    } catch (err) {
+      showToast('فشل الإزالة: ' + err.message, 'error');
+    }
+  }
+
+  /* ============================================
+     ✅ NEW: HEAD PHOTO UPLOAD
+     ============================================ */
+  async function uploadHeadPhoto(file) {
+    if (file.size > MAX_PHOTO_SIZE) {
+      showToast('حجم الصورة كبير (' + formatFileSize(file.size) + ') — الحد الأقصى 2 ميجا', 'error');
+      return;
+    }
+
+    if (ALLOWED_PHOTO_TYPES.indexOf(file.type) === -1) {
+      showToast('صيغة غير مدعومة — PNG, JPG, WEBP فقط', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('uploadHeadPhotoBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>جاري الرفع...</span>';
+    }
+
+    try {
+      let ext = 'jpg';
+      if (file.type === 'image/png') ext = 'png';
+      else if (file.type === 'image/webp') ext = 'webp';
+
+      const filePath = 'head_photo.' + ext;
+
+      const { error: upErr } = await client.storage
+        .from(HEAD_PHOTO_BUCKET)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: file.type
+        });
+
+      if (upErr) throw upErr;
+
+      const { data: urlData } = client.storage
+        .from(HEAD_PHOTO_BUCKET)
+        .getPublicUrl(filePath);
+
+      const publicUrl = urlData.publicUrl + '?v=' + Date.now();
+
+      const { error: setErr } = await client
+        .from('settings')
+        .upsert([{
+          key: 'head_photo_url',
+          value: publicUrl,
+          updated_at: new Date().toISOString()
+        }], { onConflict: 'key' });
+
+      if (setErr) throw setErr;
+
+      settings.head_photo_url = publicUrl;
+
+      try {
+        localStorage.setItem('its_head_photo_url', publicUrl);
+        localStorage.setItem('its_site_settings', JSON.stringify(settings));
+      } catch (e) {}
+
+      applyHeadPhotoPreview();
+
+      await logAudit('upload', 'head_photo', filePath, null, { url: publicUrl, size: file.size });
+      await logAction('upload_head_photo', 'head_photo', null, 'حجم: ' + formatFileSize(file.size));
+
+      showToast('تم رفع صورة النقيب بنجاح', 'success');
+
+      if (window.Realtime) {
+        window.Realtime.sendBroadcast('settings-updated', {});
+      }
+
+    } catch (err) {
+      console.error('[Admin] Head photo upload error:', err);
+      showToast('فشل رفع الصورة: ' + err.message, 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = ICONS.upload + '<span>اختر صورة</span>';
+      }
+    }
+  }
+
+  async function removeHeadPhoto() {
+    if (!confirm('هل أنت متأكد من إزالة صورة النقيب؟')) return;
+
+    try {
+      try {
+        await client.storage.from(HEAD_PHOTO_BUCKET).remove(['head_photo.png', 'head_photo.jpg', 'head_photo.webp']);
+      } catch (e) {}
+
+      await client.from('settings').upsert([{
+        key: 'head_photo_url',
+        value: '',
+        updated_at: new Date().toISOString()
+      }], { onConflict: 'key' });
+
+      settings.head_photo_url = '';
+
+      try {
+        localStorage.removeItem('its_head_photo_url');
+      } catch (e) {}
+
+      applyHeadPhotoPreview();
+      await logAudit('delete', 'head_photo', null, null, null);
+
+      showToast('تم إزالة صورة النقيب', 'success');
+
+      if (window.Realtime) {
+        window.Realtime.sendBroadcast('settings-updated', {});
+      }
     } catch (err) {
       showToast('فشل الإزالة: ' + err.message, 'error');
     }
@@ -793,6 +926,10 @@
             role: role,
             position: position,
             governorate_id: governorateId ? parseInt(governorateId) : null,
+            is_active: true,
+            activated_at: new Date().toISOString(),
+            activated_by: currentUser.id,
+            registration_source: 'admin',
             notes: notes
           }], { onConflict: 'id' });
 
@@ -800,7 +937,7 @@
 
         await logAudit('create', 'user', newUserId, null, { email: email, role: role, full_name: fullName, position: position });
         await logAction('create_user', 'user', newUserId, 'تم إنشاء ' + fullName + ' بدور ' + role);
-        showToast('تم إنشاء المستخدم — سيصله إيميل تأكيد', 'success');
+        showToast('تم إنشاء المستخدم', 'success');
       }
 
       closeUserModal();
@@ -1522,6 +1659,7 @@
     const actionLabels = {
       'update_settings': 'تحديث الإعدادات',
       'upload_logo': 'رفع شعار',
+      'upload_head_photo': 'رفع صورة النقيب',
       'create_user': 'إنشاء مستخدم',
       'update_user': 'تعديل مستخدم',
       'delete_user': 'حذف مستخدم',
@@ -1611,7 +1749,7 @@
       const backup = {
         exported_at: new Date().toISOString(),
         exported_by: currentUser ? currentUser.email : null,
-        version: '3.2.1',
+        version: '3.3.0',
         data: {
           settings: settingsRes.data || [],
           membership_types: typesRes.data || [],
@@ -1648,6 +1786,7 @@
     const saveHomeBtn = document.getElementById('saveHomeBtn');
     if (saveHomeBtn) saveHomeBtn.addEventListener('click', function() { saveSettings('saveHomeBtn'); });
 
+    // Logo
     const uploadInput = document.getElementById('logoFileInput');
     const uploadBtn = document.getElementById('uploadLogoBtn');
     if (uploadBtn && uploadInput) {
@@ -1663,36 +1802,58 @@
     const removeBtn = document.getElementById('removeLogoBtn');
     if (removeBtn) removeBtn.addEventListener('click', removeLogo);
 
+    // ✅ NEW: Head Photo
+    const headPhotoInput = document.getElementById('headPhotoInput');
+    const uploadHeadPhotoBtn = document.getElementById('uploadHeadPhotoBtn');
+    if (uploadHeadPhotoBtn && headPhotoInput) {
+      uploadHeadPhotoBtn.addEventListener('click', function() { headPhotoInput.click(); });
+      headPhotoInput.addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        await uploadHeadPhoto(file);
+        headPhotoInput.value = '';
+      });
+    }
+
+    const removeHeadPhotoBtn = document.getElementById('removeHeadPhotoBtn');
+    if (removeHeadPhotoBtn) removeHeadPhotoBtn.addEventListener('click', removeHeadPhoto);
+
+    // Users
     const addUserBtn = document.getElementById('addUserBtn');
     if (addUserBtn) addUserBtn.addEventListener('click', function() { openUserModal(null); });
 
     const saveUserBtn = document.getElementById('saveUserBtn');
     if (saveUserBtn) saveUserBtn.addEventListener('click', saveUser);
 
+    // Governorates
     const addGovBtn = document.getElementById('addGovBtn');
     if (addGovBtn) addGovBtn.addEventListener('click', function() { openGovModal(null); });
 
     const saveGovBtn = document.getElementById('saveGovBtn');
     if (saveGovBtn) saveGovBtn.addEventListener('click', saveGov);
 
+    // Types
     const addTypeBtn = document.getElementById('addTypeBtn');
     if (addTypeBtn) addTypeBtn.addEventListener('click', function() { openTypeModal(null); });
 
     const saveTypeBtn = document.getElementById('saveTypeBtn');
     if (saveTypeBtn) saveTypeBtn.addEventListener('click', saveType);
 
+    // Branches
     const addBranchBtn = document.getElementById('addBranchBtn');
     if (addBranchBtn) addBranchBtn.addEventListener('click', function() { openBranchModal(null); });
 
     const saveBranchBtn = document.getElementById('saveBranchBtn');
     if (saveBranchBtn) saveBranchBtn.addEventListener('click', saveBranch);
 
+    // Features
     const addFeatureBtn = document.getElementById('addFeatureBtn');
     if (addFeatureBtn) addFeatureBtn.addEventListener('click', function() { openFeatureModal(null); });
 
     const saveFeatureBtn = document.getElementById('saveFeatureBtn');
     if (saveFeatureBtn) saveFeatureBtn.addEventListener('click', saveFeature);
 
+    // Refresh
     const refreshSessionsBtn = document.getElementById('refreshSessionsBtn');
     if (refreshSessionsBtn) {
       refreshSessionsBtn.addEventListener('click', function() {
@@ -1799,7 +1960,7 @@
       if (activeTab === 'sessions') loadSessions();
       if (activeTab === 'audit') loadAuditLog();
 
-      console.log('[Admin] Ready. Version 3.2.1');
+      console.log('[Admin] Ready. Version 3.3.0');
     });
   }
 
