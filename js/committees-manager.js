@@ -209,13 +209,13 @@
       // 1) Members stats
       const { data: membersData } = await client
         .from('members')
-        .select('has_health_care, health_care_end, governorate')
+        .select('has_health_care, health_care_end, governorate, phone, email')
         .eq('is_active', true);
 
       let totalMembers = 0;
       let hcTotal = 0;
       let hcActive = 0;
-      let prWithContact = 0;
+      let withContact = 0;
       const govSet = new Set();
 
       if (membersData) {
@@ -228,6 +228,7 @@
             if (st.key === 'active') hcActive++;
           }
           if (m.governorate) govSet.add(m.governorate);
+          if (m.phone || m.email) withContact++;
         });
       }
 
@@ -250,20 +251,6 @@
         });
       }
 
-      // 3) Members with contact (for PR)
-      try {
-        const { data: contactData } = await client
-          .from('members')
-          .select('phone, email')
-          .eq('is_active', true);
-
-        if (contactData) {
-          contactData.forEach(m => {
-            if (m.phone || m.email) prWithContact++;
-          });
-        }
-      } catch (e) {}
-
       // Update UI
       setText('statTotalMembers', totalMembers);
       setText('statPendingApps', pendingApps);
@@ -276,7 +263,7 @@
       setText('socialHCActive', hcActive);
 
       setText('prTotal', totalMembers);
-      setText('prWithContact', prWithContact);
+      setText('prWithContact', withContact);
 
       setText('memPending', pendingApps);
       setText('memApproved', approvedApps);
