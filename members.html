@@ -31,7 +31,6 @@
     z-index: 10;
   }
 
-  /* Page header */
   .page-header {
     display: flex;
     align-items: center;
@@ -87,7 +86,6 @@
   .user-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
   .user-role { font-size: 11.5px; color: var(--text-dim); letter-spacing: 0.5px; }
 
-  /* Quick stats */
   .quick-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -133,7 +131,6 @@
     color: var(--text-muted);
   }
 
-  /* Filters */
   .filters-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -197,7 +194,6 @@
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
 
-  /* Actions row */
   .actions-row {
     display: flex;
     gap: 10px;
@@ -205,7 +201,6 @@
     margin-bottom: 20px;
   }
 
-  /* Table */
   .table-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -243,14 +238,8 @@
     font-family: 'JetBrains Mono', monospace;
   }
 
-  .table-wrap {
-    overflow-x: auto;
-    max-height: 70vh;
-  }
-  table {
-    width: 100%;
-    min-width: 1400px;
-  }
+  .table-wrap { overflow-x: auto; max-height: 70vh; }
+  table { width: 100%; min-width: 1400px; }
   table th {
     position: sticky;
     top: 0;
@@ -260,7 +249,6 @@
     -webkit-backdrop-filter: blur(10px);
   }
 
-  /* Member cell */
   .member-cell {
     display: flex;
     align-items: center;
@@ -294,7 +282,6 @@
     color: var(--text-dim);
   }
 
-  /* Membership No badge */
   .mno-badge {
     display: inline-block;
     padding: 4px 12px;
@@ -318,7 +305,6 @@
     font-weight: 700;
   }
 
-  /* Branch badge */
   .branch-cell {
     display: inline-block;
     padding: 4px 10px;
@@ -331,7 +317,6 @@
     white-space: nowrap;
   }
 
-  /* Health care badge */
   .hc-badge {
     display: inline-flex;
     align-items: center;
@@ -351,7 +336,6 @@
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
 
-  /* Subscription status */
   .sub-status {
     display: inline-flex;
     align-items: center;
@@ -385,7 +369,6 @@
     background: currentColor;
   }
 
-  /* Days cell */
   .days-cell {
     font-family: 'JetBrains Mono', monospace;
     font-size: 13px;
@@ -396,7 +379,6 @@
   .days-soon { color: var(--warning); }
   .days-expired { color: var(--danger); }
 
-  /* Actions */
   .row-actions {
     display: flex;
     gap: 6px;
@@ -443,13 +425,11 @@
     transform: translateY(-2px);
   }
 
-  /* Pagination */
   #paginationBox {
     padding: 16px 22px;
     border-top: 1px solid var(--border-soft);
   }
 
-  /* Modal */
   .modal-content { max-height: 90vh; }
   .modal-header-custom {
     padding: 20px 24px;
@@ -495,7 +475,6 @@
     stroke-width: 2; stroke-linecap: round;
   }
 
-  /* Detail grid */
   .detail-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -519,7 +498,6 @@
     word-break: break-word;
   }
 
-  /* Tabs inside modal */
   .modal-tabs {
     display: flex;
     gap: 6px;
@@ -556,7 +534,6 @@
     color: var(--accent);
   }
 
-  /* Payment history */
   .payment-history-item {
     padding: 14px 16px;
     background: rgba(0, 0, 0, 0.3);
@@ -570,7 +547,6 @@
     margin-bottom: 10px;
   }
   .payment-history-item:last-child { margin-bottom: 0; }
-
   .ph-info { flex: 1; min-width: 180px; }
   .ph-date {
     font-family: 'JetBrains Mono', monospace;
@@ -614,13 +590,7 @@
     border-color: rgba(var(--accent-rgb), 0.3);
   }
   .ph-btn.view:hover { background: rgba(var(--accent-rgb), 0.15); }
-  .ph-btn.download {
-    color: var(--success);
-    border-color: rgba(var(--success-rgb), 0.3);
-  }
-  .ph-btn.download:hover { background: rgba(var(--success-rgb), 0.15); }
 
-  /* Empty payment state */
   .empty-payment {
     padding: 40px 20px;
     text-align: center;
@@ -628,7 +598,6 @@
     font-size: 13.5px;
   }
 
-  /* Membership no assign modal */
   .notice {
     padding: 12px 16px;
     border-radius: 10px;
@@ -642,7 +611,6 @@
     color: var(--accent);
   }
 
-  /* Responsive */
   @media (max-width: 1024px) {
     .filters-grid { grid-template-columns: 1fr 1fr 1fr; }
   }
@@ -658,7 +626,6 @@
     .quick-stats { grid-template-columns: 1fr; }
   }
 
-  /* Print */
   @media print {
     .navbar, .actions-row, .filters-card, #paginationBox,
     .row-actions, .footer, .bg-grid, .bg-glow, .bg-layer,
@@ -972,78 +939,14 @@
 
 </div>
 
-<!-- ============================================
-     MEMBER DETAIL MODAL
-     ============================================ -->
+<!-- MEMBER DETAIL MODAL -->
 <div id="memberModal" class="modal modal-lg">
   <div class="modal-content">
     <div id="memberModalContent"></div>
   </div>
 </div>
 
-<!-- ============================================
-     ASSIGN MEMBERSHIP NO MODAL
-     ============================================ -->
-<div id="assignNoModal" class="modal modal-sm">
-  <div class="modal-content">
-
-    <div class="modal-header-custom">
-      <h3>تسجيل رقم العضوية</h3>
-      <button type="button" class="close-btn" onclick="closeAssignModal()">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
-    </div>
-
-    <div class="modal-body">
-      <input type="hidden" id="assignAppId" />
-
-      <div class="notice info">
-        <strong>ملاحظة:</strong> رقم العضوية يتم إصداره بشكل تسلسلي. يمكنك تعديله يدويًا.
-      </div>
-
-      <div class="form-group">
-        <label for="assignMemberName">العضو</label>
-        <input type="text" id="assignMemberName" disabled style="opacity:0.7;" />
-      </div>
-
-      <div class="form-group">
-        <label for="assignBranch">الشعبة <span style="color:var(--danger);">*</span></label>
-        <select id="assignBranch">
-          <option value="">-- اختر الشعبة --</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="assignNo">رقم العضوية</label>
-        <input type="text" id="assignNo" placeholder="MEM-2026-00001" dir="ltr" style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;" />
-        <span class="form-hint">سيتم توليده تلقائيًا لو تركته فاضيًا</span>
-      </div>
-
-      <div class="form-group" style="margin-bottom:0;">
-        <label for="assignDuration">مدة العضوية (شهور)</label>
-        <input type="number" id="assignDuration" value="12" min="1" max="120" />
-      </div>
-    </div>
-
-    <div class="modal-footer-custom">
-      <button type="button" class="btn btn-ghost" onclick="closeAssignModal()">إلغاء</button>
-      <button type="button" class="btn btn-primary" id="confirmAssignBtn">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-        <span>اعتماد رقم العضوية</span>
-      </button>
-    </div>
-
-  </div>
-</div>
-
-<!-- ============================================
-     RENEW MODAL
-     ============================================ -->
+<!-- RENEW MODAL -->
 <div id="renewModal" class="modal modal-sm">
   <div class="modal-content">
 
@@ -1114,6 +1017,7 @@
 <script src="js/theme-manager.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/realtime.js"></script>
+<script src="js/security.js"></script>
 <script src="js/members.js"></script>
 
 <script>
@@ -1122,7 +1026,6 @@
     if (nav) nav.classList.toggle('open');
   };
 
-  /* Background particles */
   (function () {
     const canvas = document.getElementById('bgCanvas');
     if (!canvas) return;
