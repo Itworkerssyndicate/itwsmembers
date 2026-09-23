@@ -359,6 +359,7 @@
     font-size: 14px;
     color: var(--text-muted);
     line-height: 1.8;
+    white-space: pre-line;
   }
 
   /* ---------- HEAD CARD ---------- */
@@ -511,6 +512,7 @@
     border-top: 1px dashed rgba(var(--accent-rgb), 0.25);
     position: relative;
     font-style: italic;
+    white-space: pre-line;
   }
 
   .head-message::before {
@@ -1086,7 +1088,7 @@
   </div>
 </section>
 
-<!-- ABOUT CARD -->
+<!-- ⚡ ABOUT CARD — عن النقابة -->
 <section class="section about-section" id="aboutSection" style="display:none;">
   <div class="container">
     <div class="about-card">
@@ -1099,8 +1101,8 @@
         </svg>
       </div>
       <div class="about-content">
-        <h2 class="about-title" data-setting="about_card_title">عن النقابة</h2>
-        <p class="about-text" data-setting="about_card_text"></p>
+        <h2 class="about-title" id="aboutTitle" data-setting="about_card_title">عن النقابة</h2>
+        <p class="about-text" id="aboutText" data-setting="about_card_text"></p>
       </div>
     </div>
   </div>
@@ -1480,7 +1482,7 @@
 
 <script>
 /* ============================================
-   DYNAMIC: FEATURES + ABOUT + HEAD + CODE CARD + STEPS
+   DYNAMIC: FEATURES + ABOUT + HEAD + CODE CARD
    ============================================ */
 (function () {
   'use strict';
@@ -1518,7 +1520,7 @@
       .replace(/'/g, '&#39;');
   }
 
-  /* ⚡ هاش لمنع إعادة الرسم لو مفيش تغيير */
+  /* ⚡ هاش لمنع إعادة الرسم */
   let lastSettingsHash = '';
 
   function hashSettings(s) {
@@ -1538,7 +1540,7 @@
     }
   }
 
-  /* FEATURES */
+  /* ⚡ FEATURES */
   function renderFeatures(cards) {
     const grid = document.getElementById('featuresGrid');
     const section = document.getElementById('featuresSection');
@@ -1566,26 +1568,40 @@
     }).join('');
   }
 
-  /* ABOUT */
+  /* ⚡ ABOUT CARD — مع دعم الشعار المخصص */
   function renderAbout(settings) {
     const section = document.getElementById('aboutSection');
     if (!section) return;
 
-    const enabled = settings.about_card_enabled === 'true' || settings.about_card_enabled === true;
+    // التفعيل
+    const enabled = settings.about_card_enabled === 'true' 
+                 || settings.about_card_enabled === true 
+                 || settings.about_card_enabled === '1';
+
     if (!enabled) {
       section.style.display = 'none';
       return;
     }
 
-    const logo = settings.about_card_logo;
+    // الشعار: مخصص → أساسي → fallback
+    const customLogo = settings.about_card_logo;
+    const siteLogo = settings.site_logo_url || settings.logo_url;
+    const logo = customLogo || siteLogo;
+
     const imgEl = document.getElementById('aboutLogoImg');
     const fbEl = document.getElementById('aboutLogoFallback');
 
     if (logo && imgEl && fbEl) {
       if (imgEl.dataset.currentSrc !== logo) {
         imgEl.dataset.currentSrc = logo;
-        imgEl.onload = () => { imgEl.style.display = 'block'; fbEl.style.display = 'none'; };
-        imgEl.onerror = () => { imgEl.style.display = 'none'; fbEl.style.display = 'block'; };
+        imgEl.onload = () => { 
+          imgEl.style.display = 'block'; 
+          fbEl.style.display = 'none'; 
+        };
+        imgEl.onerror = () => { 
+          imgEl.style.display = 'none'; 
+          fbEl.style.display = 'block'; 
+        };
         imgEl.src = logo;
       }
     } else if (imgEl && fbEl) {
@@ -1593,10 +1609,26 @@
       fbEl.style.display = 'block';
     }
 
+    // العنوان
+    const titleEl = document.getElementById('aboutTitle');
+    if (titleEl && settings.about_card_title) {
+      if (titleEl.textContent !== settings.about_card_title) {
+        titleEl.textContent = settings.about_card_title;
+      }
+    }
+
+    // النص
+    const textEl = document.getElementById('aboutText');
+    if (textEl && settings.about_card_text) {
+      if (textEl.textContent !== settings.about_card_text) {
+        textEl.textContent = settings.about_card_text;
+      }
+    }
+
     section.style.display = 'block';
   }
 
-  /* HEAD CARD */
+  /* ⚡ HEAD CARD */
   function renderHead(settings) {
     const section = document.getElementById('headSection');
     if (!section) return;
@@ -1642,7 +1674,7 @@
     section.style.display = 'block';
   }
 
-  /* CODE CARD */
+  /* ⚡ CODE CARD */
   function renderCodeCard(settings) {
     const body = document.getElementById('codeCardBody');
     if (!body) return;
@@ -1652,7 +1684,7 @@
     }
   }
 
-  /* FOOTER BUTTON */
+  /* ⚡ FOOTER BUTTON */
   function renderFooterButton(settings) {
     const btn = document.getElementById('footerButton');
     if (!btn) return;
@@ -1669,7 +1701,7 @@
     }
   }
 
-  /* HERO BUTTONS */
+  /* ⚡ HERO BUTTONS */
   function renderHeroButtons(settings) {
     const btn1 = document.getElementById('heroBtn1');
     const btn2 = document.getElementById('heroBtn2');
@@ -1680,7 +1712,7 @@
     if (ctaBtn && settings.cta_btn_url && ctaBtn.href !== settings.cta_btn_url) ctaBtn.href = settings.cta_btn_url;
   }
 
-  /* ⚡ SITE NAME EN — يشتغل مع النافبار والفوتر */
+  /* ⚡ SITE NAME EN */
   function renderSiteNameEn(settings) {
     const val = settings.site_name_en;
     if (!val) return;
@@ -1689,7 +1721,7 @@
     });
   }
 
-  /* APPLY ALL — مع hash check */
+  /* ⚡ APPLY ALL */
   function applyCustomSettings(settings) {
     if (!settings) return;
 
@@ -1719,7 +1751,7 @@
     renderSiteNameEn(settings);
   }
 
-  /* ⚡ تطبيق الثيم الافتراضي */
+  /* ⚡ APPLY DEFAULT THEME */
   function applyDefaultTheme(settings) {
     if (!settings || !settings.default_theme) return;
     if (!window.ThemeManager) return;
@@ -1731,11 +1763,11 @@
     }
   }
 
-  /* INIT */
+  /* ⚡ INIT */
   function init() {
     renderFeatures([]);
 
-    /* ⚡ المصدر الأساسي: settings-ready */
+    /* المصدر الأساسي: settings-ready */
     window.addEventListener('settings-ready', (e) => {
       const s = e.detail?.settings || window.SettingsManager?.getAll?.() || null;
       if (!s) return;
@@ -1743,16 +1775,16 @@
       applyCustomSettings(s);
     });
 
-    /* ⚡ Fallback فوري — لو الإعدادات موجودة في الكاش */
+    /* Fallback فوري */
     if (window.SettingsManager && typeof window.SettingsManager.getAll === 'function') {
       const s = window.SettingsManager.getAll();
-      if (s && (s.features_cards || s.site_name)) {
+      if (s && (s.features_cards || s.site_name || s.about_card_enabled)) {
         applyDefaultTheme(s);
         applyCustomSettings(s);
       }
     }
 
-    /* ⚡ Broadcast من تاب تاني */
+    /* Broadcast من تاب تاني */
     window.addEventListener('broadcast-settings', () => {
       const s = window.SettingsManager?.getAll?.() || null;
       if (s) {
@@ -1761,7 +1793,7 @@
       }
     });
 
-    /* ⚡ Realtime — تحديث خفيف من غير fetch */
+    /* Realtime — تحديث خفيف */
     if (window.Realtime) {
       window.Realtime.watch('settings', () => {
         const s = window.SettingsManager?.getAll?.() || null;
