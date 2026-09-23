@@ -1,6 +1,7 @@
 /* =====================================================
    IT SYNDICATE — APPLY FORM LOGIC
    Version: 3.0.0
+   Path: js/apply.js
    =====================================================
    يحتوي على:
    - تحميل أنواع العضوية + المحافظات
@@ -1123,13 +1124,11 @@
     if (!birthDate) errors.push('تاريخ الميلاد مطلوب');
     if (!membershipType) errors.push('اختر نوع العضوية');
 
-    // Age check
     const age = parseInt(document.getElementById('age')?.value) || 0;
     if (birthDate && age < 18) {
       errors.push('يجب أن يكون العمر 18 سنة على الأقل');
     }
 
-    // Other syndicate
     const isOtherSyndicate = form.querySelector('input[name="is_other_syndicate"]:checked')?.value === 'yes';
     if (isOtherSyndicate) {
       const otherName = getVal('other_syndicate');
@@ -1138,7 +1137,6 @@
       }
     }
 
-    // Required files
     const requiredFiles = ['id_front', 'id_back', 'certificate', 'photo'];
     const fileLabels = {
       id_front: 'بطاقة الرقم القومي (وجه)',
@@ -1155,7 +1153,6 @@
       }
     });
 
-    // Terms
     const agree = document.getElementById('agreeTerms');
     if (agree && !agree.checked) errors.push('يجب الموافقة على الإقرار');
 
