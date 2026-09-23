@@ -199,7 +199,7 @@
     gap: 20px;
     flex-wrap: wrap;
   }
-  #logoPreview, #headPhotoPreview {
+  #logoPreview, #headPhotoPreview, #aboutLogoPreview {
     width: 120px; height: 120px;
     border-radius: var(--radius-lg);
     background: rgba(0, 0, 0, 0.4);
@@ -210,12 +210,12 @@
     transition: all 0.25s;
   }
   #headPhotoPreview { border-radius: 50%; }
-  #logoPreview.has-logo, #headPhotoPreview.has-photo {
+  #logoPreview.has-logo, #headPhotoPreview.has-photo, #aboutLogoPreview.has-logo {
     border-style: solid;
     border-color: var(--accent);
     box-shadow: var(--glow-accent);
   }
-  #logoPreview img { max-width: 90%; max-height: 90%; object-fit: contain; }
+  #logoPreview img, #aboutLogoPreview img { max-width: 90%; max-height: 90%; object-fit: contain; }
   #headPhotoPreview img { width: 100%; height: 100%; object-fit: cover; }
 
   .logo-actions {
@@ -831,7 +831,7 @@
     .save-bar-actions { width: 100%; }
     .save-bar-actions .btn { flex: 1; }
     .logo-upload-area { flex-direction: column; align-items: stretch; }
-    #logoPreview, #headPhotoPreview { margin: 0 auto; }
+    #logoPreview, #headPhotoPreview, #aboutLogoPreview { margin: 0 auto; }
     .users-filter-tab { padding: 8px 12px; font-size: 12px; }
     .features-preview-grid { grid-template-columns: 1fr; }
   }
@@ -1514,6 +1514,88 @@
         </div>
       </div>
 
+      <!-- ⚡ ABOUT CARD — عن النقابة -->
+      <div class="settings-card full-width">
+        <div class="settings-card-header">
+          <div class="settings-card-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          </div>
+          <div style="flex:1;">
+            <div class="settings-card-title">عن النقابة</div>
+            <div class="settings-card-sub">
+              قسم يظهر في الصفحة الرئيسية قبل "النقيب العام" — شعار + عنوان + نص تعريفي
+            </div>
+          </div>
+        </div>
+
+        <!-- تفعيل -->
+        <div class="toggle-row" style="border-bottom:1px solid var(--border-soft);margin-bottom:20px;padding-bottom:18px;">
+          <div class="toggle-row-info">
+            <div class="toggle-row-label">إظهار قسم "عن النقابة"</div>
+            <div class="toggle-row-desc">تفعيل عرض القسم في الصفحة الرئيسية</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting_about_card_enabled" data-setting="about_card_enabled" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- شعار -->
+        <div class="logo-upload-area" style="margin-bottom:20px;">
+          <div id="aboutLogoPreview">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text-dim);">
+              <svg viewBox="0 0 24 24" style="width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+              <span style="font-size:11px;">شعار القسم</span>
+            </div>
+          </div>
+
+          <div class="logo-actions">
+            <div class="logo-hint">
+              شعار مخصص لقسم "عن النقابة" — لو مش محدد، سيستخدم شعار النقابة الأساسي.
+            </div>
+            <input type="file" id="aboutLogoFileInput" accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp" style="display:none;" />
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button type="button" class="btn btn-primary" id="uploadAboutLogoBtn">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <span>اختر شعار</span>
+              </button>
+
+              <button type="button" class="btn btn-outline" id="removeAboutLogoBtn">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+                <span>إزالة</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="setting_about_card_title">عنوان القسم</label>
+          <input type="text" id="setting_about_card_title" data-setting="about_card_title" placeholder="عن النقابة" />
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="setting_about_card_text">النص التعريفي</label>
+          <textarea id="setting_about_card_text" data-setting="about_card_text" rows="5" placeholder="اكتب نبذة عن النقابة، رؤيتها، رسالتها، وأهدافها..."></textarea>
+          <span class="form-hint">نص حر متعدد الأسطر — يظهر في الصفحة الرئيسية قبل قسم "النقيب العام"</span>
+        </div>
+      </div>
+
       <!-- ⚡ FEATURES CARDS — كروت المميزات -->
       <div class="settings-card full-width">
         <div class="settings-card-header">
@@ -1537,7 +1619,6 @@
           </button>
         </div>
 
-        <!-- عناوين القسم -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
           <div class="form-group" style="margin:0;">
             <label for="setting_features_title">عنوان القسم</label>
@@ -1549,7 +1630,6 @@
           </div>
         </div>
 
-        <!-- معاينة الكروت -->
         <div id="featuresPreviewList" class="features-preview-grid">
           <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-dim);">
             جاري التحميل...
@@ -2524,7 +2604,7 @@
 </div>
 
 <!-- ============================================
-     ⚡ FEATURE MODAL — إضافة/تعديل كارت مميزات
+     FEATURE MODAL — إضافة/تعديل كارت مميزات
      ============================================ -->
 <div id="featureModal" class="modal modal-sm">
   <div class="modal-content" style="max-width:520px;">
@@ -2541,7 +2621,6 @@
     <div class="modal-body">
       <input type="hidden" id="featureIndex" />
 
-      <!-- Icon Picker -->
       <div class="form-group">
         <label>الأيقونة</label>
         <input type="hidden" id="featureIcon" value="zap" />
@@ -2549,19 +2628,16 @@
         <span class="form-hint">اختر أيقونة مناسبة للكارت</span>
       </div>
 
-      <!-- Title -->
       <div class="form-group">
         <label for="featureTitle">العنوان <span style="color:var(--danger);">*</span></label>
         <input type="text" id="featureTitle" placeholder="مثال: تقديم سريع" maxlength="40" />
       </div>
 
-      <!-- Text -->
       <div class="form-group">
         <label for="featureText">الوصف</label>
         <textarea id="featureText" rows="2" placeholder="وصف مختصر للميزة..." maxlength="120"></textarea>
       </div>
 
-      <!-- Logo (اختياري) -->
       <div class="form-group" style="margin-bottom:0;">
         <label for="featureLogo">رابط صورة مخصصة (اختياري)</label>
         <input type="url" id="featureLogo" placeholder="https://..." dir="ltr" style="text-align:right;" />
@@ -2632,7 +2708,7 @@
 </div>
 
 <!-- ============================================
-     POSITION MODAL (تعيين عضو في منصب مجلس)
+     POSITION MODAL
      ============================================ -->
 <div id="positionModal" class="modal modal-sm">
   <div class="modal-content">
