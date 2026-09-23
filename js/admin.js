@@ -1,6 +1,6 @@
 /* =====================================================
    IT SYNDICATE — ADMIN PANEL LOGIC
-   Version: 3.3.0
+   Version: 3.4.0
    ===================================================== */
 
 (function () {
@@ -58,6 +58,7 @@
      ============================================ */
   let client = null;
   let currentUser = null;
+  let currentUserRole = null;
   let settings = {};
   let users = [];
   let membershipTypes = [];
@@ -68,6 +69,7 @@
   let actions = [];
   let auditLogs = [];
   let activeTab = 'settings';
+  let usersFilter = 'all'; // all / active / pending / inactive
   let unsubscribeRealtime = null;
 
   /* ============================================
@@ -119,6 +121,10 @@
     console.log('[' + type + '] ' + message);
   }
 
+  function isHead() {
+    return currentUserRole === 'head';
+  }
+
   /* ============================================
      SVG ICONS
      ============================================ */
@@ -130,7 +136,12 @@
     eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
     x: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
     check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="20 6 9 17 4 12"/></svg>',
-    image: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>'
+    image: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+    key: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>',
+    lock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+    unlock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>',
+    userCheck: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>',
+    userX: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="18" y1="8" x2="23" y2="13"/><line x1="23" y1="8" x2="18" y2="13"/></svg>'
   };
 
   /* ============================================
@@ -162,6 +173,7 @@
         return false;
       }
 
+      currentUserRole = role;
       window.currentUserRole = role;
       window.currentUserName = (userData && userData.full_name) || currentUser.email || 'النقيب';
 
@@ -228,7 +240,7 @@
       btn.classList.toggle('active', btn.dataset.tabBtn === tabId);
     });
 
-    if (tabId === 'users' && users.length === 0) loadUsers();
+    if (tabId === 'users') loadUsers();
     if (tabId === 'governorates' && governorates.length === 0) loadGovernorates();
     if (tabId === 'types' && membershipTypes.length === 0) loadTypes();
     if (tabId === 'branches' && branches.length === 0) loadBranches();
@@ -306,7 +318,6 @@
     }
   }
 
-  /* ✅ NEW: صورة النقيب */
   function applyHeadPhotoPreview() {
     const preview = document.getElementById('headPhotoPreview');
     if (!preview) return;
@@ -321,9 +332,6 @@
     }
   }
 
-  /* ============================================
-     BUILD THEME SELECT
-     ============================================ */
   function buildThemeSelect() {
     const select = document.getElementById('defaultThemeSelect');
     if (!select) return;
@@ -574,7 +582,7 @@
   }
 
   /* ============================================
-     ✅ NEW: HEAD PHOTO UPLOAD
+     HEAD PHOTO UPLOAD
      ============================================ */
   async function uploadHeadPhoto(file) {
     if (file.size > MAX_PHOTO_SIZE) {
@@ -689,11 +697,11 @@
   }
 
   /* ============================================
-     USERS
+     ✅ USERS — LOAD + RENDER + FILTERS
      ============================================ */
   async function loadUsers() {
     const tbody = document.getElementById('usersTableBody');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-dim);">جاري التحميل...</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-dim);">جاري التحميل...</td></tr>';
 
     try {
       const { data, error } = await client
@@ -704,19 +712,47 @@
       if (error) throw error;
 
       users = data || [];
+      updateUsersCounters();
       renderUsersTable();
     } catch (err) {
       console.error('[Admin] Load users error:', err);
-      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--danger);">' + escapeHtml(err.message) + '</td></tr>';
+      if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--danger);">' + escapeHtml(err.message) + '</td></tr>';
     }
+  }
+
+  function updateUsersCounters() {
+    const all = users.length;
+    const active = users.filter(function(u) { return u.is_active !== false && !u.rejected_at; }).length;
+    const pending = users.filter(function(u) { return u.is_active === false && !u.rejected_at; }).length;
+    const rejected = users.filter(function(u) { return !!u.rejected_at; }).length;
+
+    const set = function(id, v) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = v;
+    };
+
+    set('countAllUsers', all);
+    set('countActiveUsers', active);
+    set('countPendingUsers', pending);
+    set('countRejectedUsers', rejected);
   }
 
   function renderUsersTable() {
     const tbody = document.getElementById('usersTableBody');
     if (!tbody) return;
 
-    if (!users.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">لا يوجد مستخدمون</td></tr>';
+    // Filter
+    let list = users.slice();
+    if (usersFilter === 'active') {
+      list = list.filter(function(u) { return u.is_active !== false && !u.rejected_at; });
+    } else if (usersFilter === 'pending') {
+      list = list.filter(function(u) { return u.is_active === false && !u.rejected_at; });
+    } else if (usersFilter === 'rejected') {
+      list = list.filter(function(u) { return !!u.rejected_at; });
+    }
+
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">لا يوجد مستخدمون في هذه الفئة</td></tr>';
       return;
     }
 
@@ -736,11 +772,55 @@
       committees_manager_vice: { label: 'نائب مدير اللجان', cls: 'committees_manager_vice' }
     };
 
-    tbody.innerHTML = users.map(function(u) {
+    tbody.innerHTML = list.map(function(u) {
       const roleConfig = ROLE_MAP[u.role] || { label: u.role, cls: 'committee' };
       const isMe = u.id === currentUser.id;
+      const isActive = u.is_active !== false && !u.rejected_at;
+      const isPending = u.is_active === false && !u.rejected_at;
+      const isRejected = !!u.rejected_at;
 
-      return '<tr style="border-bottom:1px solid var(--border-soft);">' +
+      // Status badge
+      let statusBadge = '';
+      if (isRejected) {
+        statusBadge = '<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(var(--danger-rgb),0.1);border:1px solid var(--danger);border-radius:100px;font-size:11px;color:var(--danger);font-weight:700;"><span style="width:6px;height:6px;border-radius:50%;background:var(--danger);"></span>مرفوض</span>';
+      } else if (isPending) {
+        statusBadge = '<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(var(--warning-rgb),0.1);border:1px solid var(--warning);border-radius:100px;font-size:11px;color:var(--warning);font-weight:700;"><span style="width:6px;height:6px;border-radius:50%;background:var(--warning);animation:pulseDot 1.5s ease-in-out infinite;"></span>بانتظار التفعيل</span>';
+      } else {
+        statusBadge = '<span class="session-active"><span class="dot"></span>نشط</span>';
+      }
+
+      // Registration source badge
+      const sourceLabel = u.registration_source === 'self_signup' ? 'تسجيل ذاتي' : (u.registration_source === 'admin' ? 'إضافة النقيب' : (u.registration_source || '—'));
+
+      // Actions
+      let actionsHTML = '';
+
+      // Edit
+      actionsHTML += '<button class="row-btn edit-btn" data-action="edit-user" data-id="' + u.id + '" title="تعديل">' + ICONS.edit + '</button>';
+
+      // Activate / Deactivate (head only)
+      if (isHead() && !isMe) {
+        if (isActive) {
+          actionsHTML += '<button class="row-btn" data-action="deactivate-user" data-id="' + u.id + '" title="تعطيل" style="background:rgba(var(--warning-rgb),0.08);border:1px solid rgba(var(--warning-rgb),0.25);color:var(--warning);">' + ICONS.lock + '</button>';
+        } else if (isPending) {
+          actionsHTML += '<button class="row-btn" data-action="activate-user" data-id="' + u.id + '" title="تفعيل" style="background:rgba(var(--success-rgb),0.08);border:1px solid rgba(var(--success-rgb),0.25);color:var(--success);">' + ICONS.unlock + '</button>';
+          actionsHTML += '<button class="row-btn" data-action="reject-user" data-id="' + u.id + '" title="رفض" style="background:rgba(var(--danger-rgb),0.08);border:1px solid rgba(var(--danger-rgb),0.25);color:var(--danger);">' + ICONS.userX + '</button>';
+        } else if (isRejected) {
+          actionsHTML += '<button class="row-btn" data-action="activate-user" data-id="' + u.id + '" title="إعادة تفعيل" style="background:rgba(var(--success-rgb),0.08);border:1px solid rgba(var(--success-rgb),0.25);color:var(--success);">' + ICONS.unlock + '</button>';
+        }
+      }
+
+      // Change password (head only)
+      if (isHead()) {
+        actionsHTML += '<button class="row-btn" data-action="change-password" data-id="' + u.id + '" title="تغيير كلمة المرور" style="background:rgba(var(--accent-rgb),0.08);border:1px solid rgba(var(--accent-rgb),0.25);color:var(--accent);">' + ICONS.key + '</button>';
+      }
+
+      // Delete
+      if (!isMe) {
+        actionsHTML += '<button class="row-btn delete-btn" data-action="delete-user" data-id="' + u.id + '" title="حذف">' + ICONS.trash + '</button>';
+      }
+
+      return '<tr style="border-bottom:1px solid var(--border-soft);' + (isPending ? 'background:rgba(var(--warning-rgb),0.03);' : '') + '">' +
         '<td style="padding:14px 12px;">' +
           '<div style="font-weight:700;font-size:13.5px;color:var(--text);">' + escapeHtml(u.full_name || '—') + '</div>' +
           (u.position ? '<div style="font-size:11.5px;color:var(--accent);margin-top:3px;">' + escapeHtml(u.position) + '</div>' : '') +
@@ -750,26 +830,22 @@
           '<span dir="ltr">' + escapeHtml(u.email || '—') + '</span>' +
         '</td>' +
         '<td style="padding:14px 12px;">' +
-          '<span class="role-badge ' + roleConfig.cls + '">' +
-            '<span class="dot"></span>' +
-            roleConfig.label +
-          '</span>' +
+          '<span class="role-badge ' + roleConfig.cls + '"><span class="dot"></span>' + roleConfig.label + '</span>' +
+        '</td>' +
+        '<td style="padding:14px 12px;font-size:11.5px;color:var(--text-dim);">' +
+          '<span style="display:inline-block;padding:3px 9px;background:rgba(var(--accent-rgb),0.06);border:1px solid rgba(var(--accent-rgb),0.18);border-radius:100px;font-size:10.5px;">' + escapeHtml(sourceLabel) + '</span>' +
         '</td>' +
         '<td style="padding:14px 12px;font-size:12px;color:var(--text-dim);">' +
           escapeHtml(formatDate(u.last_login_at) || '—') +
         '</td>' +
+        '<td style="padding:14px 12px;">' + statusBadge + '</td>' +
         '<td style="padding:14px 12px;">' +
-          (u.is_active !== false ? '<span class="session-active"><span class="dot"></span>نشط</span>' : '<span style="font-size:11.5px;color:var(--text-dim);">معطّل</span>') +
-        '</td>' +
-        '<td style="padding:14px 12px;">' +
-          '<div class="row-actions">' +
-            '<button class="row-btn edit-btn" data-action="edit-user" data-id="' + u.id + '" title="تعديل">' + ICONS.edit + '</button>' +
-            (!isMe ? '<button class="row-btn delete-btn" data-action="delete-user" data-id="' + u.id + '" title="حذف">' + ICONS.trash + '</button>' : '') +
-          '</div>' +
+          '<div class="row-actions">' + actionsHTML + '</div>' +
         '</td>' +
       '</tr>';
     }).join('');
 
+    // Bind actions
     tbody.querySelectorAll('[data-action="edit-user"]').forEach(function(btn) {
       btn.addEventListener('click', function() { openUserModal(btn.dataset.id); });
     });
@@ -777,8 +853,330 @@
     tbody.querySelectorAll('[data-action="delete-user"]').forEach(function(btn) {
       btn.addEventListener('click', function() { deleteUser(btn.dataset.id); });
     });
+
+    tbody.querySelectorAll('[data-action="activate-user"]').forEach(function(btn) {
+      btn.addEventListener('click', function() { activateUser(btn.dataset.id); });
+    });
+
+    tbody.querySelectorAll('[data-action="deactivate-user"]').forEach(function(btn) {
+      btn.addEventListener('click', function() { deactivateUser(btn.dataset.id); });
+    });
+
+    tbody.querySelectorAll('[data-action="reject-user"]').forEach(function(btn) {
+      btn.addEventListener('click', function() { rejectUser(btn.dataset.id); });
+    });
+
+    tbody.querySelectorAll('[data-action="change-password"]').forEach(function(btn) {
+      btn.addEventListener('click', function() { openChangePasswordModal(btn.dataset.id); });
+    });
   }
 
+  function setupUsersFilters() {
+    document.querySelectorAll('[data-users-filter]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        usersFilter = btn.dataset.usersFilter;
+        document.querySelectorAll('[data-users-filter]').forEach(function(b) {
+          b.classList.toggle('active', b === btn);
+        });
+        renderUsersTable();
+      });
+    });
+  }
+
+  /* ============================================
+     ✅ ACTIVATE USER
+     ============================================ */
+  async function activateUser(userId) {
+    if (!isHead()) {
+      showToast('النقيب العام فقط يمكنه تفعيل المستخدمين', 'warning');
+      return;
+    }
+
+    const user = users.filter(function(u) { return u.id === userId; })[0];
+    if (!user) return;
+
+    if (!confirm('هل تريد تفعيل حساب "' + (user.full_name || user.email) + '"؟')) return;
+
+    try {
+      // استخدام دالة الـ RPC
+      const { error: rpcErr } = await client.rpc('activate_user', {
+        p_user_id: userId,
+        p_notes: 'تم التفعيل من النقيب العام'
+      });
+
+      if (rpcErr) {
+        // Fallback: تحديث مباشر
+        const { error: updErr } = await client
+          .from('users')
+          .update({
+            is_active: true,
+            activated_at: new Date().toISOString(),
+            activated_by: currentUser.id,
+            deactivated_at: null,
+            deactivated_by: null,
+            deactivation_reason: null,
+            rejection_reason: null,
+            rejected_at: null,
+            rejected_by: null
+          })
+          .eq('id', userId);
+
+        if (updErr) throw updErr;
+      }
+
+      await logAudit('activate_user', 'users', userId, { is_active: false }, { is_active: true });
+      await logAction('activate_user', 'user', userId, 'تم تفعيل ' + (user.full_name || user.email));
+
+      showToast('تم تفعيل المستخدم بنجاح', 'success');
+
+      await loadUsers();
+
+      if (window.Realtime) {
+        window.Realtime.sendBroadcast('user-activated', { userId: userId });
+      }
+
+    } catch (err) {
+      console.error('[Admin] Activate user error:', err);
+      showToast('فشل التفعيل: ' + err.message, 'error');
+    }
+  }
+
+  /* ============================================
+     ✅ DEACTIVATE USER
+     ============================================ */
+  async function deactivateUser(userId) {
+    if (!isHead()) {
+      showToast('النقيب العام فقط يمكنه تعطيل المستخدمين', 'warning');
+      return;
+    }
+
+    const user = users.filter(function(u) { return u.id === userId; })[0];
+    if (!user) return;
+
+    const reason = prompt('سبب التعطيل (اختياري):', '');
+    if (reason === null) return; // cancelled
+
+    try {
+      const { error: rpcErr } = await client.rpc('deactivate_user', {
+        p_user_id: userId,
+        p_reason: reason || null
+      });
+
+      if (rpcErr) {
+        const { error: updErr } = await client
+          .from('users')
+          .update({
+            is_active: false,
+            deactivated_at: new Date().toISOString(),
+            deactivated_by: currentUser.id,
+            deactivation_reason: reason || null
+          })
+          .eq('id', userId);
+
+        if (updErr) throw updErr;
+      }
+
+      await logAudit('deactivate_user', 'users', userId, { is_active: true }, { is_active: false, reason: reason });
+      await logAction('deactivate_user', 'user', userId, 'تم تعطيل ' + (user.full_name || user.email));
+
+      showToast('تم تعطيل المستخدم', 'success');
+
+      await loadUsers();
+
+    } catch (err) {
+      console.error('[Admin] Deactivate user error:', err);
+      showToast('فشل التعطيل: ' + err.message, 'error');
+    }
+  }
+
+  /* ============================================
+     ✅ REJECT USER
+     ============================================ */
+  async function rejectUser(userId) {
+    if (!isHead()) {
+      showToast('النقيب العام فقط يمكنه رفض المستخدمين', 'warning');
+      return;
+    }
+
+    const user = users.filter(function(u) { return u.id === userId; })[0];
+    if (!user) return;
+
+    const reason = prompt('سبب الرفض:', '');
+    if (reason === null) return; // cancelled
+    if (!reason.trim()) {
+      showToast('سبب الرفض مطلوب', 'warning');
+      return;
+    }
+
+    try {
+      const { error: rpcErr } = await client.rpc('reject_user_signup', {
+        p_user_id: userId,
+        p_reason: reason
+      });
+
+      if (rpcErr) {
+        const { error: updErr } = await client
+          .from('users')
+          .update({
+            is_active: false,
+            rejected_at: new Date().toISOString(),
+            rejected_by: currentUser.id,
+            rejection_reason: reason
+          })
+          .eq('id', userId);
+
+        if (updErr) throw updErr;
+      }
+
+      await logAudit('reject_user', 'users', userId, null, { reason: reason });
+      await logAction('reject_user', 'user', userId, 'تم رفض ' + (user.full_name || user.email) + ' — السبب: ' + reason);
+
+      showToast('تم رفض طلب الحساب', 'success');
+
+      await loadUsers();
+
+    } catch (err) {
+      console.error('[Admin] Reject user error:', err);
+      showToast('فشل الرفض: ' + err.message, 'error');
+    }
+  }
+
+  /* ============================================
+     ✅ CHANGE PASSWORD (head only)
+     ============================================ */
+  window.openChangePasswordModal = function (userId) {
+    if (!isHead()) {
+      showToast('النقيب العام فقط يمكنه تغيير كلمات المرور', 'warning');
+      return;
+    }
+
+    const user = users.filter(function(u) { return u.id === userId; })[0];
+    if (!user) {
+      showToast('لم يتم العثور على المستخدم', 'error');
+      return;
+    }
+
+    const modal = document.getElementById('changePasswordModal');
+    if (!modal) {
+      // fallback: prompt
+      const newPass = prompt('كلمة المرور الجديدة لـ "' + (user.full_name || user.email) + '":');
+      if (!newPass) return;
+      if (newPass.length < 6) {
+        showToast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'warning');
+        return;
+      }
+      executePasswordChange(userId, newPass);
+      return;
+    }
+
+    document.getElementById('changePassUserId').value = userId;
+    document.getElementById('changePassUserName').value = user.full_name || user.email || '';
+    document.getElementById('changePassUserName').disabled = true;
+    document.getElementById('changePassNew').value = '';
+    document.getElementById('changePassConfirm').value = '';
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeChangePasswordModal = function () {
+    const modal = document.getElementById('changePasswordModal');
+    if (modal) modal.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  async function executePasswordChange(userId, newPassword) {
+    try {
+      // نستخدم Edge Function
+      const { data: sessionData } = await client.auth.getSession();
+      const session = sessionData && sessionData.session;
+      if (!session) throw new Error('الجلسة انتهت');
+
+      const response = await fetch(
+        window.SUPABASE_URL + '/functions/v1/admin-change-password',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + session.access_token,
+            'apikey': window.SUPABASE_KEY
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            new_password: newPassword
+          })
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || result.error) {
+        throw new Error(result.error || 'فشل تغيير كلمة المرور');
+      }
+
+      // تحديث في قاعدة البيانات
+      try {
+        await client
+          .from('users')
+          .update({
+            password_changed_at: new Date().toISOString(),
+            password_changed_by: currentUser.id,
+            must_change_password: false
+          })
+          .eq('id', userId);
+      } catch (e) {}
+
+      await logAudit('change_user_password', 'users', userId, null, { changed_by: currentUser.id });
+      await logAction('change_user_password', 'user', userId, 'تم تغيير كلمة المرور بواسطة النقيب');
+
+      showToast('تم تغيير كلمة المرور بنجاح', 'success');
+
+      return true;
+
+    } catch (err) {
+      console.error('[Admin] Change password error:', err);
+      showToast('فشل تغيير كلمة المرور: ' + err.message, 'error');
+      return false;
+    }
+  }
+
+  async function submitChangePassword() {
+    const userId = document.getElementById('changePassUserId').value;
+    const newPass = document.getElementById('changePassNew').value;
+    const confirmPass = document.getElementById('changePassConfirm').value;
+
+    if (!newPass || newPass.length < 6) {
+      showToast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'warning');
+      return;
+    }
+
+    if (newPass !== confirmPass) {
+      showToast('كلمتا المرور غير متطابقتين', 'warning');
+      return;
+    }
+
+    const btn = document.getElementById('confirmChangePassBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>جاري التغيير...</span><span class="spinner"></span>';
+    }
+
+    const ok = await executePasswordChange(userId, newPass);
+
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = ICONS.check + '<span>حفظ كلمة المرور</span>';
+    }
+
+    if (ok) {
+      closeChangePasswordModal();
+      await loadUsers();
+    }
+  }
+
+  /* ============================================
+     USER MODAL (ADD/EDIT)
+     ============================================ */
   window.openUserModal = async function (userId) {
     const modal = document.getElementById('userModal');
     if (!modal) return;
@@ -954,14 +1352,17 @@
   }
 
   async function deleteUser(userId) {
-    if (!confirm('هل أنت متأكد من حذف هذا المستخدم؟')) return;
+    const user = users.filter(function(u) { return u.id === userId; })[0];
+    if (!user) return;
+
+    if (!confirm('هل أنت متأكد من حذف المستخدم "' + (user.full_name || user.email) + '"؟')) return;
 
     try {
       const { error } = await client.from('users').delete().eq('id', userId);
       if (error) throw error;
 
-      await logAudit('delete', 'user', userId, null, null);
-      await logAction('delete_user', 'user', userId, null);
+      await logAudit('delete', 'user', userId, user, null);
+      await logAction('delete_user', 'user', userId, 'حذف ' + (user.full_name || user.email));
       showToast('تم حذف المستخدم', 'success');
       await loadUsers();
     } catch (err) {
@@ -1009,9 +1410,7 @@
         '<td style="padding:14px 12px;font-family:\'JetBrains Mono\',monospace;font-size:12px;color:var(--accent);font-weight:600;">' + escapeHtml(g.code || '—') + '</td>' +
         '<td style="padding:14px 12px;font-weight:700;font-size:13.5px;color:var(--text);">' + escapeHtml(g.name || '—') + '</td>' +
         '<td style="padding:14px 12px;">' +
-          '<span style="display:inline-block;padding:4px 12px;background:' + structureColor + '15;border:1px solid ' + structureColor + ';border-radius:100px;font-size:11.5px;color:' + structureColor + ';font-weight:700;white-space:nowrap;">' +
-            structureLabel +
-          '</span>' +
+          '<span style="display:inline-block;padding:4px 12px;background:' + structureColor + '15;border:1px solid ' + structureColor + ';border-radius:100px;font-size:11.5px;color:' + structureColor + ';font-weight:700;white-space:nowrap;">' + structureLabel + '</span>' +
         '</td>' +
         '<td style="padding:14px 12px;font-size:12.5px;color:var(--text-muted);">' + (g.sort_order || 0) + '</td>' +
         '<td style="padding:14px 12px;">' +
@@ -1663,6 +2062,10 @@
       'create_user': 'إنشاء مستخدم',
       'update_user': 'تعديل مستخدم',
       'delete_user': 'حذف مستخدم',
+      'activate_user': 'تفعيل مستخدم',
+      'deactivate_user': 'تعطيل مستخدم',
+      'reject_user': 'رفض مستخدم',
+      'change_user_password': 'تغيير كلمة مرور',
       'create_governorate': 'إضافة محافظة',
       'update_governorate': 'تعديل محافظة',
       'delete_governorate': 'حذف محافظة'
@@ -1715,14 +2118,18 @@
       'create': { label: 'إنشاء', color: 'var(--success)' },
       'update': { label: 'تعديل', color: 'var(--warning)' },
       'delete': { label: 'حذف', color: 'var(--danger)' },
-      'upload': { label: 'رفع', color: 'var(--accent)' }
+      'upload': { label: 'رفع', color: 'var(--accent)' },
+      'activate_user': { label: 'تفعيل', color: 'var(--success)' },
+      'deactivate_user': { label: 'تعطيل', color: 'var(--warning)' },
+      'reject_user': { label: 'رفض', color: 'var(--danger)' },
+      'change_user_password': { label: 'تغيير باسورد', color: 'var(--accent)' }
     };
 
     tbody.innerHTML = auditLogs.map(function(log) {
       const action = actionColors[log.action] || { label: log.action, color: 'var(--text-muted)' };
       return '<tr style="border-bottom:1px solid var(--border-soft);">' +
         '<td style="padding:12px;font-size:12.5px;color:var(--text-muted);direction:ltr;text-align:right;"><span dir="ltr">' + escapeHtml(log.user_email || '—') + '</span></td>' +
-        '<td style="padding:12px;"><span style="padding:4px 10px;background:' + action.color + '22;border:1px solid ' + action.color + ';border-radius:100px;font-size:11.5px;color:' + action.color + ';font-weight:700;">' + action.label + '</span></td>' +
+        '<td style="padding:12px;"><span style="padding:4px 10px;background:' + action.color + '22;border:1px solid ' + action.color + ';border-radius:100px;font-size:11.5px;color:' + action.color + ';font-weight:700;white-space:nowrap;">' + action.label + '</span></td>' +
         '<td style="padding:12px;font-size:12.5px;color:var(--text-muted);">' + escapeHtml(log.entity || '—') + '</td>' +
         '<td style="padding:12px;font-family:\'JetBrains Mono\',monospace;font-size:11.5px;color:var(--text-dim);">' + escapeHtml(log.entity_id || '—') + '</td>' +
         '<td style="padding:12px;font-size:11.5px;color:var(--text-dim);font-family:\'JetBrains Mono\',monospace;">' + escapeHtml(formatDate(log.created_at)) + '</td>' +
@@ -1749,7 +2156,7 @@
       const backup = {
         exported_at: new Date().toISOString(),
         exported_by: currentUser ? currentUser.email : null,
-        version: '3.3.0',
+        version: '3.4.0',
         data: {
           settings: settingsRes.data || [],
           membership_types: typesRes.data || [],
@@ -1780,6 +2187,7 @@
      SETUP LISTENERS
      ============================================ */
   function setupListeners() {
+    // Save settings
     const saveBtn = document.getElementById('saveSettingsBtn');
     if (saveBtn) saveBtn.addEventListener('click', function() { saveSettings('saveSettingsBtn'); });
 
@@ -1802,7 +2210,7 @@
     const removeBtn = document.getElementById('removeLogoBtn');
     if (removeBtn) removeBtn.addEventListener('click', removeLogo);
 
-    // ✅ NEW: Head Photo
+    // Head Photo
     const headPhotoInput = document.getElementById('headPhotoInput');
     const uploadHeadPhotoBtn = document.getElementById('uploadHeadPhotoBtn');
     if (uploadHeadPhotoBtn && headPhotoInput) {
@@ -1818,12 +2226,19 @@
     const removeHeadPhotoBtn = document.getElementById('removeHeadPhotoBtn');
     if (removeHeadPhotoBtn) removeHeadPhotoBtn.addEventListener('click', removeHeadPhoto);
 
+    // Users filters
+    setupUsersFilters();
+
     // Users
     const addUserBtn = document.getElementById('addUserBtn');
     if (addUserBtn) addUserBtn.addEventListener('click', function() { openUserModal(null); });
 
     const saveUserBtn = document.getElementById('saveUserBtn');
     if (saveUserBtn) saveUserBtn.addEventListener('click', saveUser);
+
+    // Change password modal
+    const confirmChangePassBtn = document.getElementById('confirmChangePassBtn');
+    if (confirmChangePassBtn) confirmChangePassBtn.addEventListener('click', submitChangePassword);
 
     // Governorates
     const addGovBtn = document.getElementById('addGovBtn');
@@ -1883,7 +2298,8 @@
       });
     }
 
-    ['userModal', 'typeModal', 'branchModal', 'featureModal', 'govModal'].forEach(function(id) {
+    // Modals
+    ['userModal', 'typeModal', 'branchModal', 'featureModal', 'govModal', 'changePasswordModal'].forEach(function(id) {
       const modal = document.getElementById(id);
       if (!modal) return;
       modal.addEventListener('click', function(e) {
@@ -1893,6 +2309,7 @@
           else if (id === 'branchModal') window.closeBranchModal();
           else if (id === 'featureModal') window.closeFeatureModal();
           else if (id === 'govModal') window.closeGovModal();
+          else if (id === 'changePasswordModal') window.closeChangePasswordModal();
         }
       });
     });
@@ -1904,6 +2321,7 @@
         window.closeBranchModal();
         window.closeFeatureModal();
         window.closeGovModal();
+        window.closeChangePasswordModal();
       }
     });
   }
@@ -1960,7 +2378,7 @@
       if (activeTab === 'sessions') loadSessions();
       if (activeTab === 'audit') loadAuditLog();
 
-      console.log('[Admin] Ready. Version 3.3.0');
+      console.log('[Admin] Ready. Version 3.4.0');
     });
   }
 
