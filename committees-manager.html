@@ -131,7 +131,54 @@
     margin-top: 4px;
   }
 
-  /* Committee cards grid */
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    padding: 18px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.25s;
+  }
+  .stat-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
+  }
+  .stat-icon {
+    width: 48px; height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid;
+  }
+  .stat-icon svg {
+    width: 22px; height: 22px;
+    stroke: currentColor; fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .stat-info { min-width: 0; }
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-label { font-size: 12px; color: var(--text-muted); }
+
+  /* Committees grid */
   .committees-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -299,54 +346,7 @@
     background: rgba(249, 115, 22, 0.15);
   }
 
-  /* Stats */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 14px;
-    margin-bottom: 24px;
-  }
-  .stat-card {
-    padding: 18px;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    transition: all 0.25s;
-  }
-  .stat-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--border-strong);
-  }
-  .stat-icon {
-    width: 48px; height: 48px;
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    border: 1px solid;
-  }
-  .stat-icon svg {
-    width: 22px; height: 22px;
-    stroke: currentColor; fill: none;
-    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
-  }
-  .stat-info { min-width: 0; }
-  .stat-value {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 24px;
-    font-weight: 800;
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-  .stat-label { font-size: 12px; color: var(--text-muted); }
-
-  /* Recent activity */
+  /* Table */
   .table-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -744,157 +744,4 @@
         </div>
         <div class="committee-stat">
           <div class="committee-stat-value" style="color:var(--success);" id="memApproved">—</div>
-          <div class="committee-stat-label">مقبولة</div>
-        </div>
-      </div>
-
-      <a href="dashboard.html" class="committee-card-link">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <line x1="19" y1="12" x2="5" y2="12" />
-          <polyline points="12 19 5 12 12 5" />
-        </svg>
-        <span>فتح اللجنة</span>
-      </a>
-    </div>
-
-  </div>
-
-  <!-- RECENT APPLICATIONS -->
-  <div class="table-card">
-    <div class="table-card-header">
-      <div class="table-card-title">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
-        </svg>
-        <span>آخر الطلبات</span>
-      </div>
-      <div class="table-card-count" id="recentCount">—</div>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>العضو</th>
-            <th>رقم التتبع</th>
-            <th>نوع العضوية</th>
-            <th>المحافظة</th>
-            <th>الحالة</th>
-            <th>التاريخ</th>
-          </tr>
-        </thead>
-        <tbody id="recentAppsBody">
-          <tr>
-            <td colspan="6" style="text-align:center;padding:40px;color:var(--text-dim);">
-              جاري التحميل...
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-</div>
-
-<!-- FOOTER -->
-<footer class="footer" style="margin-top:40px;">
-  <div class="container">
-    <div class="footer-bottom" style="border-top:none;padding-top:0;justify-content:center;">
-      <div>© 2026 <span data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</span> — جميع الحقوق محفوظة</div>
-    </div>
-  </div>
-</footer>
-
-<!-- SCRIPTS -->
-<script src="js/supabase-config.js"></script>
-<script src="js/theme-manager.js"></script>
-<script src="js/settings.js"></script>
-<script src="js/realtime.js"></script>
-<script src="js/committees-manager.js"></script>
-
-<script>
-  window.toggleMobileNav = function () {
-    const nav = document.getElementById('navLinks');
-    if (nav) nav.classList.toggle('open');
-  };
-
-  /* Background particles */
-  (function () {
-    const canvas = document.getElementById('bgCanvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let W = 0, H = 0, dots = [];
-
-    function accentRgb() {
-      const raw = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim();
-      if (raw) {
-        const parts = raw.split(',').map(s => parseInt(s.trim()));
-        return { r: parts[0] || 0, g: parts[1] || 240, b: parts[2] || 255 };
-      }
-      return { r: 0, g: 240, b: 255 };
-    }
-
-    function resize() {
-      const dpr = window.devicePixelRatio || 1;
-      W = window.innerWidth; H = window.innerHeight;
-      canvas.width = W * dpr; canvas.height = H * dpr;
-      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      init();
-    }
-
-    function init() {
-      const count = Math.min(45, Math.max(18, Math.floor(W / 34)));
-      dots = [];
-      for (let i = 0; i < count; i++) {
-        dots.push({
-          x: Math.random() * W,
-          y: Math.random() * H,
-          vx: (Math.random() - 0.5) * 0.25,
-          vy: (Math.random() - 0.5) * 0.25,
-          r: Math.random() * 1.3 + 0.5
-        });
-      }
-    }
-
-    function loop() {
-      const rgb = accentRgb();
-      ctx.clearRect(0, 0, W, H);
-      dots.forEach((d, i) => {
-        d.x += d.vx; d.y += d.vy;
-        if (d.x < 0 || d.x > W) d.vx *= -1;
-        if (d.y < 0 || d.y > H) d.vy *= -1;
-        ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.4)`;
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-        ctx.fill();
-        for (let j = i + 1; j < dots.length; j++) {
-          const dx = d.x - dots[j].x;
-          const dy = d.y - dots[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 130) {
-            ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.07 * (1 - dist / 130)})`;
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(d.x, d.y);
-            ctx.lineTo(dots[j].x, dots[j].y);
-            ctx.stroke();
-          }
-        }
-      });
-      requestAnimationFrame(loop);
-    }
-
-    window.addEventListener('resize', () => {
-      clearTimeout(window.__cmResizeT);
-      window.__cmResizeT = setTimeout(resize, 200);
-    });
-
-    resize();
-    loop();
-  })();
-</script>
-
-</body>
-</html>
+          <
