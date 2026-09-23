@@ -1,6 +1,7 @@
 /* =====================================================
    IT SYNDICATE — SECURITY MODULE
    Version: 3.0.0
+   Path: js/security.js
    =====================================================
    يحتوي على:
    - منع Right Click (القائمة اليمنى)
@@ -11,6 +12,8 @@
    - Console Warning
    - حماية الحقول الحساسة (الرقم القومي / الباسورد)
    - تعطيل Print Screen (اختياري)
+   - منع Iframe Embedding
+   - منع Drop من الخارج
    ===================================================== */
 
 (function () {
@@ -42,7 +45,8 @@
       'governorate.html',
       'social-committee.html',
       'public-relations.html',
-      'committees-manager.html'
+      'committees-manager.html',
+      'profile.html'
     ]
   };
 
@@ -64,8 +68,7 @@
     if (now - lastAlertTime < 2000) return; // Rate limit
     lastAlertTime = now;
 
-    // Use toast if available
-    if (window.showToast) {
+    if (typeof window.showToast === 'function') {
       window.showToast('هذا الإجراء غير مسموح', 'warning', 2000);
     }
   }
@@ -77,7 +80,6 @@
     if (!CONFIG.disableRightClick) return;
 
     document.addEventListener('contextmenu', (e) => {
-      // Allow on inputs (for paste)
       const target = e.target;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
       if (isAdminPage()) return;
@@ -106,7 +108,7 @@
         return false;
       }
 
-      // Ctrl+Shift+I / J / C
+      // Ctrl+Shift+I / J / C / K
       if (CONFIG.disableShortcuts && e.ctrlKey && e.shiftKey) {
         if (['I', 'J', 'C', 'K'].includes(key)) {
           e.preventDefault();
@@ -214,8 +216,6 @@
 
       // If devtools is open, the debugger pauses execution > 100ms
       if (end - start > 100) {
-        // DevTools detected - but we won't redirect (annoying)
-        // Just log it
         if (window.ITS_DEBUG) console.log('[Security] DevTools detected');
       }
     }, 3000);
@@ -287,7 +287,6 @@
      8) PROTECT SENSITIVE INPUTS
      ============================================ */
   function protectSensitiveInputs() {
-    // Autocomplete off for sensitive fields
     const sensitivePatterns = [
       'national_id',
       'password',
@@ -327,13 +326,9 @@
   function blockIframeEmbedding() {
     try {
       if (window.self !== window.top) {
-        // We're inside an iframe - warn
         console.warn('[Security] Page is embedded in an iframe');
-        // Optionally break out
-        // window.top.location = window.self.location;
       }
     } catch (e) {
-      // Cross-origin iframe - can't access parent
       console.warn('[Security] Cross-origin iframe detected');
     }
   }
@@ -342,10 +337,8 @@
      10) BLOCK TEXT SELECTION (Optional)
      ============================================ */
   function blockTextSelection() {
-    // Only on non-admin pages
     if (isAdminPage()) return;
 
-    // Add CSS to disable selection on certain elements
     const style = document.createElement('style');
     style.textContent = `
       .no-select {
@@ -377,7 +370,6 @@
      ============================================ */
   function disableExternalDrop() {
     document.addEventListener('dragover', (e) => {
-      // Allow internal file uploads
       if (e.target.closest('.file-upload, [data-allow-drop]')) return;
       e.preventDefault();
     }, { capture: true });
