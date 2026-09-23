@@ -1,5 +1,18 @@
 /* =====================================================
-   IT SYNDICATE — Governorate Logic
+   IT SYNDICATE — GOVERNORATE LOGIC
+   Version: 3.0.0
+   Path: js/governorate.js
+   =====================================================
+   يحتوي على:
+   - Auth + Role check (governorate_head / governorate_board)
+   - جلب محافظة المستخدم تلقائيًا
+   - 5 كروت إحصائية (إجمالي / نشط / ينتهي قريبًا / منتهي / رعاية صحية)
+   - جدول أعضاء المحافظة + Pagination
+   - 4 فلاتر (بحث + شعبة + حالة اشتراك + رعاية صحية)
+   - تاب تقرير الشعب
+   - Member Detail Modal
+   - Realtime (members + membership_subscriptions)
+   - Export CSV + Print
    ===================================================== */
 
 (function () {
@@ -18,6 +31,7 @@
   let currentUser = null;
   let userRole = null;
   let userGovernorate = null;
+  let userGovernorateId = null;
   let members = [];
   let currentPage = 1;
   let totalCount = 0;
@@ -77,7 +91,7 @@
     return b?.name || '—';
   }
 
-  function getMembershipTypeName(typeId) {
+  function getTypeName(typeId) {
     const t = membershipTypes.find(x => String(x.id) === String(typeId));
     return t?.name || '—';
   }
@@ -106,15 +120,26 @@
     return 'days-active';
   }
 
+  function getCardStatusLabel(status) {
+    const map = {
+      'not_issued': 'لم يتم الإصدار',
+      'processing': 'جاري التجهيز',
+      'ready': 'جاهز',
+      'delivered': 'تم الاستلام'
+    };
+    return map[status] || 'غير محدد';
+  }
+
   /* ============================================
      SVG ICONS
      ============================================ */
   const ICONS = {
     eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
-    health: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
     inbox: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>',
     chevronLeft: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>',
-    chevronRight: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>'
+    chevronRight: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>',
+    close: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
   };
 
   /* ============================================
@@ -148,6 +173,7 @@
 
       // جلب اسم المحافظة
       if (userData?.governorate_id) {
+        userGovernorateId = userData.governorate_id;
         try {
           const { data: govData } = await client
             .from('governorates')
@@ -158,7 +184,7 @@
         } catch (e) {}
       }
 
-      // لو مفيش محافظة محددة → نستخدم أول محافظة (للأدوار العامة)
+      // لو مفيش محافظة محددة للأدوار المخصصة
       if (!userGovernorate && (userRole === 'governorate_head' || userRole === 'governorate_board')) {
         alert('لم يتم تحديد محافظة لهذا الحساب. تواصل مع النقيب العام.');
         window.location.href = 'dashboard.html';
@@ -181,6 +207,7 @@
       const roleLabel = userRole === 'governorate_head' ? 'نقيب المحافظة'
                        : userRole === 'governorate_board' ? 'مجلس المحافظة'
                        : 'إدارة عامة';
+
       document.querySelectorAll('.user-role').forEach(el => {
         el.textContent = roleLabel;
       });
@@ -231,7 +258,6 @@
       .select('*', { count: 'exact' })
       .eq('is_active', true);
 
-    // لو المستخدم محافظة محددة → فلترة
     if (userGovernorate) {
       query = query.eq('governorate', userGovernorate);
     }
@@ -358,19 +384,16 @@
     try {
       let query = buildBaseQuery();
 
-      // Branch
       if (filters.branch && filters.branch !== 'all') {
         query = query.eq('branch_id', parseInt(filters.branch));
       }
 
-      // Health care
       if (filters.hc === 'yes') {
         query = query.eq('has_health_care', true);
       } else if (filters.hc === 'no') {
         query = query.eq('has_health_care', false);
       }
 
-      // Search
       if (filters.search) {
         const s = filters.search.trim();
         query = query.or(
@@ -390,7 +413,6 @@
 
       let list = data || [];
 
-      // Client-side filter for sub status
       if (filters.subStatus && filters.subStatus !== 'all') {
         list = list.filter(m => getSubStatus(m.membership_end).key === filters.subStatus);
       }
@@ -484,7 +506,7 @@
           <td style="padding:14px 12px;">
             ${hasHC ? `
               <span class="hc-badge">
-                ${ICONS.health}
+                ${ICONS.heart}
                 <span>نعم</span>
               </span>
             ` : `
@@ -628,7 +650,7 @@
 
       const st = getSubStatus(m.membership_end);
       const branchName = getBranchName(m.branch_id);
-      const typeName = getMembershipTypeName(m.membership_type_id);
+      const typeName = getTypeName(m.membership_type_id);
 
       body.innerHTML = `
         <div style="animation:fadeUp 0.3s;">
@@ -685,7 +707,7 @@
 
           ${m.has_health_care ? `
             <h4 style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;color:#ec4899;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
-              ${ICONS.health}
+              ${ICONS.heart}
               الرعاية الصحية
             </h4>
             <div class="detail-grid">
@@ -717,16 +739,6 @@
         </div>
       </div>
     `;
-  }
-
-  function getCardStatusLabel(status) {
-    const map = {
-      'not_issued': 'لم يتم الإصدار',
-      'processing': 'جاري التجهيز',
-      'ready': 'جاهز',
-      'delivered': 'تم الاستلام'
-    };
-    return map[status] || 'غير محدد';
   }
 
   window.closeMemberModal = function () {
