@@ -1,6 +1,7 @@
 /* =====================================================
    IT SYNDICATE — SUBSCRIPTIONS LOGIC
    Version: 3.0.0
+   Path: js/subscriptions.js
    =====================================================
    يحتوي على:
    - Auth + Role check
@@ -34,7 +35,6 @@
   let totalCount = 0;
   let branches = [];
   let governorates = [];
-  let membershipTypes = [];
   let currentTab = 'active';
   let soonDays = DEFAULT_SOON_DAYS;
   let filters = {
@@ -115,26 +115,18 @@
   }
 
   /* ============================================
-     SVG ICONS
+     ICONS
      ============================================ */
   const ICONS = {
     check: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
-    clock: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-    x: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
-    calendar: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
     refresh: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>',
     eye: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
-    inbox: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>',
-    download: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
-    print: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
-    search: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
-    close: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
     chevronLeft: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="15 18 9 12 15 6"/></svg>',
     chevronRight: '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"/></svg>'
   };
 
   /* ============================================
-     AUTH CHECK
+     AUTH
      ============================================ */
   async function checkAuth() {
     try {
@@ -169,19 +161,6 @@
         if (adminLink) adminLink.style.display = 'flex';
       }
 
-      document.querySelectorAll('[data-user-name]').forEach(el => {
-        el.textContent = window.currentUserName;
-      });
-
-      const roleLabel = userRole === 'head' ? 'النقيب العام'
-                      : userRole === 'vice_president' ? 'نائب رئيس النقابة'
-                      : userRole === 'deputy' ? 'الوكيل'
-                      : 'لجنة العضويات';
-
-      document.querySelectorAll('[data-user-role]').forEach(el => {
-        el.textContent = roleLabel;
-      });
-
       return true;
     } catch (err) {
       console.error('[Subscriptions] Auth error:', err);
@@ -191,19 +170,17 @@
   }
 
   /* ============================================
-     LOAD LOOKUPS
+     LOOKUPS
      ============================================ */
   async function loadLookups() {
     try {
-      const [brRes, govRes, typesRes] = await Promise.all([
+      const [brRes, govRes] = await Promise.all([
         client.from('branches').select('*').eq('is_active', true).order('sort_order', { ascending: true }),
-        client.from('governorates').select('*').eq('is_active', true).order('sort_order', { ascending: true }),
-        client.from('membership_types').select('*').order('sort_order', { ascending: true })
+        client.from('governorates').select('*').eq('is_active', true).order('sort_order', { ascending: true })
       ]);
 
       branches = brRes.data || [];
       governorates = govRes.data || [];
-      membershipTypes = typesRes.data || [];
 
       const branchFilter = document.getElementById('branchFilter');
       if (branchFilter) {
@@ -226,14 +203,13 @@
           govFilter.appendChild(opt);
         });
       }
-
     } catch (err) {
       console.error('[Subscriptions] Lookups error:', err);
     }
   }
 
   /* ============================================
-     LOAD SUMMARY
+     SUMMARY
      ============================================ */
   async function loadSummary() {
     try {
@@ -263,12 +239,10 @@
       set('sumExpired', expired);
       set('sumTotal', data.length);
 
-      // Tab counts
       set('countActive', active);
       set('countSoon', soon);
       set('countExpired', expired);
       set('countAll', data.length);
-
     } catch (e) {
       console.error('[Subscriptions] Summary error:', e);
     }
@@ -321,7 +295,6 @@
 
       let allMembers = data || [];
 
-      // Filter by tab
       if (currentTab === 'active') {
         allMembers = allMembers.filter(m => getSubStatus(m.membership_end).key === 'active');
       } else if (currentTab === 'soon') {
@@ -338,7 +311,6 @@
 
       const countEl = document.getElementById('tableCount');
       if (countEl) countEl.textContent = `${members.length} عضو`;
-
     } catch (err) {
       console.error('[Subscriptions] Load error:', err);
       if (tbody) {
@@ -371,7 +343,7 @@
         <tr>
           <td colspan="9" style="text-align:center;padding:60px 20px;">
             <div style="display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--text-dim);">
-              <span style="width:48px;height:48px;display:inline-flex;">${ICONS.inbox}</span>
+              <span style="width:48px;height:48px;display:inline-flex;">${ICONS.check}</span>
               <div style="font-size:15px;">${escapeHtml(labels[currentTab] || 'لا يوجد أعضاء')}</div>
             </div>
           </td>
@@ -410,7 +382,7 @@
             `}
           </td>
           <td style="padding:14px 12px;">
-            <span class="branch-cell">${escapeHtml(branchName)}</span>
+            <span class="branch-cell" style="display:inline-block;padding:4px 10px;background:rgba(var(--accent-rgb),0.06);border:1px solid rgba(var(--accent-rgb),0.18);border-radius:100px;font-size:11.5px;color:var(--text-muted);font-weight:600;white-space:nowrap;">${escapeHtml(branchName)}</span>
           </td>
           <td style="padding:14px 12px;">
             <span style="display:inline-block;padding:4px 10px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:100px;font-size:11.5px;color:#22c55e;font-weight:600;white-space:nowrap;">
@@ -449,7 +421,7 @@
     tbody.querySelectorAll('tr[data-id]').forEach(tr => {
       tr.addEventListener('click', (e) => {
         if (e.target.closest('.row-btn')) return;
-        openRenewModal(tr.dataset.id);
+        window.openRenewModal(tr.dataset.id);
       });
       tr.addEventListener('mouseenter', () => { tr.style.background = 'rgba(var(--accent-rgb), 0.04)'; });
       tr.addEventListener('mouseleave', () => { tr.style.background = ''; });
@@ -460,7 +432,7 @@
         e.stopPropagation();
         const action = btn.dataset.action;
         const id = btn.dataset.id;
-        if (action === 'renew') openRenewModal(id);
+        if (action === 'renew') window.openRenewModal(id);
         else if (action === 'view') {
           window.location.href = `members.html?id=${id}`;
         }
@@ -552,7 +524,7 @@
   /* ============================================
      RENEW MODAL
      ============================================ */
-  function openRenewModal(memberId) {
+  window.openRenewModal = function (memberId) {
     const modal = document.getElementById('renewModal');
     if (!modal) return;
 
@@ -572,7 +544,7 @@
 
     modal.classList.add('open');
     document.body.style.overflow = 'hidden';
-  }
+  };
 
   window.closeRenewModal = function () {
     const modal = document.getElementById('renewModal');
@@ -616,19 +588,16 @@
 
       if (error) throw error;
 
-      // Add subscription record
       try {
         await client.from('membership_subscriptions').insert([{
           member_id: memberId,
           start_date: startDate,
           end_date: endDate,
           amount: amount,
-          is_active: true,
-          created_by: currentUser.id
+          is_active: true
         }]);
       } catch (e) {}
 
-      // Add payment record
       if (amount > 0) {
         try {
           await client.from('payments').insert([{
@@ -636,22 +605,20 @@
             amount: amount,
             payment_method: 'cash',
             status: 'confirmed',
-            notes: `تجديد لمدة ${months} شهر`,
-            created_by: currentUser.id
+            notes: `تجديد لمدة ${months} شهر`
           }]);
         } catch (e) {}
       }
 
       showToast('تم التجديد بنجاح', 'success');
 
-      closeRenewModal();
+      window.closeRenewModal();
       await loadMembers();
       await loadSummary();
 
       if (window.Realtime) {
         window.Realtime.sendBroadcast('subscription-renewed', { memberId });
       }
-
     } catch (err) {
       console.error('[Subscriptions] Renew error:', err);
       showToast('فشل: ' + err.message, 'error');
@@ -664,7 +631,7 @@
   }
 
   /* ============================================
-     BULK RENEW MODAL
+     BULK RENEW
      ============================================ */
   window.openBulkRenewModal = function () {
     const modal = document.getElementById('bulkRenewModal');
@@ -727,19 +694,16 @@
             })
             .eq('id', m.id);
 
-          // Subscription record
           try {
             await client.from('membership_subscriptions').insert([{
               member_id: m.id,
               start_date: startDate,
               end_date: endDate,
               amount: amount,
-              is_active: true,
-              created_by: currentUser.id
+              is_active: true
             }]);
           } catch (e) {}
 
-          // Payment record
           if (amount > 0) {
             try {
               await client.from('payments').insert([{
@@ -747,8 +711,7 @@
                 amount: amount,
                 payment_method: 'cash',
                 status: 'confirmed',
-                notes: `تجديد جماعي لمدة ${months} شهر`,
-                created_by: currentUser.id
+                notes: `تجديد جماعي لمدة ${months} شهر`
               }]);
             } catch (e) {}
           }
@@ -765,14 +728,13 @@
         showToast(`تم تجديد ${successCount} عضو — فشل ${errorCount}`, 'warning', 4000);
       }
 
-      closeBulkRenewModal();
+      window.closeBulkRenewModal();
       await loadMembers();
       await loadSummary();
 
       if (window.Realtime) {
         window.Realtime.sendBroadcast('bulk-renewed', { count: successCount });
       }
-
     } catch (err) {
       console.error('[Subscriptions] Bulk renew error:', err);
       showToast('فشل: ' + err.message, 'error');
@@ -851,10 +813,9 @@
   }
 
   /* ============================================
-     SETUP LISTENERS
+     LISTENERS
      ============================================ */
   function setupListeners() {
-    // Tabs
     document.querySelectorAll('[data-tab-btn]').forEach(btn => {
       btn.addEventListener('click', () => {
         const tab = btn.dataset.tabBtn;
@@ -869,7 +830,6 @@
       });
     });
 
-    // Branch filter
     const branchFilter = document.getElementById('branchFilter');
     if (branchFilter) {
       branchFilter.addEventListener('change', (e) => {
@@ -879,7 +839,6 @@
       });
     }
 
-    // Gov filter
     const govFilter = document.getElementById('govFilter');
     if (govFilter) {
       govFilter.addEventListener('change', (e) => {
@@ -889,17 +848,15 @@
       });
     }
 
-    // Days filter
     const daysFilter = document.getElementById('daysFilter');
     if (daysFilter) {
-      daysFilter.addEventListener('change', (e) => {
+      daysFilter.addEventListener('change', async (e) => {
         soonDays = parseInt(e.target.value) || DEFAULT_SOON_DAYS;
         await loadMembers();
         await loadSummary();
       });
     }
 
-    // Search
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
       let t = null;
@@ -913,7 +870,6 @@
       });
     }
 
-    // Refresh
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) {
       refreshBtn.addEventListener('click', async () => {
@@ -925,15 +881,12 @@
       });
     }
 
-    // Export
     const exportBtn = document.getElementById('exportCsvBtn');
     if (exportBtn) exportBtn.addEventListener('click', exportCSV);
 
-    // Print
     const printBtn = document.getElementById('printBtn');
     if (printBtn) printBtn.addEventListener('click', () => window.print());
 
-    // Bulk renew
     const bulkRenewBtn = document.getElementById('bulkRenewBtn');
     if (bulkRenewBtn) bulkRenewBtn.addEventListener('click', () => window.openBulkRenewModal());
 
@@ -943,7 +896,6 @@
     const confirmRenewBtn = document.getElementById('confirmRenewBtn');
     if (confirmRenewBtn) confirmRenewBtn.addEventListener('click', confirmRenew);
 
-    // Logout
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
@@ -953,7 +905,6 @@
       });
     }
 
-    // Modal backdrops
     ['renewModal', 'bulkRenewModal'].forEach(id => {
       const modal = document.getElementById(id);
       if (!modal) return;
