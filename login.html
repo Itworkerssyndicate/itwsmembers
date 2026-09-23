@@ -296,6 +296,7 @@
     font-weight: 600;
     color: var(--accent);
     transition: all 0.2s;
+    text-decoration: none;
   }
 
   .forgot-link:hover {
@@ -326,6 +327,65 @@
     flex: 1;
     height: 1px;
     background: linear-gradient(to right, transparent, var(--border), transparent);
+  }
+
+  /* Signup CTA */
+  .signup-cta {
+    padding: 16px 18px;
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.06), rgba(var(--accent-2-rgb), 0.04));
+    border: 1.5px dashed rgba(var(--accent-rgb), 0.3);
+    border-radius: var(--radius-md);
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .signup-cta .cta-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .signup-cta .cta-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+
+  .signup-cta .btn-signup {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(var(--accent-rgb), 0.1);
+    border: 1.5px solid rgba(var(--accent-rgb), 0.4);
+    border-radius: 10px;
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.25s;
+    width: 100%;
+  }
+
+  .signup-cta .btn-signup:hover {
+    background: rgba(var(--accent-rgb), 0.2);
+    transform: translateY(-2px);
+    box-shadow: var(--glow-accent);
+  }
+
+  .signup-cta .btn-signup svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   /* Footer note */
@@ -388,6 +448,23 @@
   }
 
   .redirect-info.show { display: block; }
+
+  /* Inactive notice */
+  .inactive-notice {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 12.5px;
+    color: var(--warning);
+    padding: 12px 16px;
+    background: rgba(var(--warning-rgb), 0.08);
+    border: 1.5px solid rgba(var(--warning-rgb), 0.35);
+    border-radius: var(--radius-md);
+    line-height: 1.7;
+    display: none;
+  }
+
+  .inactive-notice.show { display: block; }
+  .inactive-notice strong { color: var(--warning); font-weight: 700; }
 
   /* Responsive */
   @media (max-width: 480px) {
@@ -528,10 +605,29 @@
 
       <div class="redirect-info" id="redirectInfo"></div>
 
+      <div class="inactive-notice" id="inactiveNotice">
+        <strong>حسابك غير مفعّل بعد</strong><br>
+        تم إرسال طلبك إلى النقيب العام. سيتم تفعيل حسابك قريبًا.<br>
+        للاستفسار، تواصل مع النقيب العام.
+      </div>
+
     </form>
 
     <!-- Divider -->
     <div class="divider">أو</div>
+
+    <!-- Signup CTA -->
+    <div class="signup-cta">
+      <div class="cta-title">ليس لديك حساب؟</div>
+      <div class="cta-desc">قدّم طلب حساب جديد للانضمام إلى فريق العمل الإداري</div>
+      <a href="signup.html" class="btn-signup">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        <span>طلب حساب جديد</span>
+      </a>
+    </div>
 
     <div class="login-footer">
       عضو جديد؟ <a href="apply.html">قدّم طلب عضويتك من هنا</a>
@@ -736,6 +832,16 @@
     }
   }
 
+  function showInactiveNotice() {
+    const el = document.getElementById('inactiveNotice');
+    if (el) el.classList.add('show');
+  }
+
+  function hideInactiveNotice() {
+    const el = document.getElementById('inactiveNotice');
+    if (el) el.classList.remove('show');
+  }
+
   /* ============================================
      WAIT FOR SUPABASE
      ============================================ */
@@ -769,20 +875,13 @@
      ============================================ */
   function getRedirectPath(role) {
     const routes = {
-      // الأدوار الأساسية
       'head': 'admin.html',
       'vice_president': 'admin.html',
       'deputy': 'admin.html',
       'committee': 'dashboard.html',
-
-      // المحافظات
       'governorate_head': 'governorate.html',
       'governorate_board': 'governorate.html',
-
-      // الفروع
       'branches_manager': 'branches.html',
-
-      // اللجان
       'social_committee_head': 'social-committee.html',
       'social_committee_vice': 'social-committee.html',
       'public_relations_head': 'public-relations.html',
@@ -849,6 +948,7 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       clearAlert();
+      hideInactiveNotice();
 
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
@@ -895,7 +995,7 @@
           }
         } catch (err) {}
 
-        // 3) جلب بيانات المستخدم (الدور + الصفة)
+        // 3) جلب بيانات المستخدم (الدور + الصفة + is_active)
         let role = 'committee';
         let position = '';
         let fullName = '';
@@ -919,7 +1019,11 @@
         // 4) التأكد إن الحساب نشط
         if (!isActive) {
           await client.auth.signOut();
-          throw new Error('هذا الحساب معطّل. تواصل مع النقيب العام.');
+          showAlert('warning', 'حسابك غير مفعّل بعد');
+          showInactiveNotice();
+          loginBtn.disabled = false;
+          loginBtn.innerHTML = originalHtml;
+          return;
         }
 
         // 5) تسجيل آخر دخول
