@@ -18,6 +18,9 @@
 <link rel="stylesheet" href="css/style.css" />
 
 <style>
+  /* ============================================
+     PAGE-SPECIFIC: ADMIN
+     ============================================ */
   body { padding: 100px 0 40px; }
 
   .admin-wrap {
@@ -28,6 +31,7 @@
     z-index: 10;
   }
 
+  /* Page header */
   .page-header {
     display: flex;
     align-items: center;
@@ -37,6 +41,7 @@
     flex-wrap: wrap;
   }
   .page-header-info { flex: 1; min-width: 240px; }
+
   .page-header-title {
     font-family: 'Tajawal', sans-serif;
     font-size: clamp(24px, 3.5vw, 32px);
@@ -82,6 +87,7 @@
   .user-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
   .user-role { font-size: 11.5px; color: #f59e0b; letter-spacing: 0.5px; font-weight: 600; }
 
+  /* Tabs */
   .tabs-nav {
     display: flex;
     gap: 6px;
@@ -139,6 +145,7 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
+  /* Settings */
   .settings-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -185,14 +192,14 @@
   }
   .settings-card-sub { font-size: 12px; color: var(--text-dim); }
 
+  /* Logo */
   .logo-upload-area {
     display: flex;
     align-items: center;
     gap: 20px;
     flex-wrap: wrap;
   }
-  #logoPreview,
-  #headPhotoPreview {
+  #logoPreview, #headPhotoPreview {
     width: 120px; height: 120px;
     border-radius: var(--radius-lg);
     background: rgba(0, 0, 0, 0.4);
@@ -203,8 +210,7 @@
     transition: all 0.25s;
   }
   #headPhotoPreview { border-radius: 50%; }
-  #logoPreview.has-logo,
-  #headPhotoPreview.has-photo {
+  #logoPreview.has-logo, #headPhotoPreview.has-photo {
     border-style: solid;
     border-color: var(--accent);
     box-shadow: var(--glow-accent);
@@ -226,6 +232,7 @@
     margin-bottom: 4px;
   }
 
+  /* Toggle */
   .toggle-row {
     display: flex;
     align-items: center;
@@ -281,6 +288,7 @@
     background: #000;
   }
 
+  /* Save bar */
   .save-bar {
     position: sticky;
     bottom: 20px;
@@ -317,6 +325,7 @@
     flex-wrap: wrap;
   }
 
+  /* Table */
   .table-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -387,34 +396,8 @@
     background: rgba(var(--danger-rgb), 0.2);
     transform: translateY(-2px);
   }
-  .row-btn.approve-btn {
-    background: rgba(var(--success-rgb), 0.08);
-    border-color: rgba(var(--success-rgb), 0.25);
-    color: var(--success);
-  }
-  .row-btn.approve-btn:hover {
-    background: rgba(var(--success-rgb), 0.2);
-    transform: translateY(-2px);
-  }
-  .row-btn.reject-btn {
-    background: rgba(var(--danger-rgb), 0.08);
-    border-color: rgba(var(--danger-rgb), 0.25);
-    color: var(--danger);
-  }
-  .row-btn.reject-btn:hover {
-    background: rgba(var(--danger-rgb), 0.2);
-    transform: translateY(-2px);
-  }
-  .row-btn.pass-btn {
-    background: rgba(245, 158, 11, 0.08);
-    border-color: rgba(245, 158, 11, 0.25);
-    color: #f59e0b;
-  }
-  .row-btn.pass-btn:hover {
-    background: rgba(245, 158, 11, 0.2);
-    transform: translateY(-2px);
-  }
 
+  /* Role badge */
   .role-badge {
     display: inline-flex;
     align-items: center;
@@ -469,6 +452,7 @@
     background: currentColor;
   }
 
+  /* Status badge */
   .status-badge {
     display: inline-flex;
     align-items: center;
@@ -506,6 +490,7 @@
     background: currentColor;
   }
 
+  /* Users filter tabs */
   .users-filter-tabs {
     display: flex;
     gap: 6px;
@@ -561,6 +546,7 @@
     color: #000;
   }
 
+  /* Modal */
   .modal-content { max-height: 90vh; }
   .modal-header-custom {
     padding: 20px 24px;
@@ -606,6 +592,7 @@
     stroke-width: 2; stroke-linecap: round;
   }
 
+  /* Select optgroup */
   select optgroup {
     background: var(--bg-2);
     color: var(--accent);
@@ -619,190 +606,7 @@
     padding: 4px 8px;
   }
 
-  /* Committee positions grid */
-  .positions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 14px;
-    margin-top: 16px;
-  }
-  .position-card {
-    padding: 16px;
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-md);
-    transition: all 0.25s;
-  }
-  .position-card:hover {
-    border-color: rgba(var(--accent-rgb), 0.35);
-    background: rgba(var(--accent-rgb), 0.04);
-  }
-  .position-label {
-    font-size: 11.5px;
-    color: var(--text-dim);
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .position-label .pos-num {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px; height: 20px;
-    border-radius: 6px;
-    background: rgba(var(--accent-rgb), 0.12);
-    color: var(--accent);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 700;
-  }
-  .position-value {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-  .position-sub {
-    font-size: 11.5px;
-    color: var(--text-muted);
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .position-empty {
-    color: var(--text-dim);
-    font-style: italic;
-    font-weight: 500;
-  }
-  .position-actions {
-    margin-top: 10px;
-    display: flex;
-    gap: 6px;
-  }
-  .position-actions button {
-    flex: 1;
-    padding: 6px 10px;
-    background: rgba(var(--accent-rgb), 0.08);
-    border: 1px solid rgba(var(--accent-rgb), 0.25);
-    border-radius: 6px;
-    color: var(--accent);
-    font-family: inherit;
-    font-size: 11.5px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .position-actions button:hover {
-    background: rgba(var(--accent-rgb), 0.18);
-  }
-  .position-actions button.remove {
-    background: rgba(var(--danger-rgb), 0.08);
-    border-color: rgba(var(--danger-rgb), 0.25);
-    color: var(--danger);
-  }
-  .position-actions button.remove:hover {
-    background: rgba(var(--danger-rgb), 0.18);
-  }
-
-  /* Icon picker */
-  .icon-picker {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
-    gap: 8px;
-    padding: 12px;
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-md);
-    max-height: 200px;
-    overflow-y: auto;
-  }
-  .icon-pick-item {
-    width: 44px; height: 44px;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .icon-pick-item:hover {
-    background: rgba(var(--accent-rgb), 0.1);
-    border-color: rgba(var(--accent-rgb), 0.3);
-  }
-  .icon-pick-item.selected {
-    background: rgba(var(--accent-rgb), 0.18);
-    border-color: var(--accent);
-    box-shadow: var(--glow-accent);
-  }
-  .icon-pick-item svg {
-    width: 22px; height: 22px;
-    stroke: var(--text-muted); fill: none;
-    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
-  }
-  .icon-pick-item.selected svg { stroke: var(--accent); }
-
-  /* Feature preview card */
-  .feature-preview-card {
-    padding: 16px;
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-md);
-    position: relative;
-  }
-  .feature-preview-card .feat-icon {
-    width: 40px; height: 40px;
-    border-radius: var(--radius-sm);
-    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-2-rgb), 0.15));
-    border: 1px solid rgba(var(--accent-rgb), 0.3);
-    display: flex; align-items: center; justify-content: center;
-    margin-bottom: 10px;
-  }
-  .feature-preview-card .feat-icon svg {
-    width: 20px; height: 20px;
-    stroke: var(--accent); fill: none;
-    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
-  }
-  .feature-preview-card .feat-title {
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-  .feature-preview-card .feat-text {
-    font-size: 12px;
-    color: var(--text-muted);
-    line-height: 1.5;
-  }
-  .feature-preview-card .feat-actions {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    display: flex;
-    gap: 4px;
-  }
-  .feature-preview-card .feat-actions button {
-    width: 26px; height: 26px;
-    border-radius: 6px;
-    border: 1px solid;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .feature-preview-card .feat-actions button svg {
-    width: 12px; height: 12px;
-    stroke: currentColor; fill: none;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-  }
-  .feature-preview-card .feat-actions .edit-f {
-    background: rgba(var(--accent-rgb), 0.08);
-    border-color: rgba(var(--accent-rgb), 0.25);
-    color: var(--accent);
-  }
-  .feature-preview-card .feat-actions .del-f {
-    background: rgba(var(--danger-rgb), 0.08);
-    border-color: rgba(var(--danger-rgb), 0.25);
-    color: var(--danger);
-  }
-
+  /* Responsive */
   @media (max-width: 1024px) {
     .settings-section { grid-template-columns: 1fr; }
   }
@@ -820,7 +624,6 @@
     .logo-upload-area { flex-direction: column; align-items: stretch; }
     #logoPreview, #headPhotoPreview { margin: 0 auto; }
     .users-filter-tab { padding: 8px 12px; font-size: 12px; }
-    .positions-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -854,6 +657,7 @@
       <a href="dashboard.html">لوحة اللجنة</a>
       <a href="members.html">الأعضاء</a>
       <a href="revenue.html">الإيرادات</a>
+      <a href="expenses.html">المصروفات</a>
       <a href="subscriptions.html">الاشتراكات</a>
       <a href="head-approval.html">اعتماد النقيب</a>
       <a href="admin.html" class="active">لوحة النقيب</a>
@@ -1500,75 +1304,30 @@
         </div>
       </div>
 
-      <!-- FEATURES EDITOR -->
+      <!-- TYPES SECTION -->
       <div class="settings-card full-width">
         <div class="settings-card-header">
           <div class="settings-card-icon">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
-          </div>
-          <div style="flex:1;">
-            <div class="settings-card-title">المميزات (كروت الصفحة الرئيسية)</div>
-            <div class="settings-card-sub">أضف، عدّل، أو احذف كروت المميزات</div>
-          </div>
-          <button type="button" class="btn btn-primary btn-sm" id="addFeatureBtn">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            <span>إضافة كارت</span>
-          </button>
-        </div>
-
-        <div class="features-preview-list" id="featuresPreviewList" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));gap:14px;">
-          <div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-dim);">
-            لا توجد كروت بعد. اضغط "إضافة كارت" لإضافة أول كارت.
-          </div>
-        </div>
-      </div>
-
-      <!-- ABOUT CARD -->
-      <div class="settings-card full-width">
-        <div class="settings-card-header">
-          <div class="settings-card-icon">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="16" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12.01" y2="8" />
+              <rect x="2" y="7" width="20" height="14" rx="2" />
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
             </svg>
           </div>
           <div>
-            <div class="settings-card-title">كارت "عن النقابة"</div>
-            <div class="settings-card-sub">كارت اختياري يظهر في الصفحة الرئيسية</div>
+            <div class="settings-card-title">قسم أنواع العضوية</div>
+            <div class="settings-card-sub">العنوان والوصف اللي فوق كروت الأنواع</div>
           </div>
-        </div>
-
-        <div class="toggle-row" style="border-bottom:none;padding-top:0;padding-bottom:16px;">
-          <div class="toggle-row-info">
-            <div class="toggle-row-label">تفعيل كارت "عن النقابة"</div>
-            <div class="toggle-row-desc">سيظهر بين الهيرو والمميزات</div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="setting_about_card_enabled" data-setting="about_card_enabled" />
-            <span class="toggle-slider"></span>
-          </label>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
           <div class="form-group" style="margin:0;">
-            <label for="setting_about_card_title">العنوان</label>
-            <input type="text" id="setting_about_card_title" data-setting="about_card_title" placeholder="عن النقابة" />
+            <label for="setting_types_title">عنوان القسم</label>
+            <input type="text" id="setting_types_title" data-setting="types_title" placeholder="أنواع العضوية" />
           </div>
           <div class="form-group" style="margin:0;">
-            <label for="setting_about_card_logo">رابط اللوجو (اختياري)</label>
-            <input type="text" id="setting_about_card_logo" data-setting="about_card_logo" placeholder="https://..." dir="ltr" style="text-align:right;" />
+            <label for="setting_types_subtitle">وصف القسم</label>
+            <input type="text" id="setting_types_subtitle" data-setting="types_subtitle" placeholder="اختر النوع المناسب لك وابدأ التقديم فورًا" />
           </div>
-        </div>
-
-        <div class="form-group" style="margin-top:14px;margin-bottom:0;">
-          <label for="setting_about_card_text">النص</label>
-          <textarea id="setting_about_card_text" data-setting="about_card_text" rows="3" placeholder="وصف مختصر عن النقابة..."></textarea>
         </div>
       </div>
 
@@ -1602,7 +1361,8 @@
           </div>
         </div>
 
-        <div class="step-editor-card" data-step-num="01" style="padding:18px;background:rgba(0,0,0,0.25);border:1px solid var(--border-soft);border-radius:var(--radius-md);margin-bottom:14px;position:relative;">
+        <!-- Step 1 -->
+        <div style="padding:18px;background:rgba(0,0,0,0.25);border:1px solid var(--border-soft);border-radius:var(--radius-md);margin-bottom:14px;">
           <div style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
             <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#000;border-radius:50%;font-size:12px;font-weight:800;">1</span>
             <span>الخطوة الأولى</span>
@@ -1619,7 +1379,8 @@
           </div>
         </div>
 
-        <div class="step-editor-card" data-step-num="02" style="padding:18px;background:rgba(0,0,0,0.25);border:1px solid var(--border-soft);border-radius:var(--radius-md);margin-bottom:14px;position:relative;">
+        <!-- Step 2 -->
+        <div style="padding:18px;background:rgba(0,0,0,0.25);border:1px solid var(--border-soft);border-radius:var(--radius-md);margin-bottom:14px;">
           <div style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
             <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#000;border-radius:50%;font-size:12px;font-weight:800;">2</span>
             <span>الخطوة الثانية</span>
@@ -1636,7 +1397,8 @@
           </div>
         </div>
 
-        <div class="step-editor-card" data-step-num="03" style="padding:18px;background:rgba(0,0,0,0.25);border:1px solid var(--border-soft);border-radius:var(--radius-md);margin-bottom:14px;position:relative;">
+        <!-- Step 3 -->
+        <div style="padding:18px;background:rgba(0,0,0,0.25);border:1px solid var(--border-soft);border-radius:var(--radius-md);margin-bottom:14px;">
           <div style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
             <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#000;border-radius:50%;font-size:12px;font-weight:800;">3</span>
             <span>الخطوة الثالثة</span>
@@ -1653,7 +1415,8 @@
           </div>
         </div>
 
-        <div class="step-editor-card" data-step-num="04" style="padding:18px;background:rgba(0,0,0,0.25);border:1px solid var(--border-soft);border-radius:var(--radius-md);position:relative;">
+        <!-- Step 4 -->
+        <div style="padding:18px;background:rgba(0,0,0,0.25);border:1px solid var(--border-soft);border-radius:var(--radius-md);">
           <div style="font-family:'Tajawal',sans-serif;font-size:14px;font-weight:800;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
             <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#000;border-radius:50%;font-size:12px;font-weight:800;">4</span>
             <span>الخطوة الرابعة</span>
@@ -1787,8 +1550,8 @@
               <th>الاسم</th>
               <th>البريد</th>
               <th>الدور</th>
-              <th>المصدر</th>
-              <th>آخر تسجيل دخول</th>
+              <th>الصفة</th>
+              <th>المحافظة</th>
               <th>الحالة</th>
               <th style="text-align:center;">إجراءات</th>
             </tr>
@@ -1853,7 +1616,7 @@
   </div>
 
   <!-- ============================================
-       TAB 5: COMMITTEES (المجالس)
+       TAB 5: COMMITTEES
        ============================================ -->
   <div data-tab-content="committees" style="display:none;">
     <div class="table-card" style="margin-bottom:20px;">
@@ -2080,7 +1843,7 @@
           </svg>
           <span>آخر الإجراءات</span>
         </div>
-        <div class="table-card-count" id="actionsCount">—</div>
+        <div style="font-size:12.5px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;" id="actionsCount">—</div>
       </div>
 
       <div class="table-wrap">
@@ -2214,14 +1977,14 @@
         </select>
       </div>
 
-      <div class="form-group" id="userPositionField">
+      <div class="form-group">
         <label for="userPosition">الصفة (اختياري)</label>
         <input type="text" id="userPosition" placeholder="مثال: أمين عام محافظة القاهرة" />
         <span class="form-hint">نص حر يظهر بجانب اسم المستخدم</span>
       </div>
 
       <div class="form-group" id="userGovernorateField" style="display:none;">
-        <label for="userGovernorate">المحافظة <span style="color:var(--danger);">*</span></label>
+        <label for="userGovernorate">المحافظة</label>
         <select id="userGovernorate">
           <option value="">-- اختر المحافظة --</option>
         </select>
@@ -2448,59 +2211,6 @@
 </div>
 
 <!-- ============================================
-     FEATURE MODAL
-     ============================================ -->
-<div id="featureModal" class="modal modal-sm">
-  <div class="modal-content">
-    <div class="modal-header-custom">
-      <h3 id="featureModalTitle">إضافة كارت مميزات</h3>
-      <button type="button" class="close-btn" onclick="closeFeatureModal()">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
-    </div>
-
-    <div class="modal-body">
-      <input type="hidden" id="featureIndex" />
-
-      <div class="form-group">
-        <label for="featureTitle">العنوان</label>
-        <input type="text" id="featureTitle" placeholder="مثال: تقديم في دقائق" />
-      </div>
-
-      <div class="form-group">
-        <label for="featureText">الوصف</label>
-        <textarea id="featureText" rows="2" placeholder="وصف مختصر..."></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>الأيقونة</label>
-        <div class="icon-picker" id="iconPicker"></div>
-        <input type="hidden" id="featureIcon" value="zap" />
-      </div>
-
-      <div class="form-group" style="margin-bottom:0;">
-        <label for="featureLogo">أو رابط صورة (اختياري)</label>
-        <input type="text" id="featureLogo" placeholder="https://..." dir="ltr" style="text-align:right;" />
-        <span class="form-hint">لو حطيت رابط صورة، هتتغلب على الأيقونة</span>
-      </div>
-    </div>
-
-    <div class="modal-footer-custom">
-      <button type="button" class="btn btn-ghost" onclick="closeFeatureModal()">إلغاء</button>
-      <button type="button" class="btn btn-primary" id="saveFeatureBtn">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-        <span>حفظ</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================
      EXPENSE CATEGORY MODAL
      ============================================ -->
 <div id="expCatModal" class="modal modal-sm">
@@ -2578,7 +2288,7 @@
     <div class="modal-body">
       <input type="hidden" id="changePassUserId" />
 
-      <div class="notice info" style="padding:12px 16px;background:rgba(var(--accent-rgb),0.06);border:1px solid rgba(var(--accent-rgb),0.25);border-radius:10px;font-size:12.5px;line-height:1.7;margin-bottom:16px;color:var(--accent);">
+      <div style="padding:12px 16px;background:rgba(var(--accent-rgb),0.06);border:1px solid rgba(var(--accent-rgb),0.25);border-radius:10px;font-size:12.5px;line-height:1.7;margin-bottom:16px;color:var(--accent);">
         <strong>ملاحظة:</strong> كلمة المرور الجديدة سيتم تطبيقها فورًا. المستخدم سيدخل بها في المرة القادمة.
       </div>
 
