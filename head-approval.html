@@ -31,7 +31,6 @@
     z-index: 10;
   }
 
-  /* Page header */
   .page-header {
     display: flex;
     align-items: center;
@@ -87,7 +86,6 @@
   .user-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
   .user-role { font-size: 11.5px; color: #f59e0b; letter-spacing: 0.5px; font-weight: 600; }
 
-  /* Stats */
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -122,7 +120,6 @@
     color: var(--text-muted);
   }
 
-  /* Filters */
   .filters-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -186,7 +183,6 @@
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
 
-  /* Actions */
   .actions-row {
     display: flex;
     gap: 10px;
@@ -194,7 +190,6 @@
     margin-bottom: 20px;
   }
 
-  /* Table */
   .table-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -243,12 +238,7 @@
     -webkit-backdrop-filter: blur(10px);
   }
 
-  /* Member cell */
-  .member-cell {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+  .member-cell { display: flex; align-items: center; gap: 10px; }
   .member-avatar {
     width: 38px; height: 38px;
     border-radius: var(--radius-sm);
@@ -277,7 +267,6 @@
     color: var(--text-dim);
   }
 
-  /* Tracking cell */
   .tracking-cell {
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px;
@@ -286,7 +275,6 @@
     letter-spacing: 0.5px;
   }
 
-  /* Status badge */
   .status-badge {
     display: inline-flex;
     align-items: center;
@@ -329,7 +317,6 @@
     color: var(--success);
   }
 
-  /* Health care badge */
   .hc-badge {
     display: inline-flex;
     align-items: center;
@@ -349,7 +336,6 @@
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
 
-  /* Actions */
   .row-actions {
     display: flex;
     gap: 6px;
@@ -396,13 +382,11 @@
     transform: translateY(-2px);
   }
 
-  /* Pagination */
   #paginationBox {
     padding: 16px 22px;
     border-top: 1px solid var(--border-soft);
   }
 
-  /* Modal */
   .modal-content { max-height: 90vh; }
   .modal-header-custom {
     padding: 20px 24px;
@@ -448,7 +432,6 @@
     stroke-width: 2; stroke-linecap: round;
   }
 
-  /* Notice */
   .notice {
     padding: 12px 16px;
     border-radius: 10px;
@@ -467,32 +450,6 @@
     color: var(--warning);
   }
 
-  /* Detail grid */
-  .detail-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .detail-item {
-    padding: 12px 14px;
-    background: rgba(10, 12, 20, 0.5);
-    border: 1px solid var(--border-soft);
-    border-radius: 10px;
-  }
-  .detail-item-label {
-    font-size: 11.5px;
-    color: var(--text-dim);
-    margin-bottom: 4px;
-  }
-  .detail-item-value {
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--text);
-    word-break: break-word;
-  }
-
-  /* Upload card area */
   .upload-card-area {
     padding: 24px;
     background: rgba(0, 0, 0, 0.3);
@@ -516,8 +473,7 @@
   .upload-card-area input[type="file"] { display: none; }
 
   .upload-card-icon {
-    width: 60px;
-    height: 60px;
+    width: 60px; height: 60px;
     margin: 0 auto 12px;
     border-radius: 50%;
     background: rgba(var(--accent-rgb), 0.1);
@@ -564,29 +520,9 @@
     margin: 0 auto;
   }
 
-  /* Empty state */
-  .empty-state {
-    padding: 60px 20px;
-    text-align: center;
-    color: var(--text-dim);
-  }
-  .empty-state svg {
-    width: 48px; height: 48px;
-    stroke: var(--text-dim);
-    fill: none;
-    stroke-width: 1.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    margin: 0 auto 16px;
-    display: block;
-    opacity: 0.5;
-  }
-
-  /* Responsive */
   @media (max-width: 1024px) {
     .filters-grid { grid-template-columns: 1fr 1fr; }
   }
-
   @media (max-width: 768px) {
     body { padding: 90px 0 30px; }
     .approval-wrap { padding: 0 16px; }
@@ -599,7 +535,6 @@
     .stats-grid { grid-template-columns: 1fr 1fr; }
   }
 
-  /* Print */
   @media print {
     .navbar, .actions-row, .filters-card, #paginationBox,
     .row-actions, .footer, .bg-grid, .bg-glow, .bg-layer,
@@ -677,7 +612,6 @@
 <!-- MAIN -->
 <div class="approval-wrap">
 
-  <!-- HEADER -->
   <div class="page-header">
     <div class="page-header-info">
       <div class="page-header-title">اعتماد النقيب العام</div>
@@ -850,9 +784,7 @@
 
 </div>
 
-<!-- ============================================
-     APPROVE / ASSIGN MEMBERSHIP NO MODAL
-     ============================================ -->
+<!-- ASSIGN MODAL -->
 <div id="assignModal" class="modal modal-sm">
   <div class="modal-content">
 
@@ -918,9 +850,7 @@
   </div>
 </div>
 
-<!-- ============================================
-     CARD UPLOAD MODAL
-     ============================================ -->
+<!-- CARD UPLOAD MODAL -->
 <div id="cardModal" class="modal modal-sm">
   <div class="modal-content">
 
@@ -998,6 +928,7 @@
 <script src="js/theme-manager.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/realtime.js"></script>
+<script src="js/security.js"></script>
 <script src="js/head-approval.js"></script>
 
 <script>
@@ -1006,7 +937,6 @@
     if (nav) nav.classList.toggle('open');
   };
 
-  /* Background particles */
   (function () {
     const canvas = document.getElementById('bgCanvas');
     if (!canvas) return;
