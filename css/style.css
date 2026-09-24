@@ -1,7 +1,13 @@
 /* =====================================================
    IT SYNDICATE — MAIN STYLESHEET
-   Version: 4.1.0
+   Version: 5.0.0 (FINAL)
    Path: css/style.css
+   =====================================================
+   - Responsive على كل الأجهزة (Mobile / Tablet / Desktop)
+   - Footer متظبط تمامًا
+   - Buttons responsive
+   - مفيش overflow
+   - دعم iPhone notch
    ===================================================== */
 
 /* ============================================
@@ -19,8 +25,10 @@ html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   overflow-x: hidden;
   width: 100%;
+  max-width: 100vw;
 }
 
 body {
@@ -30,9 +38,11 @@ body {
   color: var(--text);
   background: var(--bg);
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
   max-width: 100vw;
   width: 100%;
+  position: relative;
   transition: background 0.3s ease, color 0.3s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -178,6 +188,7 @@ table {
   margin: 0 auto;
   padding: 0 24px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .container-wide {
@@ -204,6 +215,7 @@ table {
   border-bottom: 1px solid transparent;
   transition: all 0.3s ease;
   width: 100%;
+  max-width: 100vw;
 }
 
 .navbar.scrolled {
@@ -229,6 +241,7 @@ table {
   justify-content: space-between;
   gap: 20px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 /* Logo */
@@ -238,6 +251,7 @@ table {
   gap: 12px;
   flex-shrink: 0;
   min-width: 0;
+  max-width: 100%;
 }
 
 .logo-badge {
@@ -282,6 +296,7 @@ table {
   line-height: 1.2;
   min-width: 0;
   overflow: hidden;
+  max-width: 100%;
 }
 
 .logo-main {
@@ -482,7 +497,6 @@ table {
   flex-shrink: 0;
 }
 
-/* Primary */
 .btn-primary {
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   color: #000;
@@ -499,7 +513,6 @@ table {
   transform: translateY(0);
 }
 
-/* Outline */
 .btn-outline {
   background: transparent;
   border-color: rgba(var(--accent-rgb), 0.4);
@@ -512,7 +525,6 @@ table {
   transform: translateY(-1px);
 }
 
-/* Ghost */
 .btn-ghost {
   background: transparent;
   border-color: var(--border-soft);
@@ -525,7 +537,6 @@ table {
   color: var(--text);
 }
 
-/* Danger */
 .btn-danger {
   background: linear-gradient(135deg, var(--danger), #b91c1c);
   color: #fff;
@@ -536,7 +547,6 @@ table {
   box-shadow: 0 8px 25px rgba(var(--danger-rgb), 0.4);
 }
 
-/* Success */
 .btn-success {
   background: linear-gradient(135deg, #22c55e, #16a34a);
   color: #fff;
@@ -547,7 +557,6 @@ table {
   box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
 }
 
-/* Sizes */
 .btn-sm {
   padding: 8px 14px;
   font-size: 12.5px;
@@ -568,7 +577,6 @@ table {
   height: 17px;
 }
 
-/* Width */
 .w-full {
   width: 100%;
 }
@@ -662,7 +670,6 @@ table {
   line-height: 1.5;
 }
 
-/* Checkbox */
 .form-check {
   display: flex;
   align-items: center;
@@ -811,7 +818,6 @@ tbody td {
   vertical-align: middle;
 }
 
-/* Row buttons */
 .row-actions {
   display: flex;
   gap: 6px;
@@ -871,7 +877,7 @@ tbody td {
 }
 
 /* ============================================
-   BADGES — Role
+   BADGES
    ============================================ */
 .role-badge {
   display: inline-flex;
@@ -936,7 +942,6 @@ tbody td {
   color: #f97316;
 }
 
-/* Treasurer */
 .role-badge.treasurer {
   background: rgba(16, 185, 129, 0.12);
   border-color: #10b981;
@@ -949,9 +954,6 @@ tbody td {
   color: #14b8a6;
 }
 
-/* ============================================
-   BADGES — Status
-   ============================================ */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -996,9 +998,6 @@ tbody td {
   color: #9ca3af;
 }
 
-/* ============================================
-   BADGES — Payment Method
-   ============================================ */
 .payment-method-badge {
   display: inline-flex;
   align-items: center;
@@ -1333,7 +1332,7 @@ tbody td {
 }
 
 /* ============================================
-   ALERTS / TOASTS
+   TOASTS
    ============================================ */
 .toast-container {
   position: fixed;
@@ -1400,21 +1399,23 @@ tbody td {
 }
 
 /* ============================================
-   FOOTER — FIXED FOR MOBILE
+   FOOTER — FINAL FIX
    ============================================ */
 .footer {
   position: relative;
   z-index: 10;
-  margin-top: 60px;
+  margin: 60px 0 0 0;
   padding: 60px 24px 30px;
   border-top: 1px solid var(--border);
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  max-width: 100vw;
   width: 100%;
-  overflow-x: hidden;
+  max-width: 100vw;
   box-sizing: border-box;
+  overflow-x: hidden;
+  direction: rtl;
+  text-align: right;
 }
 
 .footer *,
@@ -1424,15 +1425,32 @@ tbody td {
   max-width: 100%;
 }
 
+.footer .container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .footer-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1.5fr;
   gap: 40px;
   margin-bottom: 40px;
-  max-width: 1280px;
-  margin-left: auto;
-  margin-right: auto;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.footer-col {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .footer-col h4 {
@@ -1442,6 +1460,8 @@ tbody td {
   color: var(--text);
   margin-bottom: 16px;
   letter-spacing: 0.3px;
+  display: block;
+  line-height: 1.3;
 }
 
 .footer-logo {
@@ -1450,10 +1470,12 @@ tbody td {
   gap: 12px;
   margin-bottom: 16px;
   flex-wrap: wrap;
+  max-width: 100%;
 }
 
 .footer-logo > div {
   min-width: 0;
+  max-width: 100%;
   flex: 1 1 auto;
 }
 
@@ -1462,7 +1484,10 @@ tbody td {
   font-size: 14px;
   font-weight: 800;
   color: var(--text);
-  line-height: 1.2;
+  line-height: 1.3;
+  display: block;
+  max-width: 100%;
+  overflow-wrap: break-word;
   word-break: break-word;
 }
 
@@ -1473,6 +1498,9 @@ tbody td {
   letter-spacing: 1.5px;
   font-weight: 600;
   margin-top: 2px;
+  display: block;
+  max-width: 100%;
+  overflow-wrap: break-word;
   word-break: break-word;
 }
 
@@ -1480,15 +1508,27 @@ tbody td {
   font-size: 13px;
   color: var(--text-muted);
   line-height: 1.7;
-  max-width: 400px;
-  word-wrap: break-word;
+  max-width: 100%;
+  display: block;
   overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .footer-links {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.footer-links li {
+  display: block;
+  margin: 0;
+  padding: 0;
 }
 
 .footer-links a {
@@ -1496,12 +1536,12 @@ tbody td {
   color: var(--text-muted);
   font-weight: 600;
   transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  width: fit-content;
+  display: inline-block;
   max-width: 100%;
+  overflow-wrap: break-word;
   word-break: break-word;
+  white-space: normal;
+  line-height: 1.5;
 }
 
 .footer-links a:hover {
@@ -1513,6 +1553,9 @@ tbody td {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
 .footer-contact li {
@@ -1522,6 +1565,8 @@ tbody td {
   font-size: 13px;
   color: var(--text-muted);
   max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .footer-contact li svg {
@@ -1537,10 +1582,18 @@ tbody td {
 }
 
 .footer-contact li span {
-  min-width: 0;
   flex: 1;
-  word-break: break-word;
+  min-width: 0;
+  max-width: 100%;
+  display: block;
   overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.5;
+}
+
+.footer .btn {
+  max-width: 100%;
 }
 
 .footer-bottom {
@@ -1553,23 +1606,24 @@ tbody td {
   flex-wrap: wrap;
   font-size: 12.5px;
   color: var(--text-dim);
+  width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  width: 100%;
+  box-sizing: border-box;
 }
 
 .footer-bottom > div {
+  min-width: 0;
   max-width: 100%;
+  overflow-wrap: break-word;
   word-break: break-word;
+  white-space: normal;
+  line-height: 1.5;
 }
 
 .footer-bottom strong {
   color: var(--accent);
   font-weight: 700;
-}
-
-.footer .btn {
-  max-width: 100%;
 }
 
 /* ============================================
@@ -1703,11 +1757,6 @@ tbody td {
   to { transform: rotate(360deg); }
 }
 
-@keyframes shimmer {
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
-}
-
 .animate-fadeUp { animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 .animate-fadeIn { animation: fadeIn 0.3s ease; }
 .animate-pulse { animation: pulse 2s ease-in-out infinite; }
@@ -1789,15 +1838,19 @@ tbody td {
 }
 
 /* ============================================
-   RESPONSIVE — TABLET
+   RESPONSIVE — TABLET (1024px)
    ============================================ */
 @media (max-width: 1024px) {
   .container {
     padding: 0 20px;
   }
 
+  .nav-container {
+    padding: 0 20px;
+  }
+
   .footer-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.5fr 1fr 1fr;
     gap: 30px;
   }
 
@@ -1812,7 +1865,7 @@ tbody td {
 }
 
 /* ============================================
-   RESPONSIVE — MOBILE
+   RESPONSIVE — MOBILE (768px)
    ============================================ */
 @media (max-width: 768px) {
   body {
@@ -1826,6 +1879,7 @@ tbody td {
   /* Navbar */
   .nav-container {
     padding: 0 16px;
+    gap: 10px;
   }
 
   .logo-main {
@@ -1834,6 +1888,7 @@ tbody td {
 
   .logo-sub {
     font-size: 9px;
+    letter-spacing: 1px;
   }
 
   #mobileToggle {
@@ -1985,54 +2040,65 @@ tbody td {
     transform: translateY(0) scale(1);
   }
 
-  /* ⚡ FOOTER FIX */
+  /* Footer */
   .footer {
     padding: 40px 16px 24px;
-    overflow-x: hidden;
+    margin-top: 40px;
   }
 
   .footer-grid {
-    grid-template-columns: 1fr !important;
-    gap: 28px !important;
-    width: 100% !important;
+    grid-template-columns: 1fr;
+    gap: 28px;
+    margin-bottom: 28px;
   }
 
   .footer-col {
-    width: 100% !important;
-    max-width: 100% !important;
+    text-align: right;
   }
 
   .footer-logo {
-    flex-wrap: wrap;
-    gap: 10px;
+    justify-content: flex-start;
   }
 
-  .footer-logo > div {
-    min-width: 0;
-    flex: 1 1 auto;
+  .footer-logo-main {
+    font-size: 13.5px;
+    line-height: 1.4;
   }
 
-  .footer-logo-main,
   .footer-logo-sub {
-    white-space: normal;
-    word-break: break-word;
+    font-size: 9px;
+    letter-spacing: 1.2px;
+  }
+
+  .footer-desc {
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .footer-col h4 {
+    font-size: 15px;
+    margin-bottom: 14px;
   }
 
   .footer-links a {
-    white-space: normal;
-    word-break: break-word;
+    font-size: 13.5px;
+    padding: 4px 0;
   }
 
   .footer-contact li {
-    align-items: flex-start;
-    flex-wrap: nowrap;
+    font-size: 13px;
+    gap: 8px;
   }
 
   .footer-contact li span {
-    min-width: 0;
-    flex: 1;
-    word-break: break-word;
-    overflow-wrap: break-word;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .footer .btn {
+    width: 100%;
+    justify-content: center;
+    margin-top: 16px;
   }
 
   .footer-bottom {
@@ -2040,19 +2106,14 @@ tbody td {
     align-items: center;
     text-align: center;
     gap: 10px;
-    width: 100%;
+    padding-top: 20px;
   }
 
   .footer-bottom > div {
+    font-size: 12px;
+    text-align: center;
     width: 100%;
-    max-width: 100%;
-    word-break: break-word;
-  }
-
-  .footer .btn {
-    width: 100%;
-    max-width: 100%;
-    justify-content: center;
+    line-height: 1.6;
   }
 
   /* Forms */
@@ -2089,7 +2150,7 @@ tbody td {
 }
 
 /* ============================================
-   RESPONSIVE — SMALL MOBILE
+   RESPONSIVE — SMALL MOBILE (480px)
    ============================================ */
 @media (max-width: 480px) {
   body {
@@ -2097,6 +2158,10 @@ tbody td {
   }
 
   .container {
+    padding: 0 14px;
+  }
+
+  .nav-container {
     padding: 0 14px;
   }
 
@@ -2111,11 +2176,17 @@ tbody td {
 
   .logo-sub {
     font-size: 8.5px;
+    letter-spacing: 0.8px;
   }
 
   .nav-actions .icon-btn {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
+  }
+
+  .nav-actions .icon-btn svg {
+    width: 16px;
+    height: 16px;
   }
 
   .btn {
@@ -2138,36 +2209,43 @@ tbody td {
     font-size: 15px;
   }
 
-  .footer-grid {
-    gap: 24px;
-  }
-
   .footer {
     padding: 30px 14px 20px;
+    margin-top: 30px;
   }
 
-  .footer-col h4 {
-    font-size: 14px;
+  .footer-grid {
+    gap: 24px;
+    margin-bottom: 24px;
   }
 
   .footer-logo-main {
-    font-size: 13px;
+    font-size: 12.5px;
   }
 
   .footer-logo-sub {
-    font-size: 9px;
+    font-size: 8.5px;
   }
 
   .footer-desc {
     font-size: 12.5px;
   }
 
-  .footer-contact li {
+  .footer-col h4 {
+    font-size: 14px;
+  }
+
+  .footer-links a {
+    font-size: 13px;
+  }
+
+  .footer-contact li,
+  .footer-contact li span {
     font-size: 12.5px;
   }
 
-  .footer-bottom {
-    font-size: 12px;
+  .footer-bottom > div {
+    font-size: 11.5px;
   }
 
   .theme-grid {
@@ -2176,6 +2254,119 @@ tbody td {
 
   .row-actions {
     gap: 4px;
+  }
+}
+
+/* ============================================
+   RESPONSIVE — VERY SMALL (360px)
+   ============================================ */
+@media (max-width: 360px) {
+  .container,
+  .nav-container {
+    padding: 0 12px;
+  }
+
+  .logo-badge {
+    width: 32px;
+    height: 32px;
+  }
+
+  .logo-main {
+    font-size: 11px;
+  }
+
+  .logo-sub {
+    font-size: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .footer {
+    padding: 24px 12px 16px;
+  }
+
+  .footer-logo-main {
+    font-size: 12px;
+  }
+
+  .footer-bottom > div {
+    font-size: 11px;
+  }
+}
+
+/* ============================================
+   iPhone NOTCH SUPPORT
+   ============================================ */
+@supports (padding: max(0px)) {
+  .navbar {
+    padding-top: max(14px, env(safe-area-inset-top));
+  }
+
+  .footer {
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  .nav-container {
+    padding-left: max(24px, env(safe-area-inset-left));
+    padding-right: max(24px, env(safe-area-inset-right));
+  }
+}
+
+@media (max-width: 768px) {
+  @supports (padding: max(0px)) {
+    .nav-container {
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+    }
+
+    .container {
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+    }
+  }
+}
+
+/* ============================================
+   LANDSCAPE MODE
+   ============================================ */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero {
+    padding: 100px 16px 40px;
+  }
+
+  .hero-visual {
+    height: 200px;
+  }
+
+  .modal-content {
+    max-height: 85vh;
+  }
+
+  .nav-links {
+    max-height: calc(100vh - 70px);
+  }
+}
+
+/* ============================================
+   LARGE SCREENS
+   ============================================ */
+@media (min-width: 1440px) {
+  .container-wide {
+    max-width: 1520px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .container-wide {
+    max-width: 1720px;
+  }
+
+  body {
+    font-size: 16px;
   }
 }
 
