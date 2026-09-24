@@ -2,9 +2,9 @@
 <html lang="ar" dir="rtl" data-theme="neon-dark">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
 <meta name="theme-color" content="#000000" />
-<meta name="description" content="تسجيل دخول الموظفين — نقابة تكنولوجيا المعلومات والبرمجيات" />
+<meta name="description" content="تسجيل الدخول — نقابة تكنولوجيا المعلومات والبرمجيات" />
 <title>تسجيل الدخول — نقابة تكنولوجيا المعلومات والبرمجيات</title>
 
 <link rel="icon" id="faviconLink" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
@@ -12,375 +12,220 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Alexandria:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 
 <link rel="stylesheet" href="css/themes.css" />
 <link rel="stylesheet" href="css/style.css" />
 
 <style>
   /* ============================================
-     PAGE-SPECIFIC: LOGIN
+     LOGIN PAGE — SPECIFIC STYLES
      ============================================ */
+  
   body {
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-direction: column !important;
+    padding: 80px 16px 30px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ---------- LOGIN CARD ---------- */
+  .login-card {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 28px 22px;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 22px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(var(--accent-rgb), 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 10;
+    animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @media (min-width: 480px) {
+    .login-card {
+      max-width: 420px;
+      padding: 32px 28px;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .login-card {
+      max-width: 440px;
+      padding: 40px 32px;
+    }
+  }
+
+  /* ---------- LOGO ---------- */
+  .login-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .login-logo .logo-badge {
+    width: 68px;
+    height: 68px;
+    border-radius: 18px;
+    flex: 0 0 68px;
+    background: linear-gradient(135deg,
+      rgba(var(--accent-rgb), 0.15),
+      rgba(var(--accent-2-rgb), 0.15));
+    border: 1.5px solid rgba(var(--accent-rgb), 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
-    min-height: 100vh;
-    min-height: 100dvh;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.2);
   }
 
-  /* Corners */
-  .corner {
-    position: fixed;
-    width: 60px;
-    height: 60px;
-    border: 1.5px solid var(--accent);
-    z-index: 10;
-    opacity: 0.5;
-    pointer-events: none;
-    animation: cornerPulse 2.5s ease-in-out infinite;
-  }
-  .corner.tl { top: 15px; left: 15px; border-right: none; border-bottom: none; border-top-left-radius: 8px; }
-  .corner.tr { top: 15px; right: 15px; border-left: none; border-bottom: none; border-top-right-radius: 8px; }
-  .corner.bl { bottom: 15px; left: 15px; border-right: none; border-top: none; border-bottom-left-radius: 8px; }
-  .corner.br { bottom: 15px; right: 15px; border-left: none; border-top: none; border-bottom-right-radius: 8px; }
-
-  @keyframes cornerPulse {
-    0%, 100% { opacity: 0.25; }
-    50%      { opacity: 0.8; }
+  .login-logo .logo-badge img {
+    width: 82%;
+    height: 82%;
+    object-fit: contain;
   }
 
-  /* Back link */
-  .back-link {
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    z-index: 50;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-muted);
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 9px 16px;
-    border-radius: var(--radius-md);
-    transition: all 0.25s;
-    border: 1px solid transparent;
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  .back-link:hover {
-    color: var(--accent);
-    background: rgba(var(--accent-rgb), 0.06);
-    border-color: rgba(var(--accent-rgb), 0.2);
-    transform: translateX(4px);
-  }
-
-  .back-link svg {
-    width: 15px;
-    height: 15px;
-    stroke: currentColor;
+  .login-logo .logo-badge svg {
+    width: 55%;
+    height: 55%;
+    stroke: var(--accent);
     fill: none;
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
-    transition: transform 0.25s;
   }
 
-  .back-link:hover svg {
-    transform: translateX(4px);
+  /* ---------- TITLE ---------- */
+  .login-title {
+    font-family: var(--font-heading, 'Alexandria', sans-serif);
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--text);
+    text-align: center;
+    margin: 0 0 6px 0;
+    line-height: 1.3;
+    letter-spacing: -0.3px;
   }
 
-  /* Login wrapper */
-  .login-wrap {
-    position: relative;
-    z-index: 20;
+  /* ---------- SUBTITLE ---------- */
+  .login-subtitle {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    text-align: center;
+    margin: 0 0 24px 0;
+    line-height: 1.5;
+  }
+
+  /* ---------- FORM ---------- */
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
     width: 100%;
-    max-width: 440px;
-    animation: cardEnter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    margin: 0;
   }
 
-  @keyframes cardEnter {
-    from { opacity: 0; transform: translateY(30px) scale(0.95); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+  /* ---------- FORM GROUP ---------- */
+  .login-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    margin: 0;
   }
 
-  /* Login card */
-  .login-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    padding: 40px 32px 32px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: var(--shadow-lg), var(--glow-accent);
-    position: relative;
-    overflow: hidden;
+  .login-form label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    text-align: right;
+    display: block;
+    margin: 0;
+    line-height: 1.4;
   }
 
-  .login-card::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: var(--radius-xl);
-    padding: 1px;
-    background: linear-gradient(
-      135deg,
-      var(--accent),
-      transparent 40%,
-      transparent 60%,
-      var(--accent-2)
-    );
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
+  /* ---------- INPUT ---------- */
+  .login-form input[type="email"],
+  .login-form input[type="password"],
+  .login-form input[type="text"] {
+    width: 100%;
+    padding: 13px 14px;
+    font-size: 16px;
+    font-family: inherit;
+    color: var(--text);
+    background: rgba(0, 0, 0, 0.35);
+    border: 1.5px solid var(--border-soft);
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .login-form input::placeholder {
+    color: var(--text-dim);
     opacity: 0.7;
   }
 
-  /* Brand */
-  .brand {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 28px;
-    text-align: center;
+  .login-form input:focus {
+    border-color: var(--accent);
+    background: rgba(0, 0, 0, 0.45);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
   }
 
-  .brand-logo {
+  /* ---------- PASSWORD WRAPPER ---------- */
+  .password-wrap {
     position: relative;
-    width: 90px;
-    height: 90px;
-    border-radius: var(--radius-lg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(
-      circle at 30% 30%,
-      rgba(var(--accent-rgb), 0.15),
-      rgba(0, 0, 0, 0.6) 70%
-    );
-    border: 1.5px solid rgba(var(--accent-rgb), 0.45);
-    box-shadow: var(--glow-accent), inset 0 0 15px rgba(var(--accent-rgb), 0.15);
-    overflow: hidden;
-    margin-bottom: 16px;
-    animation: logoPulse 3s ease-in-out infinite;
+    width: 100%;
   }
 
-  @keyframes logoPulse {
-    0%, 100% { box-shadow: var(--glow-accent), inset 0 0 15px rgba(var(--accent-rgb), 0.15); }
-    50%      { box-shadow: 0 0 45px rgba(var(--accent-rgb), 0.5), inset 0 0 20px rgba(var(--accent-rgb), 0.25); }
+  .password-wrap input {
+    padding-left: 46px;
   }
 
-  .brand-logo img {
-    width: 88%;
-    height: 88%;
-    object-fit: contain;
-    filter: drop-shadow(0 0 8px var(--accent));
-  }
-
-  .brand-logo svg.logo-fallback {
-    width: 55%;
-    height: 55%;
-    stroke: #fff;
-    stroke-width: 2;
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .brand-title {
-    font-family: 'Tajawal', sans-serif;
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-  }
-
-  .brand-sub {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 4px;
-    color: var(--text-dim);
-  }
-
-  /* Title */
-  .login-title {
-    text-align: center;
-    margin-bottom: 6px;
-    font-size: 24px;
-    font-weight: 800;
-    background: linear-gradient(
-      90deg,
-      var(--accent),
-      var(--accent-2),
-      var(--accent)
-    );
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shine 3s linear infinite;
-  }
-
-  @keyframes shine { to { background-position: 200% center; } }
-
-  .login-desc {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 13px;
-    margin-bottom: 28px;
-  }
-
-  /* Password toggle */
-  .field-toggle {
+  .password-toggle {
     position: absolute;
-    left: 12px;
+    left: 10px;
     top: 50%;
     transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
     background: transparent;
     border: none;
-    cursor: pointer;
-    padding: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
-    transition: background 0.2s;
-    z-index: 3;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
   }
 
-  .field-toggle:hover {
-    background: rgba(255, 255, 255, 0.06);
+  .password-toggle:hover {
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.08);
   }
 
-  .field-toggle svg {
+  .password-toggle svg {
     width: 18px;
     height: 18px;
-    stroke: var(--text-muted);
-    fill: none;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transition: stroke 0.2s;
-  }
-
-  .field-toggle:hover svg {
-    stroke: var(--accent);
-  }
-
-  .field-with-icon input {
-    padding-left: 44px;
-  }
-
-  /* Remember + Forgot */
-  .row-between {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 22px;
-    gap: 12px;
-  }
-
-  .form-check {
-    margin: 0;
-    font-size: 13px;
-    color: var(--text-muted);
-  }
-
-  .forgot-link {
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--accent);
-    transition: all 0.2s;
-    text-decoration: none;
-  }
-
-  .forgot-link:hover {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
-  /* Submit */
-  .submit-btn {
-    width: 100%;
-    margin-top: 4px;
-    position: relative;
-  }
-
-  /* Divider */
-  .divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 22px 0;
-    color: var(--text-dim);
-    font-size: 12px;
-  }
-
-  .divider::before,
-  .divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(to right, transparent, var(--border), transparent);
-  }
-
-  /* Signup CTA */
-  .signup-cta {
-    padding: 16px 18px;
-    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.06), rgba(var(--accent-2-rgb), 0.04));
-    border: 1.5px dashed rgba(var(--accent-rgb), 0.3);
-    border-radius: var(--radius-md);
-    text-align: center;
-    margin-bottom: 16px;
-  }
-
-  .signup-cta .cta-title {
-    font-family: 'Tajawal', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-
-  .signup-cta .cta-desc {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-bottom: 12px;
-    line-height: 1.6;
-  }
-
-  .signup-cta .btn-signup {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background: rgba(var(--accent-rgb), 0.1);
-    border: 1.5px solid rgba(var(--accent-rgb), 0.4);
-    border-radius: 10px;
-    color: var(--accent);
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none;
-    transition: all 0.25s;
-    width: 100%;
-  }
-
-  .signup-cta .btn-signup:hover {
-    background: rgba(var(--accent-rgb), 0.2);
-    transform: translateY(-2px);
-    box-shadow: var(--glow-accent);
-  }
-
-  .signup-cta .btn-signup svg {
-    width: 15px;
-    height: 15px;
     stroke: currentColor;
     fill: none;
     stroke-width: 2;
@@ -388,113 +233,383 @@
     stroke-linejoin: round;
   }
 
-  /* Footer note */
-  .login-footer {
-    text-align: center;
-    margin-top: 20px;
+  /* ---------- OPTIONS ROW ---------- */
+  .login-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 2px 0 4px 0;
+    width: 100%;
+  }
+
+  .remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-size: 13px;
     color: var(--text-muted);
+    cursor: pointer;
+    font-weight: 600;
+    user-select: none;
+    margin: 0;
+  }
+
+  .remember-me input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .forgot-link {
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+
+  .forgot-link:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+  }
+
+  /* ---------- SUBMIT BUTTON ---------- */
+  .login-btn {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 14.5px;
+    font-weight: 700;
+    font-family: inherit;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 50px;
+    margin: 8px 0 0 0;
+    text-align: center;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.3);
+    box-sizing: border-box;
+  }
+
+  .login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.5);
+    filter: brightness(1.1);
+  }
+
+  .login-btn:active {
+    transform: translateY(0);
+  }
+
+  .login-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .login-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  /* ---------- DIVIDER ---------- */
+  .login-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 14px 0;
+    color: var(--text-dim);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .login-divider::before,
+  .login-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-soft);
+  }
+
+  /* ---------- SIGNUP BOX ---------- */
+  .signup-box {
+    padding: 18px 16px;
+    border: 1.5px dashed rgba(var(--accent-rgb), 0.35);
+    border-radius: 14px;
+    background: rgba(var(--accent-rgb), 0.03);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    margin: 0;
+  }
+
+  .signup-box-title {
+    font-family: var(--font-heading, 'Alexandria', sans-serif);
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .signup-box-text {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .signup-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 13.5px;
+    font-weight: 700;
+    font-family: inherit;
+    background: transparent;
+    color: var(--accent);
+    border: 1.5px solid rgba(var(--accent-rgb), 0.5);
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    margin: 4px 0 0 0;
+    box-sizing: border-box;
+  }
+
+  .signup-btn:hover {
+    background: rgba(var(--accent-rgb), 0.1);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .signup-btn svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  /* ---------- FOOTER LINK ---------- */
+  .login-footer {
+    text-align: center;
+    margin-top: 4px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
   }
 
   .login-footer a {
     color: var(--accent);
-    font-weight: 600;
+    font-weight: 700;
+    text-decoration: none;
   }
 
   .login-footer a:hover {
     text-decoration: underline;
-    text-underline-offset: 3px;
   }
 
-  /* Copyright */
-  .login-copy {
+  /* ---------- ERROR MESSAGE ---------- */
+  .error-message {
+    display: none;
+    padding: 12px 14px;
+    background: rgba(var(--danger-rgb), 0.1);
+    border: 1.5px solid rgba(var(--danger-rgb), 0.4);
+    border-radius: 10px;
+    color: #f87171;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
     text-align: center;
-    margin-top: 24px;
-    font-size: 11.5px;
-    color: var(--text-dim);
+    margin: 0;
   }
 
-  /* Head note */
-  .login-head-note {
-    margin-top: 22px;
-    padding: 12px 18px;
-    background: rgba(var(--accent-rgb), 0.04);
-    border: 1px solid rgba(var(--accent-rgb), 0.15);
-    border-radius: var(--radius-md);
-    text-align: center;
-    font-size: 12.5px;
-    color: var(--text-muted);
-  }
-
-  .login-head-note strong {
-    color: var(--accent);
-    font-weight: 700;
+  .error-message.show {
     display: block;
-    margin-top: 4px;
-    font-size: 14px;
+    animation: shake 0.4s ease;
   }
 
-  /* Role redirect indicator */
-  .redirect-info {
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  /* ---------- SUCCESS MESSAGE ---------- */
+  .success-message {
+    display: none;
+    padding: 12px 14px;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1.5px solid rgba(34, 197, 94, 0.4);
+    border-radius: 10px;
+    color: #4ade80;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
     text-align: center;
-    margin-top: 12px;
-    font-size: 12px;
+    margin: 0;
+  }
+
+  .success-message.show {
+    display: block;
+  }
+
+  /* ---------- LOGO TEXT (under badge) ---------- */
+  .login-brand-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+
+  .login-brand-ar {
+    font-family: var(--font-heading, 'Alexandria', sans-serif);
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  .login-brand-en {
+    font-family: var(--font-mono, monospace);
+    font-size: 9.5px;
     color: var(--text-dim);
-    padding: 10px;
-    background: rgba(var(--success-rgb), 0.06);
-    border: 1px solid rgba(var(--success-rgb), 0.2);
-    border-radius: var(--radius-md);
-    display: none;
-  }
-
-  .redirect-info.show { display: block; }
-
-  /* Inactive notice */
-  .inactive-notice {
+    letter-spacing: 2px;
+    font-weight: 600;
+    text-transform: uppercase;
     text-align: center;
-    margin-top: 12px;
-    font-size: 12.5px;
-    color: var(--warning);
-    padding: 12px 16px;
-    background: rgba(var(--warning-rgb), 0.08);
-    border: 1.5px solid rgba(var(--warning-rgb), 0.35);
-    border-radius: var(--radius-md);
-    line-height: 1.7;
-    display: none;
+    line-height: 1.3;
+    direction: ltr;
+    margin: 0;
   }
 
-  .inactive-notice.show { display: block; }
-  .inactive-notice strong { color: var(--warning); font-weight: 700; }
+  /* ---------- LOADING SPINNER ---------- */
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
 
-  /* Responsive */
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ---------- BACK HOME BUTTON ---------- */
+  .back-home {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(var(--accent-rgb), 0.08);
+    border: 1px solid rgba(var(--accent-rgb), 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    z-index: 20;
+  }
+
+  .back-home:hover {
+    background: rgba(var(--accent-rgb), 0.15);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .back-home svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
   @media (max-width: 480px) {
+    .back-home {
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 380px) {
     .login-card {
-      padding: 32px 22px 24px;
+      padding: 22px 16px;
+      border-radius: 18px;
     }
 
-    .back-link {
-      top: 14px;
-      right: 14px;
-      padding: 7px 12px;
-      font-size: 12px;
+    .login-logo .logo-badge {
+      width: 58px;
+      height: 58px;
+      flex: 0 0 58px;
+      border-radius: 16px;
     }
 
-    .back-link span {
-      display: none;
+    .login-title {
+      font-size: 21px;
     }
 
-    .brand-logo {
-      width: 76px;
-      height: 76px;
+    .login-subtitle {
+      font-size: 12.5px;
+      margin-bottom: 20px;
     }
 
-    .brand-title {
-      font-size: 15px;
+    .login-form input {
+      padding: 12px 13px;
     }
 
-    .corner {
-      width: 42px;
-      height: 42px;
+    .login-btn {
+      padding: 13px 18px;
+      font-size: 14px;
+    }
+  }
+
+  /* ---------- REDUCED MOTION ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .login-card {
+      animation: none;
     }
   }
 </style>
@@ -502,166 +617,427 @@
 <body>
 
 <!-- BACKGROUND -->
-<canvas id="loginCanvas" class="bg-layer"></canvas>
+<canvas id="bgCanvas" class="bg-layer"></canvas>
 <div class="bg-grid"></div>
 <div class="bg-glow glow-1"></div>
 <div class="bg-glow glow-2"></div>
-<div class="vignette"></div>
 
-<!-- CORNERS -->
-<div class="corner tl"></div>
-<div class="corner tr"></div>
-<div class="corner bl"></div>
-<div class="corner br"></div>
-
-<!-- BACK LINK -->
-<a href="home.html" class="back-link">
+<!-- BACK HOME BUTTON -->
+<a href="home.html" class="back-home" aria-label="العودة للرئيسية" title="العودة للرئيسية">
   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <line x1="19" y1="12" x2="5" y2="12" />
-    <polyline points="12 19 5 12 12 5" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 19 19 12 12 5" />
   </svg>
-  <span>رجوع للرئيسية</span>
 </a>
 
-<!-- LOGIN WRAP -->
-<div class="login-wrap">
-  <div class="login-card">
+<!-- LOGIN CARD -->
+<div class="login-card" id="loginCard">
 
-    <!-- Brand -->
-    <div class="brand">
-      <div class="brand-logo">
-        <img id="brandLogoImg" src="" alt="شعار النقابة" style="display:none;" />
-        <svg class="logo-fallback" id="brandLogoFallback" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <polyline points="16 18 22 12 16 6" />
-          <polyline points="8 6 2 12 8 18" />
-          <line x1="14" y1="4" x2="10" y2="20" />
-        </svg>
-      </div>
-      <div class="brand-title" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
-      <div class="brand-sub">IT WORKERS SYNDICATE</div>
+  <!-- LOGO -->
+  <div class="login-logo">
+    <div class="logo-badge">
+      <img id="loginLogoImg" src="" alt="شعار النقابة" style="display:none;" />
+      <svg id="loginLogoFallback" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="16 18 22 12 16 6" />
+        <polyline points="8 6 2 12 8 18" />
+        <line x1="14" y1="4" x2="10" y2="20" />
+      </svg>
+    </div>
+  </div>
+
+  <!-- BRAND TEXT -->
+  <div class="login-brand-text">
+    <p class="login-brand-ar" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</p>
+    <p class="login-brand-en" data-setting="site_name_en">I.T.W.S</p>
+  </div>
+
+  <!-- TITLE -->
+  <h1 class="login-title">تسجيل الدخول</h1>
+  <p class="login-subtitle">أدخل بياناتك للوصول إلى لوحة التحكم</p>
+
+  <!-- ERROR / SUCCESS -->
+  <div class="error-message" id="errorMsg"></div>
+  <div class="success-message" id="successMsg"></div>
+
+  <!-- FORM -->
+  <form class="login-form" id="loginForm" autocomplete="on">
+
+    <!-- EMAIL -->
+    <div class="form-group">
+      <label for="email">البريد الإلكتروني</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="example@itsyndicate.eg"
+        dir="ltr"
+        style="text-align:right;"
+        required
+        autocomplete="email"
+      />
     </div>
 
-    <!-- Title -->
-    <div class="login-title">تسجيل الدخول</div>
-    <div class="login-desc">أدخل بياناتك للوصول إلى لوحة التحكم</div>
-
-    <!-- Alert box -->
-    <div id="alertBox"></div>
-
-    <!-- Form -->
-    <form id="loginForm" autocomplete="on">
-
-      <div class="form-group">
-        <label for="email">البريد الإلكتروني</label>
+    <!-- PASSWORD -->
+    <div class="form-group">
+      <label for="password">كلمة المرور</label>
+      <div class="password-wrap">
         <input
-          type="email"
-          id="email"
-          name="email"
-          placeholder="admin@itsyndicate.eg"
+          type="password"
+          id="password"
+          name="password"
+          placeholder="••••••••"
           required
-          autocomplete="email"
-          dir="ltr"
-          style="text-align:right;"
+          autocomplete="current-password"
         />
+        <button
+          type="button"
+          class="password-toggle"
+          id="togglePassword"
+          aria-label="إظهار كلمة المرور"
+        >
+          <svg id="eyeIcon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </button>
       </div>
-
-      <div class="form-group field-with-icon">
-        <label for="password">كلمة المرور</label>
-        <div style="position:relative;">
-          <input
-            type="password"
-            id="password"
-            name="password"
-            placeholder="••••••••"
-            required
-            autocomplete="current-password"
-            style="padding-left:44px;"
-          />
-          <button type="button" class="field-toggle" id="togglePassword" aria-label="إظهار كلمة المرور">
-            <svg id="eyeIcon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="row-between">
-        <label class="form-check">
-          <input type="checkbox" id="rememberMe" name="remember" />
-          <span>تذكرني</span>
-        </label>
-        <a href="#" class="forgot-link" id="forgotLink">نسيت كلمة المرور؟</a>
-      </div>
-
-      <button type="submit" class="btn btn-primary btn-lg submit-btn" id="loginBtn">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-          <polyline points="10 17 15 12 10 7" />
-          <line x1="15" y1="12" x2="3" y2="12" />
-        </svg>
-        <span>دخول</span>
-      </button>
-
-      <div class="redirect-info" id="redirectInfo"></div>
-
-      <div class="inactive-notice" id="inactiveNotice">
-        <strong>حسابك غير مفعّل بعد</strong><br>
-        تم إرسال طلبك إلى النقيب العام. سيتم تفعيل حسابك قريبًا.<br>
-        للاستفسار، تواصل مع النقيب العام.
-      </div>
-
-    </form>
-
-    <!-- Divider -->
-    <div class="divider">أو</div>
-
-    <!-- Signup CTA -->
-    <div class="signup-cta">
-      <div class="cta-title">ليس لديك حساب؟</div>
-      <div class="cta-desc">قدّم طلب حساب جديد للانضمام إلى فريق العمل الإداري</div>
-      <a href="signup.html" class="btn-signup">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-        <span>طلب حساب جديد</span>
-      </a>
     </div>
 
-    <div class="login-footer">
-      عضو جديد؟ <a href="apply.html">قدّم طلب عضويتك من هنا</a>
+    <!-- OPTIONS -->
+    <div class="login-options">
+      <label class="remember-me">
+        <input type="checkbox" id="rememberMe" name="remember" />
+        <span>تذكرني</span>
+      </label>
+      <a href="forgot.html" class="forgot-link">نسيت كلمة المرور؟</a>
     </div>
 
+    <!-- SUBMIT -->
+    <button type="submit" class="login-btn" id="loginBtn">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+        <polyline points="10 17 15 12 10 7" />
+        <line x1="15" y1="12" x2="3" y2="12" />
+      </svg>
+      <span id="loginBtnText">دخول</span>
+    </button>
+
+  </form>
+
+  <!-- DIVIDER -->
+  <div class="login-divider">
+    <span>أو</span>
   </div>
 
-  <!-- Head note -->
-  <div class="login-head-note">
-    <div data-head-title>النقيب العام</div>
-    <strong data-head-name>م / محمود جميل</strong>
+  <!-- SIGNUP BOX -->
+  <div class="signup-box">
+    <h3 class="signup-box-title">ليس لديك حساب؟</h3>
+    <p class="signup-box-text">قدّم طلب حساب جديد للانضمام إلى فريق العمل الإداري</p>
+    <a href="signup.html" class="signup-btn">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <line x1="12" y1="5" x2="12" y2="19" />
+        <line x1="5" y1="12" x2="19" y2="12" />
+      </svg>
+      <span>طلب حساب جديد</span>
+    </a>
   </div>
 
-  <div class="login-copy">
-    © 2026 <span data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</span> — جميع الحقوق محفوظة
+  <!-- FOOTER -->
+  <div class="login-footer">
+    عضو جديد؟ <a href="apply.html">قدّم طلب عضويتك من هنا</a>
   </div>
+
 </div>
 
 <!-- SCRIPTS -->
 <script src="js/supabase-config.js"></script>
 <script src="js/theme-manager.js"></script>
 <script src="js/settings.js"></script>
-<script src="js/security.js"></script>
+<script src="js/realtime.js"></script>
 
 <script>
+/* ============================================
+   LOGIN PAGE — LOGIC
+   ============================================ */
 (function () {
   'use strict';
 
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
   /* ============================================
-     BACKGROUND PARTICLES
+     TOGGLE PASSWORD VISIBILITY
      ============================================ */
-  (function () {
-    const canvas = document.getElementById('loginCanvas');
-    if (!canvas) return;
+  const toggleBtn = $('#togglePassword');
+  const passwordInput = $('#password');
+  const eyeIcon = $('#eyeIcon');
+
+  const EYE_OPEN = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  const EYE_CLOSED = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+
+  if (toggleBtn && passwordInput && eyeIcon) {
+    toggleBtn.addEventListener('click', () => {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      eyeIcon.innerHTML = isPassword ? EYE_CLOSED : EYE_OPEN;
+      toggleBtn.setAttribute('aria-label', isPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور');
+    });
+  }
+
+  /* ============================================
+     SHOW ERROR / SUCCESS
+     ============================================ */
+  function showError(msg) {
+    const el = $('#errorMsg');
+    const successEl = $('#successMsg');
+    if (successEl) successEl.classList.remove('show');
+    if (el) {
+      el.textContent = msg;
+      el.classList.add('show');
+    }
+  }
+
+  function showSuccess(msg) {
+    const el = $('#successMsg');
+    const errEl = $('#errorMsg');
+    if (errEl) errEl.classList.remove('show');
+    if (el) {
+      el.textContent = msg;
+      el.classList.add('show');
+    }
+  }
+
+  function hideMessages() {
+    const errEl = $('#errorMsg');
+    const successEl = $('#successMsg');
+    if (errEl) errEl.classList.remove('show');
+    if (successEl) successEl.classList.remove('show');
+  }
+
+  /* ============================================
+     LOADING STATE
+     ============================================ */
+  function setLoading(isLoading) {
+    const btn = $('#loginBtn');
+    const btnText = $('#loginBtnText');
+    if (!btn || !btnText) return;
+
+    if (isLoading) {
+      btn.disabled = true;
+      btnText.innerHTML = '<span class="spinner"></span>';
+    } else {
+      btn.disabled = false;
+      btnText.textContent = 'دخول';
+    }
+  }
+
+  /* ============================================
+     LOGIN HANDLER
+     ============================================ */
+  const form = $('#loginForm');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideMessages();
+
+      const email = $('#email').value.trim();
+      const password = $('#password').value;
+      const remember = $('#rememberMe').checked;
+
+      /* Validation */
+      if (!email || !password) {
+        showError('يرجى إدخال البريد الإلكتروني وكلمة المرور');
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showError('البريد الإلكتروني غير صحيح');
+        return;
+      }
+
+      if (password.length < 6) {
+        showError('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+        return;
+      }
+
+      /* Loading */
+      setLoading(true);
+
+      try {
+        /* Check Supabase client */
+        if (!window.supabaseClient) {
+          await waitForSupabase();
+        }
+
+        if (!window.supabaseClient) {
+          throw new Error('فشل الاتصال بالخادم. حاول مرة أخرى.');
+        }
+
+        /* Sign in */
+        const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+        if (error) {
+          /* Translate common errors */
+          if (error.message.includes('Invalid login')) {
+            throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+          }
+          if (error.message.includes('Email not confirmed')) {
+            throw new Error('لم يتم تأكيد البريد الإلكتروني. تواصل مع الإدارة.');
+          }
+          throw new Error(error.message || 'فشل تسجيل الدخول');
+        }
+
+        if (!data || !data.user) {
+          throw new Error('لم يتم العثور على الحساب');
+        }
+
+        /* Check user in users table */
+        const { data: userData, error: userErr } = await window.supabaseClient
+          .from('users')
+          .select('role, full_name, is_active')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        if (userErr) {
+          console.warn('Failed to fetch user data:', userErr);
+        }
+
+        if (!userData) {
+          await window.supabaseClient.auth.signOut();
+          throw new Error('هذا الحساب غير مسجل في النظام. تواصل مع الإدارة.');
+        }
+
+        if (userData.is_active === false) {
+          await window.supabaseClient.auth.signOut();
+          throw new Error('هذا الحساب غير نشط. تواصل مع الإدارة.');
+        }
+
+        /* Save remember preference */
+        try {
+          if (remember) {
+            localStorage.setItem('its_remember_email', email);
+          } else {
+            localStorage.removeItem('its_remember_email');
+          }
+        } catch (e) {}
+
+        /* Success */
+        showSuccess('تم تسجيل الدخول بنجاح! جاري التحويل...');
+
+        /* Redirect after 800ms */
+        setTimeout(() => {
+          const role = userData.role || 'committee';
+          redirectByRole(role);
+        }, 800);
+
+      } catch (err) {
+        console.error('Login error:', err);
+        showError(err.message || 'حدث خطأ أثناء تسجيل الدخول');
+        setLoading(false);
+      }
+    });
+  }
+
+  /* ============================================
+     REDIRECT BY ROLE
+     ============================================ */
+  function redirectByRole(role) {
+    const redirectMap = {
+      'head': 'admin.html',
+      'vice_president': 'admin.html',
+      'deputy': 'admin.html',
+      'committee': 'dashboard.html',
+      'governorate_head': 'dashboard.html',
+      'governorate_board': 'dashboard.html',
+      'branches_manager': 'dashboard.html',
+      'social_committee_head': 'dashboard.html',
+      'social_committee_vice': 'dashboard.html',
+      'public_relations_head': 'dashboard.html',
+      'public_relations_vice': 'dashboard.html',
+      'committees_manager_head': 'dashboard.html',
+      'committees_manager_vice': 'dashboard.html',
+      'treasurer': 'admin.html',
+      'treasurer_assist': 'admin.html'
+    };
+
+    const url = redirectMap[role] || 'dashboard.html';
+    window.location.href = url;
+  }
+
+  /* ============================================
+     WAIT FOR SUPABASE
+     ============================================ */
+  function waitForSupabase() {
+    return new Promise((resolve) => {
+      if (window.supabaseClient) {
+        resolve();
+        return;
+      }
+
+      if (typeof window.onSupabaseReady === 'function') {
+        window.onSupabaseReady(() => resolve());
+      } else {
+        window.addEventListener('supabase-ready', () => resolve(), { once: true });
+        setTimeout(resolve, 3000);
+      }
+    });
+  }
+
+  /* ============================================
+     LOAD REMEMBERED EMAIL
+     ============================================ */
+  try {
+    const remembered = localStorage.getItem('its_remember_email');
+    if (remembered && $('#email')) {
+      $('#email').value = remembered;
+      if ($('#rememberMe')) $('#rememberMe').checked = true;
+    }
+  } catch (e) {}
+
+  /* ============================================
+     LOGO FROM SETTINGS
+     ============================================ */
+  function applyLogo() {
+    if (!window.SettingsManager || typeof window.SettingsManager.getAll !== 'function') return;
+
+    const s = window.SettingsManager.getAll();
+    if (!s) return;
+
+    const logo = s.site_logo_url || s.logo_url;
+    if (!logo) return;
+
+    const img = $('#loginLogoImg');
+    const fallback = $('#loginLogoFallback');
+
+    if (img && fallback) {
+      img.onload = () => {
+        img.style.display = 'block';
+        fallback.style.display = 'none';
+      };
+      img.onerror = () => {
+        img.style.display = 'none';
+        fallback.style.display = 'block';
+      };
+      img.src = logo;
+    }
+  }
+
+  window.addEventListener('settings-ready', applyLogo);
+  window.addEventListener('settings-applied', applyLogo);
+
+  if (window.SettingsManager && typeof window.SettingsManager.getAll === 'function') {
+    setTimeout(applyLogo, 500);
+  }
+
+  /* ============================================
+     BACKGROUND CANVAS
+     ============================================ */
+  const canvas = document.getElementById('bgCanvas');
+  if (canvas) {
     const ctx = canvas.getContext('2d');
     let W = 0, H = 0, dots = [];
 
@@ -687,15 +1063,15 @@
     }
 
     function init() {
-      const count = Math.min(50, Math.max(20, Math.floor(W / 32)));
+      const count = Math.min(40, Math.max(15, Math.floor(W / 40)));
       dots = [];
       for (let i = 0; i < count; i++) {
         dots.push({
           x: Math.random() * W,
           y: Math.random() * H,
-          vx: (Math.random() - 0.5) * 0.35,
-          vy: (Math.random() - 0.5) * 0.35,
-          r: Math.random() * 1.5 + 0.5
+          vx: (Math.random() - 0.5) * 0.25,
+          vy: (Math.random() - 0.5) * 0.25,
+          r: Math.random() * 1.3 + 0.5
         });
       }
     }
@@ -703,14 +1079,13 @@
     function loop() {
       const rgb = accentRgb();
       ctx.clearRect(0, 0, W, H);
-
       dots.forEach((d, i) => {
         d.x += d.vx;
         d.y += d.vy;
         if (d.x < 0 || d.x > W) d.vx *= -1;
         if (d.y < 0 || d.y > H) d.vy *= -1;
 
-        ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.55)`;
+        ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.4)`;
         ctx.beginPath();
         ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
         ctx.fill();
@@ -720,7 +1095,7 @@
           const dy = d.y - dots[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 130) {
-            ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.1 * (1 - dist / 130)})`;
+            ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.08 * (1 - dist / 130)})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(d.x, d.y);
@@ -729,7 +1104,6 @@
           }
         }
       });
-
       requestAnimationFrame(loop);
     }
 
@@ -740,386 +1114,7 @@
 
     resize();
     loop();
-  })();
-
-  /* ============================================
-     PASSWORD TOGGLE
-     ============================================ */
-  const toggleBtn = document.getElementById('togglePassword');
-  const passwordInput = document.getElementById('password');
-  const eyeIcon = document.getElementById('eyeIcon');
-
-  if (toggleBtn && passwordInput) {
-    let visible = false;
-
-    toggleBtn.addEventListener('click', () => {
-      visible = !visible;
-      passwordInput.type = visible ? 'text' : 'password';
-
-      if (eyeIcon) {
-        if (visible) {
-          eyeIcon.innerHTML = `
-            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-            <line x1="1" y1="1" x2="23" y2="23"/>
-          `;
-        } else {
-          eyeIcon.innerHTML = `
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-            <circle cx="12" cy="12" r="3" />
-          `;
-        }
-      }
-    });
   }
-
-  /* ============================================
-     ALERT HELPER
-     ============================================ */
-  function showAlert(type, message) {
-    const box = document.getElementById('alertBox');
-    if (!box) return;
-
-    const colors = {
-      success: { bg: 'rgba(var(--success-rgb), 0.12)', border: 'var(--success)', text: 'var(--success)' },
-      error:   { bg: 'rgba(var(--danger-rgb), 0.12)',  border: 'var(--danger)',  text: 'var(--danger)' },
-      warning: { bg: 'rgba(var(--warning-rgb), 0.12)', border: 'var(--warning)', text: 'var(--warning)' },
-      info:    { bg: 'rgba(var(--accent-rgb), 0.1)',   border: 'var(--accent)',  text: 'var(--accent)' }
-    };
-    const c = colors[type] || colors.info;
-
-    const iconSvg = type === 'success'
-      ? '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg>'
-      : type === 'error'
-      ? '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
-      : '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-
-    box.innerHTML = `
-      <div style="
-        background:${c.bg};
-        border:1.5px solid ${c.border};
-        color:${c.text};
-        padding:13px 16px;
-        border-radius:12px;
-        font-size:13.5px;
-        font-weight:600;
-        display:flex;
-        align-items:center;
-        gap:10px;
-        margin-bottom:18px;
-        animation:alertIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-      ">
-        ${iconSvg}
-        <span>${message}</span>
-      </div>
-      <style>
-        @keyframes alertIn {
-          from { opacity: 0; transform: translateY(-6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      </style>
-    `;
-  }
-
-  function clearAlert() {
-    const box = document.getElementById('alertBox');
-    if (box) box.innerHTML = '';
-  }
-
-  function showRedirectInfo(msg) {
-    const el = document.getElementById('redirectInfo');
-    if (el) {
-      el.textContent = msg;
-      el.classList.add('show');
-    }
-  }
-
-  function showInactiveNotice() {
-    const el = document.getElementById('inactiveNotice');
-    if (el) el.classList.add('show');
-  }
-
-  function hideInactiveNotice() {
-    const el = document.getElementById('inactiveNotice');
-    if (el) el.classList.remove('show');
-  }
-
-  /* ============================================
-     WAIT FOR SUPABASE
-     ============================================ */
-  function waitForSupabase() {
-    return new Promise((resolve) => {
-      if (window.supabaseClient) {
-        resolve(window.supabaseClient);
-        return;
-      }
-
-      if (typeof window.onSupabaseReady === 'function') {
-        window.onSupabaseReady((c) => resolve(c));
-        setTimeout(() => resolve(window.supabaseClient || null), 5000);
-      } else {
-        const start = Date.now();
-        const check = setInterval(() => {
-          if (window.supabaseClient) {
-            clearInterval(check);
-            resolve(window.supabaseClient);
-          } else if (Date.now() - start > 5000) {
-            clearInterval(check);
-            resolve(null);
-          }
-        }, 100);
-      }
-    });
-  }
-
-  /* ============================================
-     REDIRECT BY ROLE
-     ============================================ */
-  function getRedirectPath(role) {
-    const routes = {
-      'head': 'admin.html',
-      'vice_president': 'admin.html',
-      'deputy': 'admin.html',
-      'committee': 'dashboard.html',
-      'governorate_head': 'governorate.html',
-      'governorate_board': 'governorate.html',
-      'branches_manager': 'branches.html',
-      'social_committee_head': 'social-committee.html',
-      'social_committee_vice': 'social-committee.html',
-      'public_relations_head': 'public-relations.html',
-      'public_relations_vice': 'public-relations.html',
-      'committees_manager_head': 'committees-manager.html',
-      'committees_manager_vice': 'committees-manager.html'
-    };
-
-    return routes[role] || 'dashboard.html';
-  }
-
-  function getRoleLabel(role) {
-    const labels = {
-      'head': 'النقيب العام',
-      'vice_president': 'نائب رئيس النقابة',
-      'deputy': 'الوكيل',
-      'committee': 'لجنة العضوية',
-      'governorate_head': 'نقيب محافظة',
-      'governorate_board': 'مجلس محافظة',
-      'branches_manager': 'مدير الفروع',
-      'social_committee_head': 'رئيس اللجنة الاجتماعية',
-      'social_committee_vice': 'نائب اللجنة الاجتماعية',
-      'public_relations_head': 'رئيس العلاقات العامة',
-      'public_relations_vice': 'نائب العلاقات العامة',
-      'committees_manager_head': 'مدير اللجان',
-      'committees_manager_vice': 'نائب مدير اللجان'
-    };
-
-    return labels[role] || 'موظف';
-  }
-
-  /* ============================================
-     TRANSLATE AUTH ERRORS
-     ============================================ */
-  function translateAuthError(msg) {
-    if (!msg) return 'حدث خطأ غير متوقع';
-    const m = msg.toLowerCase();
-
-    if (m.includes('invalid login') || m.includes('invalid credentials')) {
-      return 'البريد أو كلمة المرور غير صحيحة';
-    }
-    if (m.includes('email not confirmed')) {
-      return 'البريد الإلكتروني لم يتم تأكيده بعد';
-    }
-    if (m.includes('too many requests') || m.includes('rate limit')) {
-      return 'محاولات كثيرة، حاول بعد قليل';
-    }
-    if (m.includes('network')) {
-      return 'فشل الاتصال، تحقق من الإنترنت';
-    }
-    if (m.includes('user not found')) {
-      return 'المستخدم غير موجود';
-    }
-    return msg;
-  }
-
-  /* ============================================
-     LOGIN HANDLER
-     ============================================ */
-  const form = document.getElementById('loginForm');
-  const loginBtn = document.getElementById('loginBtn');
-
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      clearAlert();
-      hideInactiveNotice();
-
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const remember = document.getElementById('rememberMe').checked;
-
-      if (!email || !password) {
-        showAlert('error', 'من فضلك أدخل البريد وكلمة المرور');
-        return;
-      }
-
-      const originalHtml = loginBtn.innerHTML;
-      loginBtn.disabled = true;
-      loginBtn.innerHTML = `
-        <span class="spinner"></span>
-        <span>جاري التحقق...</span>
-      `;
-
-      try {
-        const client = await waitForSupabase();
-        if (!client) {
-          throw new Error('فشل تحميل النظام، حاول تحديث الصفحة');
-        }
-
-        // 1) تسجيل الدخول
-        const { data, error } = await client.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        if (error) {
-          throw new Error(translateAuthError(error.message));
-        }
-
-        if (!data?.user) {
-          throw new Error('لم يتم العثور على المستخدم');
-        }
-
-        // 2) تذكرني
-        try {
-          if (remember) {
-            localStorage.setItem('its_remember_email', email);
-          } else {
-            localStorage.removeItem('its_remember_email');
-          }
-        } catch (err) {}
-
-        // 3) جلب بيانات المستخدم (الدور + الصفة + is_active)
-        let role = 'committee';
-        let position = '';
-        let fullName = '';
-        let isActive = true;
-
-        try {
-          const { data: userData } = await client
-            .from('users')
-            .select('role, full_name, position, is_active')
-            .eq('id', data.user.id)
-            .maybeSingle();
-
-          if (userData) {
-            role = userData.role || 'committee';
-            position = userData.position || '';
-            fullName = userData.full_name || '';
-            isActive = userData.is_active !== false;
-          }
-        } catch (err) {}
-
-        // 4) التأكد إن الحساب نشط
-        if (!isActive) {
-          await client.auth.signOut();
-          showAlert('warning', 'حسابك غير مفعّل بعد');
-          showInactiveNotice();
-          loginBtn.disabled = false;
-          loginBtn.innerHTML = originalHtml;
-          return;
-        }
-
-        // 5) تسجيل آخر دخول
-        try {
-          await client
-            .from('users')
-            .update({ last_login_at: new Date().toISOString() })
-            .eq('id', data.user.id);
-        } catch (e) {}
-
-        // 6) تسجيل الإجراء
-        if (window.logUserAction) {
-          try {
-            await window.logUserAction('login', 'auth', data.user.id, `role: ${role}`);
-          } catch (e) {}
-        }
-
-        // 7) عرض الرسالة
-        const roleLabel = getRoleLabel(role);
-        showAlert('success', `مرحبًا ${roleLabel} — جاري التحويل...`);
-        showRedirectInfo(`سيتم تحويلك إلى لوحة التحكم خلال لحظات...`);
-
-        // 8) التحويل حسب الدور
-        const redirectPath = getRedirectPath(role);
-
-        setTimeout(() => {
-          window.location.href = redirectPath;
-        }, 800);
-
-      } catch (err) {
-        console.error('[Login] Error:', err);
-        showAlert('error', err.message || 'فشل تسجيل الدخول');
-        loginBtn.disabled = false;
-        loginBtn.innerHTML = originalHtml;
-      }
-    });
-  }
-
-  /* ============================================
-     RESTORE REMEMBERED EMAIL
-     ============================================ */
-  try {
-    const remembered = localStorage.getItem('its_remember_email');
-    if (remembered) {
-      const emailInput = document.getElementById('email');
-      const rememberBox = document.getElementById('rememberMe');
-      if (emailInput) emailInput.value = remembered;
-      if (rememberBox) rememberBox.checked = true;
-    }
-  } catch (e) {}
-
-  /* ============================================
-     FORGOT PASSWORD
-     ============================================ */
-  const forgotLink = document.getElementById('forgotLink');
-  if (forgotLink) {
-    forgotLink.addEventListener('click', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-
-      if (!email) {
-        showAlert('warning', 'أدخل بريدك الإلكتروني أولًا');
-        return;
-      }
-
-      const client = await waitForSupabase();
-      if (!client) {
-        showAlert('error', 'النظام غير جاهز، حاول مرة أخرى');
-        return;
-      }
-
-      try {
-        const { error } = await client.auth.resetPasswordForEmail(email, {
-          redirectTo: window.location.origin + '/login.html'
-        });
-
-        if (error) throw error;
-
-        showAlert('success', 'تم إرسال رابط إعادة التعيين إلى بريدك');
-      } catch (err) {
-        console.error('[ForgotPassword] Error:', err);
-        showAlert('error', 'فشل الإرسال: ' + (err.message || ''));
-      }
-    });
-  }
-
-  /* ============================================
-     FOCUS FIRST FIELD
-     ============================================ */
-  window.addEventListener('load', () => {
-    const emailInput = document.getElementById('email');
-    if (emailInput && !emailInput.value) {
-      setTimeout(() => emailInput.focus(), 400);
-    }
-  });
 
 })();
 </script>
