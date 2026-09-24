@@ -1,13 +1,7 @@
 /* =====================================================
    IT SYNDICATE — MAIN STYLESHEET
-   Version: 5.0.0 (FINAL)
+   Version: 6.0.0 (FINAL — FOOTER PERFECT)
    Path: css/style.css
-   =====================================================
-   - Responsive على كل الأجهزة (Mobile / Tablet / Desktop)
-   - Footer متظبط تمامًا
-   - Buttons responsive
-   - مفيش overflow
-   - دعم iPhone notch
    ===================================================== */
 
 /* ============================================
@@ -46,6 +40,8 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  flex-direction: column;
 }
 
 body.modal-open {
@@ -88,7 +84,6 @@ table {
   border-spacing: 0;
 }
 
-/* Selection */
 ::selection {
   background: rgba(var(--accent-rgb), 0.3);
   color: var(--text);
@@ -99,7 +94,6 @@ table {
   color: var(--text);
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -118,14 +112,13 @@ table {
   background: rgba(var(--accent-rgb), 0.5);
 }
 
-/* Theme Transition */
 .theme-transition,
 .theme-transition * {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
 }
 
 /* ============================================
-   BACKGROUND LAYERS
+   BACKGROUND
    ============================================ */
 .bg-layer {
   position: fixed;
@@ -244,7 +237,6 @@ table {
   box-sizing: border-box;
 }
 
-/* Logo */
 .nav-logo {
   display: flex;
   align-items: center;
@@ -321,7 +313,6 @@ table {
   text-overflow: ellipsis;
 }
 
-/* Nav Links */
 .nav-links {
   display: flex;
   align-items: center;
@@ -378,7 +369,6 @@ table {
   flex-shrink: 0;
 }
 
-/* Nav Actions */
 .nav-actions {
   display: flex;
   align-items: center;
@@ -451,7 +441,7 @@ table {
 }
 
 /* ============================================
-   BUTTONS — RESPONSIVE
+   BUTTONS
    ============================================ */
 .btn {
   display: inline-flex;
@@ -879,7 +869,9 @@ tbody td {
 /* ============================================
    BADGES
    ============================================ */
-.role-badge {
+.role-badge,
+.status-badge,
+.payment-method-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -891,7 +883,8 @@ tbody td {
   white-space: nowrap;
 }
 
-.role-badge .dot {
+.role-badge .dot,
+.status-badge .dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -954,26 +947,6 @@ tbody td {
   color: #14b8a6;
 }
 
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  font-size: 11.5px;
-  font-weight: 700;
-  border: 1.5px solid;
-  white-space: nowrap;
-}
-
-.status-badge .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-  flex-shrink: 0;
-}
-
 .status-badge.active {
   background: rgba(34, 197, 94, 0.1);
   border-color: rgba(34, 197, 94, 0.4);
@@ -999,17 +972,11 @@ tbody td {
 }
 
 .payment-method-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
   padding: 3px 9px;
-  border-radius: 100px;
   font-size: 10.5px;
-  font-weight: 700;
   background: rgba(var(--accent-rgb), 0.08);
-  border: 1px solid rgba(var(--accent-rgb), 0.25);
+  border-color: rgba(var(--accent-rgb), 0.25);
   color: var(--accent);
-  white-space: nowrap;
 }
 
 .payment-method-badge.cash {
@@ -1242,11 +1209,6 @@ tbody td {
   background: #000;
 }
 
-.toggle-switch input:focus-visible + .toggle-slider {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
 /* ============================================
    THEME PANEL
    ============================================ */
@@ -1398,51 +1360,53 @@ tbody td {
   }
 }
 
-/* ============================================
-   FOOTER — FINAL FIX
-   ============================================ */
+/* ==========================================================
+   ⚡ FOOTER — PERFECT FULL WIDTH (RESPONSIVE)
+   ========================================================== */
 .footer {
   position: relative;
   z-index: 10;
-  margin: 60px 0 0 0;
-  padding: 60px 24px 30px;
+  margin: 0;
+  margin-top: auto;
+  padding: 60px 0 30px;
   border-top: 1px solid var(--border);
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   width: 100%;
-  max-width: 100vw;
+  max-width: 100%;
+  min-width: 0;
   box-sizing: border-box;
-  overflow-x: hidden;
+  overflow: hidden;
   direction: rtl;
   text-align: right;
+  display: block;
 }
 
-.footer *,
-.footer *::before,
-.footer *::after {
-  box-sizing: border-box;
-  max-width: 100%;
-}
-
-.footer .container {
+.footer > .container,
+.footer > .container-wide {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0;
+  padding: 0 24px;
   width: 100%;
   box-sizing: border-box;
+  display: block;
 }
 
+/* Grid */
 .footer-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1.5fr;
+  grid-template-columns: 1.8fr 1fr 1.4fr;
   gap: 40px;
-  margin-bottom: 40px;
+  margin: 0 0 40px 0;
+  padding: 0;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  align-items: start;
 }
 
+/* Columns */
 .footer-col {
   min-width: 0;
   max-width: 100%;
@@ -1458,25 +1422,36 @@ tbody td {
   font-size: 15px;
   font-weight: 800;
   color: var(--text);
-  margin-bottom: 16px;
+  margin: 0 0 16px 0;
+  padding: 0;
   letter-spacing: 0.3px;
   display: block;
   line-height: 1.3;
 }
 
+/* Logo Block */
 .footer-logo {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
+  margin: 0 0 16px 0;
+  padding: 0;
   max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.footer-logo > .logo-badge {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
 }
 
 .footer-logo > div {
+  flex: 1 1 auto;
   min-width: 0;
   max-width: 100%;
-  flex: 1 1 auto;
+  overflow: hidden;
 }
 
 .footer-logo-main {
@@ -1484,30 +1459,36 @@ tbody td {
   font-size: 14px;
   font-weight: 800;
   color: var(--text);
-  line-height: 1.3;
+  line-height: 1.35;
   display: block;
   max-width: 100%;
   overflow-wrap: break-word;
+  word-wrap: break-word;
   word-break: break-word;
+  white-space: normal;
+  margin: 0 0 3px 0;
 }
 
 .footer-logo-sub {
   font-family: var(--font-mono, monospace);
   font-size: 9.5px;
   color: var(--text-dim);
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
   font-weight: 600;
-  margin-top: 2px;
   display: block;
   max-width: 100%;
   overflow-wrap: break-word;
   word-break: break-word;
+  white-space: normal;
+  line-height: 1.3;
 }
 
 .footer-desc {
   font-size: 13px;
   color: var(--text-muted);
   line-height: 1.7;
+  margin: 0;
+  padding: 0;
   max-width: 100%;
   display: block;
   overflow-wrap: break-word;
@@ -1516,6 +1497,7 @@ tbody td {
   white-space: normal;
 }
 
+/* Links */
 .footer-links {
   display: flex;
   flex-direction: column;
@@ -1523,12 +1505,14 @@ tbody td {
   padding: 0;
   margin: 0;
   list-style: none;
+  width: 100%;
 }
 
 .footer-links li {
   display: block;
   margin: 0;
   padding: 0;
+  width: 100%;
 }
 
 .footer-links a {
@@ -1542,6 +1526,7 @@ tbody td {
   word-break: break-word;
   white-space: normal;
   line-height: 1.5;
+  padding: 0;
 }
 
 .footer-links a:hover {
@@ -1549,13 +1534,15 @@ tbody td {
   transform: translateX(-4px);
 }
 
+/* Contact */
 .footer-contact {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 0;
-  margin: 0;
+  margin: 0 0 0 0;
   list-style: none;
+  width: 100%;
 }
 
 .footer-contact li {
@@ -1564,25 +1551,30 @@ tbody td {
   gap: 10px;
   font-size: 13px;
   color: var(--text-muted);
-  max-width: 100%;
+  margin: 0;
+  padding: 0;
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
+  line-height: 1.5;
 }
 
 .footer-contact li svg {
+  flex: 0 0 16px;
   width: 16px;
   height: 16px;
+  min-width: 16px;
+  min-height: 16px;
   stroke: var(--accent);
   fill: none;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  flex-shrink: 0;
   margin-top: 2px;
 }
 
 .footer-contact li span {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
   max-width: 100%;
   display: block;
@@ -1592,12 +1584,18 @@ tbody td {
   line-height: 1.5;
 }
 
+/* Footer Button */
 .footer .btn {
+  display: inline-flex;
   max-width: 100%;
+  margin-top: 18px;
+  box-sizing: border-box;
 }
 
+/* Bottom Bar */
 .footer-bottom {
-  padding-top: 24px;
+  padding: 24px 0 0 0;
+  margin: 0;
   border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -1607,8 +1605,7 @@ tbody td {
   font-size: 12.5px;
   color: var(--text-dim);
   width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -1632,31 +1629,21 @@ tbody td {
 .text-center { text-align: center; }
 .text-right { text-align: right; }
 .text-left { text-align: left; }
-
 .text-muted { color: var(--text-muted); }
 .text-dim { color: var(--text-dim); }
 .text-accent { color: var(--accent); }
 .text-success { color: #22c55e; }
 .text-warning { color: #f59e0b; }
 .text-danger { color: var(--danger); }
-
 .text-sm { font-size: 12px; }
 .text-md { font-size: 14px; }
 .text-lg { font-size: 16px; }
 .text-xl { font-size: 20px; }
-
 .font-bold { font-weight: 700; }
 .font-black { font-weight: 900; }
-
-.mono {
-  font-family: var(--font-mono, monospace);
-  direction: ltr;
-  text-align: right;
-}
-
+.mono { font-family: var(--font-mono, monospace); direction: ltr; text-align: right; }
 .ltr { direction: ltr; text-align: right; }
 .rtl { direction: rtl; text-align: right; }
-
 .flex { display: flex; }
 .flex-col { flex-direction: column; }
 .flex-wrap { flex-wrap: wrap; }
@@ -1672,13 +1659,10 @@ tbody td {
 .gap-3 { gap: 12px; }
 .gap-4 { gap: 16px; }
 .gap-5 { gap: 20px; }
-
 .hidden { display: none !important; }
 .invisible { visibility: hidden; }
-
 .w-full { width: 100%; }
 .h-full { height: 100%; }
-
 .mt-1 { margin-top: 4px; }
 .mt-2 { margin-top: 8px; }
 .mt-3 { margin-top: 12px; }
@@ -1689,7 +1673,6 @@ tbody td {
 .mb-3 { margin-bottom: 12px; }
 .mb-4 { margin-bottom: 16px; }
 .mb-5 { margin-bottom: 20px; }
-
 .p-1 { padding: 4px; }
 .p-2 { padding: 8px; }
 .p-3 { padding: 12px; }
@@ -1700,14 +1683,8 @@ tbody td {
    ANIMATIONS
    ============================================ */
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeIn {
@@ -1715,42 +1692,9 @@ tbody td {
   to { opacity: 1; }
 }
 
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.05);
-  }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
 }
 
 @keyframes spin {
@@ -1792,16 +1736,6 @@ tbody td {
   background-size: 200% 100%;
   border-radius: var(--radius-md);
   animation: skeletonShine 1.5s ease-in-out infinite;
-}
-
-.skeleton-text {
-  height: 14px;
-  margin-bottom: 8px;
-}
-
-.skeleton-text:last-child {
-  margin-bottom: 0;
-  width: 60%;
 }
 
 /* ============================================
@@ -1849,9 +1783,17 @@ tbody td {
     padding: 0 20px;
   }
 
+  .footer {
+    padding: 50px 0 26px;
+  }
+
+  .footer > .container {
+    padding: 0 20px;
+  }
+
   .footer-grid {
-    grid-template-columns: 1.5fr 1fr 1fr;
-    gap: 30px;
+    grid-template-columns: 1.5fr 1fr 1.2fr;
+    gap: 28px;
   }
 
   .nav-links {
@@ -1876,7 +1818,6 @@ tbody td {
     padding: 0 16px;
   }
 
-  /* Navbar */
   .nav-container {
     padding: 0 16px;
     gap: 10px;
@@ -1940,7 +1881,6 @@ tbody td {
     justify-content: center;
   }
 
-  /* Buttons */
   .btn {
     padding: 10px 16px;
     font-size: 13px;
@@ -1963,7 +1903,6 @@ tbody td {
     font-size: 12px;
   }
 
-  /* Full width button groups */
   .hero-actions,
   .cta-actions,
   .save-bar-actions,
@@ -1982,7 +1921,6 @@ tbody td {
     flex: none;
   }
 
-  /* Modals */
   .modal {
     padding: 12px;
     align-items: flex-end;
@@ -2006,7 +1944,6 @@ tbody td {
     padding: 14px 20px;
   }
 
-  /* Tables */
   .table-card-header {
     padding: 14px 16px;
   }
@@ -2025,7 +1962,6 @@ tbody td {
     font-size: 12.5px;
   }
 
-  /* Theme Panel */
   .theme-panel {
     top: auto;
     bottom: 16px;
@@ -2040,10 +1976,13 @@ tbody td {
     transform: translateY(0) scale(1);
   }
 
-  /* Footer */
+  /* ⚡ FOOTER — MOBILE */
   .footer {
-    padding: 40px 16px 24px;
-    margin-top: 40px;
+    padding: 40px 0 24px;
+  }
+
+  .footer > .container {
+    padding: 0 16px;
   }
 
   .footer-grid {
@@ -2054,10 +1993,17 @@ tbody td {
 
   .footer-col {
     text-align: right;
+    width: 100%;
   }
 
   .footer-logo {
-    justify-content: flex-start;
+    gap: 10px;
+  }
+
+  .footer-logo > .logo-badge {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
   }
 
   .footer-logo-main {
@@ -2067,7 +2013,7 @@ tbody td {
 
   .footer-logo-sub {
     font-size: 9px;
-    letter-spacing: 1.2px;
+    letter-spacing: 1px;
   }
 
   .footer-desc {
@@ -2080,9 +2026,17 @@ tbody td {
     margin-bottom: 14px;
   }
 
+  .footer-links {
+    gap: 10px;
+  }
+
   .footer-links a {
     font-size: 13.5px;
-    padding: 4px 0;
+    padding: 2px 0;
+  }
+
+  .footer-contact {
+    gap: 10px;
   }
 
   .footer-contact li {
@@ -2090,9 +2044,16 @@ tbody td {
     gap: 8px;
   }
 
+  .footer-contact li svg {
+    flex: 0 0 15px;
+    width: 15px;
+    height: 15px;
+    min-width: 15px;
+    min-height: 15px;
+  }
+
   .footer-contact li span {
     font-size: 13px;
-    line-height: 1.5;
   }
 
   .footer .btn {
@@ -2116,14 +2077,12 @@ tbody td {
     line-height: 1.6;
   }
 
-  /* Forms */
   .form-group input,
   .form-group textarea,
   .form-group select {
     font-size: 16px;
   }
 
-  /* Row Actions */
   .row-actions {
     flex-wrap: nowrap;
   }
@@ -2138,7 +2097,6 @@ tbody td {
     height: 13px;
   }
 
-  /* Icon buttons */
   .nav-actions {
     gap: 6px;
   }
@@ -2209,14 +2167,24 @@ tbody td {
     font-size: 15px;
   }
 
+  /* FOOTER — SMALL MOBILE */
   .footer {
-    padding: 30px 14px 20px;
-    margin-top: 30px;
+    padding: 30px 0 20px;
+  }
+
+  .footer > .container {
+    padding: 0 14px;
   }
 
   .footer-grid {
     gap: 24px;
     margin-bottom: 24px;
+  }
+
+  .footer-logo > .logo-badge {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
   }
 
   .footer-logo-main {
@@ -2225,14 +2193,17 @@ tbody td {
 
   .footer-logo-sub {
     font-size: 8.5px;
+    letter-spacing: 0.8px;
   }
 
   .footer-desc {
     font-size: 12.5px;
+    line-height: 1.65;
   }
 
   .footer-col h4 {
     font-size: 14px;
+    margin-bottom: 12px;
   }
 
   .footer-links a {
@@ -2266,6 +2237,10 @@ tbody td {
     padding: 0 12px;
   }
 
+  .footer > .container {
+    padding: 0 12px;
+  }
+
   .logo-badge {
     width: 32px;
     height: 32px;
@@ -2286,7 +2261,7 @@ tbody td {
   }
 
   .footer {
-    padding: 24px 12px 16px;
+    padding: 24px 0 16px;
   }
 
   .footer-logo-main {
@@ -2299,47 +2274,11 @@ tbody td {
 }
 
 /* ============================================
-   iPhone NOTCH SUPPORT
-   ============================================ */
-@supports (padding: max(0px)) {
-  .navbar {
-    padding-top: max(14px, env(safe-area-inset-top));
-  }
-
-  .footer {
-    padding-bottom: max(20px, env(safe-area-inset-bottom));
-  }
-
-  .nav-container {
-    padding-left: max(24px, env(safe-area-inset-left));
-    padding-right: max(24px, env(safe-area-inset-right));
-  }
-}
-
-@media (max-width: 768px) {
-  @supports (padding: max(0px)) {
-    .nav-container {
-      padding-left: max(16px, env(safe-area-inset-left));
-      padding-right: max(16px, env(safe-area-inset-right));
-    }
-
-    .container {
-      padding-left: max(16px, env(safe-area-inset-left));
-      padding-right: max(16px, env(safe-area-inset-right));
-    }
-  }
-}
-
-/* ============================================
    LANDSCAPE MODE
    ============================================ */
 @media (max-height: 500px) and (orientation: landscape) {
-  .hero {
-    padding: 100px 16px 40px;
-  }
-
-  .hero-visual {
-    height: 200px;
+  .footer {
+    padding: 40px 0 24px;
   }
 
   .modal-content {
@@ -2358,6 +2297,10 @@ tbody td {
   .container-wide {
     max-width: 1520px;
   }
+
+  .footer > .container {
+    max-width: 1400px;
+  }
 }
 
 @media (min-width: 1920px) {
@@ -2365,8 +2308,63 @@ tbody td {
     max-width: 1720px;
   }
 
+  .footer > .container {
+    max-width: 1600px;
+  }
+
   body {
     font-size: 16px;
+  }
+
+  .footer-grid {
+    gap: 60px;
+  }
+}
+
+@media (min-width: 2560px) {
+  .footer > .container {
+    max-width: 1800px;
+  }
+
+  .footer-grid {
+    gap: 80px;
+  }
+}
+
+/* ============================================
+   iPhone NOTCH SUPPORT
+   ============================================ */
+@supports (padding: max(0px)) {
+  .navbar {
+    padding-top: max(14px, env(safe-area-inset-top));
+  }
+
+  .footer {
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+  }
+
+  .footer > .container {
+    padding-left: max(24px, env(safe-area-inset-left));
+    padding-right: max(24px, env(safe-area-inset-right));
+  }
+}
+
+@media (max-width: 768px) {
+  @supports (padding: max(0px)) {
+    .nav-container {
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+    }
+
+    .container {
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+    }
+
+    .footer > .container {
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+    }
   }
 }
 
