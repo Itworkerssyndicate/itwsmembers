@@ -2,493 +2,773 @@
 <html lang="ar" dir="rtl" data-theme="neon-dark">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
 <meta name="theme-color" content="#000000" />
 <meta name="description" content="إدارة الاشتراكات — نقابة تكنولوجيا المعلومات والبرمجيات" />
-<title>الاشتراكات — نقابة تكنولوجيا المعلومات والبرمجيات</title>
+<title>إدارة الاشتراكات — نقابة تكنولوجيا المعلومات والبرمجيات</title>
 
 <link rel="icon" id="faviconLink" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
 <link rel="apple-touch-icon" id="appleTouchIcon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23000'/%3E%3Ctext x='50' y='68' font-family='monospace' font-size='48' font-weight='bold' fill='%2300f0ff' text-anchor='middle'%3E%26lt;/%26gt%3C/text%3E%3C/svg%3E" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Alexandria:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 
 <link rel="stylesheet" href="css/themes.css" />
 <link rel="stylesheet" href="css/style.css" />
 
 <style>
   /* ============================================
-     PAGE-SPECIFIC: SUBSCRIPTIONS
+     SUBSCRIPTIONS PAGE — SPECIFIC STYLES
      ============================================ */
-  body { padding: 100px 0 40px; }
+
+  body {
+    padding: 80px 0 30px !important;
+    margin: 0 !important;
+  }
 
   .subs-wrap {
-    max-width: 1500px;
+    width: 100%;
+    max-width: 100%;
+    padding: 0 16px;
     margin: 0 auto;
-    padding: 0 24px;
+    box-sizing: border-box;
     position: relative;
     z-index: 10;
   }
 
-  .page-header {
+  /* ============================================
+     PAGE HEADER
+     ============================================ */
+  .subs-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+    width: 100%;
+  }
+
+  .subs-title {
+    font-family: var(--font-heading, 'Alexandria', sans-serif);
+    font-size: clamp(22px, 5.5vw, 30px);
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1.25;
+    letter-spacing: -0.3px;
+    margin: 0;
+  }
+
+  .subs-subtitle {
+    font-size: clamp(12.5px, 3.3vw, 14px);
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  @media (min-width: 769px) {
+    .subs-header {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  /* ============================================
+     STATS CARDS — COMPACT
+     ============================================ */
+  .subs-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+    width: 100%;
+  }
+
+  @media (min-width: 640px) {
+    .subs-stats {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+  }
+
+  .subs-stat {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
-    margin-bottom: 28px;
-    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.25s ease;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 0;
+    overflow: hidden;
   }
-  .page-header-info { flex: 1; min-width: 240px; }
 
-  .page-header-title {
-    font-family: 'Tajawal', sans-serif;
-    font-size: clamp(24px, 3.5vw, 32px);
-    font-weight: 900;
-    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent));
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shine 3s linear infinite;
-    margin-bottom: 6px;
-    line-height: 1.3;
+  .subs-stat:hover {
+    border-color: rgba(var(--accent-rgb), 0.4);
+    transform: translateY(-2px);
   }
-  @keyframes shine { to { background-position: 200% center; } }
-  .page-header-sub { font-size: 13.5px; color: var(--text-muted); }
 
-  .tabs-nav {
+  .subs-stat-info {
     display: flex;
-    gap: 6px;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+    order: 1;
+  }
+
+  .subs-stat-value {
+    font-family: var(--font-mono, monospace);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1.1;
+    margin: 0;
+  }
+
+  .subs-stat-label {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .subs-stat-icon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    order: 2;
+  }
+
+  .subs-stat-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Stat Variants */
+  .subs-stat.green .subs-stat-value { color: #22c55e; }
+  .subs-stat.green .subs-stat-icon {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #22c55e;
+  }
+
+  .subs-stat.yellow .subs-stat-value { color: #f59e0b; }
+  .subs-stat.yellow .subs-stat-icon {
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #f59e0b;
+  }
+
+  .subs-stat.red .subs-stat-value { color: #ef4444; }
+  .subs-stat.red .subs-stat-icon {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+  }
+
+  .subs-stat.purple .subs-stat-value { color: #8b5cf6; }
+  .subs-stat.purple .subs-stat-icon {
+    background: rgba(139, 92, 246, 0.12);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: #8b5cf6;
+  }
+
+  /* ============================================
+     TABS
+     ============================================ */
+  .subs-tabs {
+    display: flex;
+    gap: 4px;
     padding: 6px;
     background: var(--card-bg);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    margin-bottom: 24px;
+    border-radius: 12px;
+    margin-bottom: 16px;
     overflow-x: auto;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    width: 100%;
+    box-sizing: border-box;
   }
-  .tabs-nav::-webkit-scrollbar { display: none; }
 
-  .tab-btn {
+  .subs-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .subs-tab {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 11px 20px;
+    gap: 6px;
+    padding: 9px 14px;
     background: transparent;
     border: 1px solid transparent;
-    border-radius: var(--radius-md);
+    border-radius: 8px;
     font-family: inherit;
-    font-size: 13.5px;
+    font-size: 12.5px;
     font-weight: 700;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.25s;
+    transition: all 0.2s ease;
     white-space: nowrap;
     flex-shrink: 0;
   }
-  .tab-btn:hover {
+
+  .subs-tab:hover {
     color: var(--accent);
     background: rgba(var(--accent-rgb), 0.05);
   }
-  .tab-btn.active {
-    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-2-rgb), 0.15));
+
+  .subs-tab.active {
+    background: linear-gradient(135deg,
+      rgba(var(--accent-rgb), 0.15),
+      rgba(var(--accent-2-rgb), 0.15));
     border-color: rgba(var(--accent-rgb), 0.4);
     color: var(--accent);
-    box-shadow: var(--glow-accent);
   }
-  .tab-btn svg {
-    width: 16px; height: 16px;
-    stroke: currentColor; fill: none;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+
+  .subs-tab svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
     flex-shrink: 0;
   }
-  .tab-btn .tab-count {
+
+  .subs-tab .count {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 22px;
-    height: 22px;
+    min-width: 20px;
+    height: 20px;
     padding: 0 6px;
     border-radius: 100px;
     background: rgba(255, 255, 255, 0.1);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-family: var(--font-mono, monospace);
+    font-size: 10.5px;
     font-weight: 700;
   }
-  .tab-btn.active .tab-count {
+
+  .subs-tab.active .count {
     background: var(--accent);
     color: #000;
   }
 
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 14px;
-    margin-bottom: 24px;
-  }
-  .summary-card {
-    padding: 20px;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+  /* ============================================
+     SEARCH & FILTERS
+     ============================================ */
+  .subs-filters {
     display: flex;
-    align-items: center;
-    gap: 14px;
-    transition: all 0.25s;
-  }
-  .summary-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--border-strong);
-  }
-  .summary-icon {
-    width: 52px; height: 52px;
-    border-radius: var(--radius-md);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    border: 1px solid;
-  }
-  .summary-icon svg {
-    width: 24px; height: 24px;
-    stroke: currentColor; fill: none;
-    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
-  }
-  .summary-info { min-width: 0; }
-  .summary-value {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 26px;
-    font-weight: 800;
-    line-height: 1;
-    margin-bottom: 6px;
-  }
-  .summary-label { font-size: 12.5px; color: var(--text-muted); }
-
-  .filters-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    padding: 20px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    margin-bottom: 20px;
-  }
-  .filters-header {
-    display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 10px;
     margin-bottom: 16px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--border-soft);
+    width: 100%;
   }
-  .filters-header svg {
-    width: 18px; height: 18px;
-    stroke: var(--accent); fill: none;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+
+  @media (min-width: 640px) {
+    .subs-filters {
+      flex-direction: row;
+      align-items: center;
+    }
   }
-  .filters-header-title {
-    font-family: 'Tajawal', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text);
+
+  .subs-search {
+    position: relative;
     flex: 1;
+    width: 100%;
   }
 
-  .filters-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 12px;
-    align-items: end;
-  }
-  .filters-grid .form-group { margin: 0; }
-  .filters-grid .form-group label {
-    font-size: 12px;
-    margin-bottom: 6px;
-  }
-  .filters-grid input,
-  .filters-grid select {
-    padding: 10px 14px;
-    font-size: 13.5px;
+  .subs-search input {
+    width: 100%;
+    padding: 11px 42px 11px 14px;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
   }
 
-  .search-input-wrap { position: relative; }
-  .search-input-wrap input { padding-right: 42px; }
-  .search-input-wrap .search-icon {
+  .subs-search input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
+  }
+
+  .subs-search input::placeholder {
+    color: var(--text-dim);
+    opacity: 0.7;
+  }
+
+  .subs-search svg {
     position: absolute;
     right: 14px;
     top: 50%;
     transform: translateY(-50%);
-    width: 16px; height: 16px;
+    width: 18px;
+    height: 18px;
+    stroke: var(--text-dim);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
     pointer-events: none;
   }
-  .search-input-wrap .search-icon svg {
-    width: 100%; height: 100%;
-    stroke: var(--text-dim); fill: none;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-  }
 
-  .actions-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-  }
-
-  .table-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-  .table-card-header {
-    padding: 18px 22px;
-    border-bottom: 1px solid var(--border-soft);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .table-card-title {
-    font-family: 'Tajawal', sans-serif;
-    font-size: 16px;
-    font-weight: 800;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .table-card-title svg {
-    width: 18px; height: 18px;
-    stroke: var(--accent); fill: none;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-  }
-  .table-card-count {
-    font-size: 12.5px;
-    color: var(--text-dim);
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .table-wrap { overflow-x: auto; max-height: 70vh; }
-  table { width: 100%; min-width: 1200px; }
-  table th {
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    background: rgba(10, 12, 20, 0.98);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-
-  .member-cell { display: flex; align-items: center; gap: 10px; }
-  .member-avatar {
-    width: 38px; height: 38px;
-    border-radius: var(--radius-sm);
-    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-2-rgb), 0.15));
-    border: 1px solid rgba(var(--accent-rgb), 0.25);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    font-size: 11px;
-    color: var(--accent);
-    flex-shrink: 0;
-  }
-  .member-info { min-width: 0; line-height: 1.25; }
-  .member-name {
-    font-weight: 700;
-    font-size: 13.5px;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 180px;
-  }
-  .member-nid {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-dim);
-  }
-
-  .mno-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    background: linear-gradient(135deg, rgba(var(--success-rgb), 0.15), rgba(var(--accent-rgb), 0.1));
-    border: 1.5px solid var(--success);
-    border-radius: var(--radius-full);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--success);
-    font-weight: 700;
-    white-space: nowrap;
-  }
-
-  .days-cell {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    font-size: 13px;
-    white-space: nowrap;
-  }
-  .days-active { color: var(--success); }
-  .days-soon { color: var(--warning); }
-  .days-expired { color: var(--danger); }
-
-  .status-badge {
+  .subs-filter-btn {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 16px;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .subs-filter-btn:hover {
+    color: var(--accent);
+    border-color: rgba(var(--accent-rgb), 0.4);
+  }
+
+  .subs-filter-btn svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ============================================
+     SUBSCRIPTIONS LIST
+     ============================================ */
+  .subs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .subs-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.25s ease;
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .subs-card:hover {
+    border-color: rgba(var(--accent-rgb), 0.35);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .subs-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 3px;
+    height: 100%;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .subs-card.status-active::before { background: #22c55e; }
+  .subs-card.status-expiring::before { background: #f59e0b; }
+  .subs-card.status-expired::before { background: #ef4444; }
+
+  /* Card Header */
+  .subs-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .subs-card-avatar {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg,
+      rgba(var(--accent-rgb), 0.15),
+      rgba(var(--accent-2-rgb), 0.15));
+    border: 1.5px solid rgba(var(--accent-rgb), 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    color: var(--accent);
+    font-family: var(--font-heading, 'Alexandria', sans-serif);
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  .subs-card-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .subs-card-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .subs-card-name {
+    font-family: var(--font-heading, 'Alexandria', sans-serif);
+    font-size: 14.5px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.3;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .subs-card-role {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .subs-card-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     padding: 4px 10px;
     border-radius: 100px;
-    font-size: 11.5px;
+    font-size: 10.5px;
     font-weight: 700;
     border: 1.5px solid;
     white-space: nowrap;
+    flex-shrink: 0;
   }
-  .status-badge .dot {
-    width: 6px; height: 6px;
+
+  .subs-card-badge .dot {
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background: currentColor;
   }
-  .status-active {
-    background: rgba(var(--success-rgb), 0.1);
-    border-color: var(--success);
-    color: var(--success);
-  }
-  .status-soon {
-    background: rgba(var(--warning-rgb), 0.1);
-    border-color: var(--warning);
-    color: var(--warning);
-  }
-  .status-expired {
-    background: rgba(var(--danger-rgb), 0.1);
-    border-color: var(--danger);
-    color: var(--danger);
+
+  .subs-card-badge.active {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.4);
+    color: #22c55e;
   }
 
-  .row-actions {
+  .subs-card-badge.expiring {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.4);
+    color: #f59e0b;
+  }
+
+  .subs-card-badge.expired {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+  }
+
+  /* Card Details */
+  .subs-card-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border-soft);
+  }
+
+  .subs-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .subs-detail-label {
+    font-size: 10.5px;
+    color: var(--text-dim);
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    line-height: 1.3;
+  }
+
+  .subs-detail-value {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 700;
+    line-height: 1.4;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .subs-detail-value.amount {
+    font-family: var(--font-mono, monospace);
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  /* Card Actions */
+  .subs-card-actions {
     display: flex;
     gap: 6px;
-    justify-content: center;
-  }
-  .row-btn {
-    width: 32px; height: 32px;
-    border-radius: var(--radius-sm);
-    border: 1px solid;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .row-btn svg {
-    width: 14px; height: 14px;
-    stroke: currentColor; fill: none;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-  }
-  .row-btn.renew-btn {
-    background: rgba(var(--success-rgb), 0.08);
-    border-color: rgba(var(--success-rgb), 0.25);
-    color: var(--success);
-  }
-  .row-btn.renew-btn:hover {
-    background: rgba(var(--success-rgb), 0.2);
-    transform: translateY(-2px);
-  }
-  .row-btn.view-btn {
-    background: rgba(var(--accent-rgb), 0.08);
-    border-color: rgba(var(--accent-rgb), 0.25);
-    color: var(--accent);
-  }
-  .row-btn.view-btn:hover {
-    background: rgba(var(--accent-rgb), 0.2);
-    transform: translateY(-2px);
-  }
-
-  #paginationBox {
-    padding: 16px 22px;
+    flex-wrap: wrap;
+    padding-top: 8px;
     border-top: 1px solid var(--border-soft);
   }
 
-  .modal-content { max-height: 90vh; }
-  .modal-header-custom {
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border-soft);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    background: linear-gradient(135deg, rgba(var(--success-rgb), 0.06), transparent);
+  .subs-card-actions .btn {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 8px 12px;
+    font-size: 12px;
   }
-  .modal-header-custom h3 {
-    font-family: 'Tajawal', sans-serif;
-    font-size: 17px;
+
+  @media (min-width: 640px) {
+    .subs-card {
+      flex-direction: row;
+      align-items: center;
+      padding: 16px;
+      gap: 16px;
+    }
+
+    .subs-card-header {
+      flex: 0 0 auto;
+      min-width: 200px;
+    }
+
+    .subs-card-details {
+      grid-template-columns: repeat(3, 1fr);
+      flex: 1;
+      padding-top: 0;
+      border-top: none;
+      border-right: 1px dashed var(--border-soft);
+      padding-right: 16px;
+      margin-right: 0;
+    }
+
+    .subs-card-actions {
+      flex: 0 0 auto;
+      padding-top: 0;
+      border-top: none;
+      flex-wrap: nowrap;
+    }
+
+    .subs-card-actions .btn {
+      flex: 0 0 auto;
+      min-width: auto;
+    }
+  }
+
+  @media (min-width: 1025px) {
+    .subs-card {
+      padding: 18px 20px;
+    }
+
+    .subs-card-header {
+      min-width: 240px;
+    }
+
+    .subs-card-details {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+  }
+
+  /* ============================================
+     PROGRESS BAR (نسبة انتهاء الاشتراك)
+     ============================================ */
+  .subs-progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+
+  .subs-progress-bar {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 0.5s ease;
+  }
+
+  .subs-progress-bar.active { background: linear-gradient(90deg, #22c55e, #16a34a); }
+  .subs-progress-bar.expiring { background: linear-gradient(90deg, #f59e0b, #d97706); }
+  .subs-progress-bar.expired { background: linear-gradient(90deg, #ef4444, #b91c1c); }
+
+  /* ============================================
+     EMPTY STATE
+     ============================================ */
+  .subs-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    text-align: center;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    gap: 12px;
+  }
+
+  .subs-empty svg {
+    width: 60px;
+    height: 60px;
+    stroke: var(--text-dim);
+    fill: none;
+    stroke-width: 1.5;
+    opacity: 0.5;
+  }
+
+  .subs-empty h3 {
+    font-family: var(--font-heading, 'Alexandria', sans-serif);
+    font-size: 16px;
     font-weight: 800;
     color: var(--text);
+    margin: 0;
+    line-height: 1.3;
   }
-  .modal-footer-custom {
-    padding: 16px 24px;
-    border-top: 1px solid var(--border-soft);
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-  }
-  .close-btn {
-    width: 32px; height: 32px;
-    border-radius: var(--radius-sm);
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+
+  .subs-empty p {
+    font-size: 13.5px;
     color: var(--text-muted);
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s;
-  }
-  .close-btn:hover {
-    background: rgba(var(--danger-rgb), 0.15);
-    border-color: rgba(var(--danger-rgb), 0.4);
-    color: var(--danger);
-  }
-  .close-btn svg {
-    width: 14px; height: 14px;
-    stroke: currentColor; fill: none;
-    stroke-width: 2; stroke-linecap: round;
+    margin: 0;
+    line-height: 1.6;
+    max-width: 320px;
   }
 
-  @media (max-width: 1024px) {
-    .filters-grid { grid-template-columns: 1fr 1fr; }
-  }
-  @media (max-width: 768px) {
-    body { padding: 90px 0 30px; }
-    .subs-wrap { padding: 0 16px; }
-    .page-header { flex-direction: column; align-items: stretch; }
-    .filters-grid { grid-template-columns: 1fr; }
-    .actions-row { flex-direction: column; }
-    .actions-row .btn { width: 100%; }
-    .table-card-header { flex-direction: column; align-items: stretch; }
-    .summary-grid { grid-template-columns: 1fr; }
-    .tab-btn .tab-label { display: none; }
+  /* ============================================
+     LOADING
+     ============================================ */
+  .subs-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    gap: 12px;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 600;
   }
 
-  @media print {
-    .navbar, .actions-row, .filters-card, .tabs-nav,
-    .row-actions, .footer, .bg-grid, .bg-glow, .bg-layer {
-      display: none !important;
+  .subs-loading .spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(var(--accent-rgb), 0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ============================================
+     MODAL
+     ============================================ */
+  .modal-content {
+    max-width: 100%;
+  }
+
+  /* ============================================
+     RESPONSIVE
+     ============================================ */
+  @media (max-width: 380px) {
+    .subs-wrap {
+      padding: 0 12px;
     }
-    body { padding: 0 !important; background: white !important; color: black !important; }
-    .table-card, .summary-card {
-      border: 1px solid #999 !important;
-      background: white !important;
-      box-shadow: none !important;
-      backdrop-filter: none !important;
+
+    .subs-stat {
+      padding: 12px 12px;
     }
-    table th { background: #f0f0f0 !important; color: black !important; }
-    .summary-value, .member-name, .mno-badge,
-    .days-cell, .status-badge, .table-card-title,
-    .table-card-count {
-      color: black !important;
-      text-shadow: none !important;
+
+    .subs-stat-value {
+      font-size: 19px;
+    }
+
+    .subs-stat-icon {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+    }
+
+    .subs-stat-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .subs-tab {
+      padding: 8px 10px;
+      font-size: 11.5px;
+    }
+  }
+
+  /* ============================================
+     NOTCH SUPPORT
+     ============================================ */
+  @supports (padding: max(0px)) {
+    .subs-wrap {
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
     }
   }
 </style>
@@ -515,8 +795,8 @@
         </svg>
       </div>
       <div class="logo-text">
-        <div class="logo-main" data-site-name>نقابة تكنولوجيا المعلومات</div>
-        <div class="logo-sub">SUBSCRIPTIONS</div>
+        <div class="logo-main" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
+        <div class="logo-sub" data-setting="site_name_en">SUBSCRIPTIONS</div>
       </div>
     </a>
 
@@ -524,8 +804,11 @@
       <a href="dashboard.html">لوحة اللجنة</a>
       <a href="members.html">الأعضاء</a>
       <a href="revenue.html">الإيرادات</a>
+      <a href="expenses.html">المصروفات</a>
       <a href="subscriptions.html" class="active">الاشتراكات</a>
-      <a href="admin.html" id="adminLink" style="display:none;">لوحة النقيب</a>
+      <a href="head-approval.html">اعتماد النقيب</a>
+      <a href="admin.html">لوحة النقيب</a>
+      <a href="profile.html">حسابي</a>
       <a href="#" id="logoutBtn" class="btn-login" style="background:rgba(var(--danger-rgb),0.1) !important; border-color:rgba(var(--danger-rgb),0.4) !important; color:var(--danger) !important;">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -549,60 +832,70 @@
   </div>
 </header>
 
-<!-- MAIN -->
+<!-- MAIN CONTENT -->
 <div class="subs-wrap">
 
-  <div class="page-header">
-    <div class="page-header-info">
-      <div class="page-header-title">إدارة الاشتراكات</div>
-      <div class="page-header-sub">متابعة العضويات المنتهية والقريبة من الانتهاء</div>
+  <!-- HEADER -->
+  <div class="subs-header">
+    <div>
+      <h1 class="subs-title">إدارة الاشتراكات</h1>
+      <p class="subs-subtitle">متابعة العضويات المنتهية والقريبة من الانتهاء</p>
     </div>
   </div>
 
-  <!-- SUMMARY -->
-  <div class="summary-grid">
-    <div class="summary-card">
-      <div class="summary-icon" style="background:rgba(var(--success-rgb),0.08);border-color:rgba(var(--success-rgb),0.3);color:var(--success);">
+  <!-- STATS CARDS -->
+  <div class="subs-stats">
+
+    <!-- نشطة -->
+    <div class="subs-stat green">
+      <div class="subs-stat-info">
+        <p class="subs-stat-value" id="statActive">0</p>
+        <p class="subs-stat-label">اشتراكات نشطة</p>
+      </div>
+      <div class="subs-stat-icon">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
           <polyline points="22 4 12 14.01 9 11.01" />
         </svg>
       </div>
-      <div class="summary-info">
-        <div class="summary-value" id="sumActive" style="color:var(--success);">—</div>
-        <div class="summary-label">اشتراكات نشطة</div>
-      </div>
     </div>
 
-    <div class="summary-card">
-      <div class="summary-icon" style="background:rgba(var(--warning-rgb),0.08);border-color:rgba(var(--warning-rgb),0.3);color:var(--warning);">
+    <!-- تنتهي خلال 30 يوم -->
+    <div class="subs-stat yellow">
+      <div class="subs-stat-info">
+        <p class="subs-stat-value" id="statExpiring">0</p>
+        <p class="subs-stat-label">تنتهي خلال 30 يوم</p>
+      </div>
+      <div class="subs-stat-icon">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <circle cx="12" cy="12" r="10" />
           <polyline points="12 6 12 12 16 14" />
         </svg>
       </div>
-      <div class="summary-info">
-        <div class="summary-value" id="sumSoon" style="color:var(--warning);">—</div>
-        <div class="summary-label">تنتهي خلال 30 يوم</div>
-      </div>
     </div>
 
-    <div class="summary-card">
-      <div class="summary-icon" style="background:rgba(var(--danger-rgb),0.08);border-color:rgba(var(--danger-rgb),0.3);color:var(--danger);">
+    <!-- منتهية -->
+    <div class="subs-stat red">
+      <div class="subs-stat-info">
+        <p class="subs-stat-value" id="statExpired">0</p>
+        <p class="subs-stat-label">اشتراكات منتهية</p>
+      </div>
+      <div class="subs-stat-icon">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <circle cx="12" cy="12" r="10" />
           <line x1="15" y1="9" x2="9" y2="15" />
           <line x1="9" y1="9" x2="15" y2="15" />
         </svg>
       </div>
-      <div class="summary-info">
-        <div class="summary-value" id="sumExpired" style="color:var(--danger);">—</div>
-        <div class="summary-label">اشتراكات منتهية</div>
-      </div>
     </div>
 
-    <div class="summary-card">
-      <div class="summary-icon" style="background:rgba(var(--accent-rgb),0.08);border-color:rgba(var(--accent-rgb),0.3);color:var(--accent);">
+    <!-- إجمالي الأعضاء -->
+    <div class="subs-stat purple">
+      <div class="subs-stat-info">
+        <p class="subs-stat-value" id="statTotal">0</p>
+        <p class="subs-stat-label">إجمالي الأعضاء</p>
+      </div>
+      <div class="subs-stat-icon">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
           <line x1="16" y1="2" x2="16" y2="6" />
@@ -610,292 +903,149 @@
           <line x1="3" y1="10" x2="21" y2="10" />
         </svg>
       </div>
-      <div class="summary-info">
-        <div class="summary-value" id="sumTotal" style="color:var(--accent);">—</div>
-        <div class="summary-label">إجمالي الأعضاء</div>
-      </div>
     </div>
+
   </div>
 
   <!-- TABS -->
-  <div class="tabs-nav">
-    <button type="button" class="tab-btn active" data-tab-btn="active">
+  <div class="subs-tabs">
+    <button type="button" class="subs-tab active" data-filter="all">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="3" width="7" height="7" />
+        <rect x="14" y="3" width="7" height="7" />
+        <rect x="14" y="14" width="7" height="7" />
+        <rect x="3" y="14" width="7" height="7" />
+      </svg>
+      <span>الكل</span>
+      <span class="count" id="countAll">0</span>
+    </button>
+
+    <button type="button" class="subs-tab" data-filter="active">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
         <polyline points="22 4 12 14.01 9 11.01" />
       </svg>
-      <span class="tab-label">نشطة</span>
-      <span class="tab-count" id="countActive">0</span>
+      <span>نشطة</span>
+      <span class="count" id="countActive">0</span>
     </button>
 
-    <button type="button" class="tab-btn" data-tab-btn="soon">
+    <button type="button" class="subs-tab" data-filter="expiring">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="12" r="10" />
         <polyline points="12 6 12 12 16 14" />
       </svg>
-      <span class="tab-label">تنتهي قريبًا</span>
-      <span class="tab-count" id="countSoon">0</span>
+      <span>قريبة الانتهاء</span>
+      <span class="count" id="countExpiring">0</span>
     </button>
 
-    <button type="button" class="tab-btn" data-tab-btn="expired">
+    <button type="button" class="subs-tab" data-filter="expired">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="12" r="10" />
         <line x1="15" y1="9" x2="9" y2="15" />
         <line x1="9" y1="9" x2="15" y2="15" />
       </svg>
-      <span class="tab-label">منتهية</span>
-      <span class="tab-count" id="countExpired">0</span>
-    </button>
-
-    <button type="button" class="tab-btn" data-tab-btn="all">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <line x1="8" y1="6" x2="21" y2="6" />
-        <line x1="8" y1="12" x2="21" y2="12" />
-        <line x1="8" y1="18" x2="21" y2="18" />
-        <line x1="3" y1="6" x2="3.01" y2="6" />
-        <line x1="3" y1="12" x2="3.01" y2="12" />
-        <line x1="3" y1="18" x2="3.01" y2="18" />
-      </svg>
-      <span class="tab-label">الكل</span>
-      <span class="tab-count" id="countAll">0</span>
+      <span>منتهية</span>
+      <span class="count" id="countExpired">0</span>
     </button>
   </div>
 
-  <!-- FILTERS -->
-  <div class="filters-card">
-    <div class="filters-header">
+  <!-- SEARCH -->
+  <div class="subs-filters">
+    <div class="subs-search">
+      <input type="text" id="searchInput" placeholder="ابحث بالاسم أو رقم العضوية..." />
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
       </svg>
-      <div class="filters-header-title">البحث والفلاتر</div>
     </div>
-
-    <div class="filters-grid">
-      <div class="form-group search-input-wrap">
-        <label for="searchInput">بحث</label>
-        <div class="search-icon">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-        </div>
-        <input type="text" id="searchInput" placeholder="الاسم، رقم العضوية، الموبايل..." autocomplete="off" />
-      </div>
-
-      <div class="form-group">
-        <label for="branchFilter">الشعبة</label>
-        <select id="branchFilter">
-          <option value="all">كل الشعب</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="govFilter">المحافظة</label>
-        <select id="govFilter">
-          <option value="all">كل المحافظات</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="daysFilter">فترة التنبيه</label>
-        <select id="daysFilter">
-          <option value="30">30 يوم</option>
-          <option value="60">60 يوم</option>
-          <option value="90">90 يوم</option>
-          <option value="7">7 أيام</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- ACTIONS -->
-  <div class="actions-row">
-    <button type="button" class="btn btn-outline" id="refreshBtn">
+    <button type="button" class="subs-filter-btn" onclick="refreshList()">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <polyline points="1 4 1 10 7 10" />
         <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
       </svg>
       <span>تحديث</span>
     </button>
-
-    <button type="button" class="btn btn-outline" id="exportCsvBtn">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-        <polyline points="7 10 12 15 17 10" />
-        <line x1="12" y1="15" x2="12" y2="3" />
-      </svg>
-      <span>تصدير Excel (CSV)</span>
-    </button>
-
-    <button type="button" class="btn btn-outline" id="printBtn">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <polyline points="6 9 6 2 18 2 18 9" />
-        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-        <rect x="6" y="14" width="12" height="8" />
-      </svg>
-      <span>طباعة / PDF</span>
-    </button>
-
-    <button type="button" class="btn btn-primary" id="bulkRenewBtn">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <polyline points="1 4 1 10 7 10" />
-        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-      </svg>
-      <span>تجديد جماعي</span>
-    </button>
   </div>
 
-  <!-- TABLE -->
-  <div class="table-card">
-    <div class="table-card-header">
-      <div class="table-card-title">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-          <line x1="16" y1="2" x2="16" y2="6" />
-          <line x1="8" y1="2" x2="8" y2="6" />
-          <line x1="3" y1="10" x2="21" y2="10" />
-        </svg>
-        <span>الاشتراكات</span>
-      </div>
-      <div class="table-card-count" id="tableCount">—</div>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>العضو</th>
-            <th>رقم العضوية</th>
-            <th>الشعبة</th>
-            <th>المحافظة</th>
-            <th>بداية الاشتراك</th>
-            <th>نهاية الاشتراك</th>
-            <th>المتبقي</th>
-            <th>الحالة</th>
-            <th style="text-align:center;">إجراءات</th>
-          </tr>
-        </thead>
-        <tbody id="subsTableBody">
-          <tr>
-            <td colspan="9" style="text-align:center;padding:40px;color:var(--text-dim);">
-              جاري التحميل...
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div id="paginationBox"></div>
-  </div>
-
-</div>
-
-<!-- RENEW MODAL -->
-<div id="renewModal" class="modal modal-sm">
-  <div class="modal-content">
-    <div class="modal-header-custom">
-      <h3>تجديد الاشتراك</h3>
-      <button type="button" class="close-btn" onclick="closeRenewModal()">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
-    </div>
-
-    <div class="modal-body">
-      <input type="hidden" id="renewMemberId" />
-
-      <div class="form-group">
-        <label>العضو</label>
-        <input type="text" id="renewMemberName" disabled style="opacity:0.7;" />
-      </div>
-
-      <div class="form-group">
-        <label for="renewMonths">عدد شهور التجديد</label>
-        <select id="renewMonths">
-          <option value="12" selected>سنة (12 شهر)</option>
-          <option value="6">6 شهور</option>
-          <option value="3">3 شهور</option>
-          <option value="24">سنتان (24 شهر)</option>
-          <option value="1">شهر</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="renewStartDate">تاريخ البداية</label>
-        <input type="date" id="renewStartDate" />
-      </div>
-
-      <div class="form-group" style="margin-bottom:0;">
-        <label for="renewAmount">المبلغ (جنيه)</label>
-        <input type="number" id="renewAmount" placeholder="0" min="0" step="10" />
-      </div>
-    </div>
-
-    <div class="modal-footer-custom">
-      <button type="button" class="btn btn-ghost" onclick="closeRenewModal()">إلغاء</button>
-      <button type="button" class="btn btn-primary" id="confirmRenewBtn">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-        <span>تجديد</span>
-      </button>
+  <!-- LIST -->
+  <div class="subs-list" id="subsList">
+    <!-- Loading state -->
+    <div class="subs-loading">
+      <div class="spinner"></div>
+      <span>جاري التحميل...</span>
     </div>
   </div>
-</div>
 
-<!-- BULK RENEW MODAL -->
-<div id="bulkRenewModal" class="modal modal-sm">
-  <div class="modal-content">
-    <div class="modal-header-custom">
-      <h3>تجديد جماعي</h3>
-      <button type="button" class="close-btn" onclick="closeBulkRenewModal()">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
-    </div>
-
-    <div class="modal-body">
-      <div id="bulkRenewInfo" style="padding:14px 16px;background:rgba(var(--accent-rgb),0.06);border:1px solid rgba(var(--accent-rgb),0.25);border-radius:12px;margin-bottom:16px;font-size:13px;color:var(--text-muted);line-height:1.7;">
-        سيتم تجديد كل الأعضاء الظاهرين حاليًا في الجدول (حسب الفلتر المطبّق).
-      </div>
-
-      <div class="form-group">
-        <label for="bulkRenewMonths">عدد شهور التجديد</label>
-        <select id="bulkRenewMonths">
-          <option value="12" selected>سنة (12 شهر)</option>
-          <option value="6">6 شهور</option>
-          <option value="3">3 شهور</option>
-          <option value="24">سنتان (24 شهر)</option>
-        </select>
-      </div>
-
-      <div class="form-group" style="margin-bottom:0;">
-        <label for="bulkRenewAmount">المبلغ لكل عضو (جنيه)</label>
-        <input type="number" id="bulkRenewAmount" placeholder="0" min="0" step="10" />
-      </div>
-    </div>
-
-    <div class="modal-footer-custom">
-      <button type="button" class="btn btn-ghost" onclick="closeBulkRenewModal()">إلغاء</button>
-      <button type="button" class="btn btn-primary" id="confirmBulkRenewBtn">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
-        <span>تجديد الجميع</span>
-      </button>
-    </div>
-  </div>
 </div>
 
 <!-- FOOTER -->
-<footer class="footer" style="margin-top:40px;">
+<footer class="footer">
   <div class="container">
-    <div class="footer-bottom" style="border-top:none;padding-top:0;justify-content:center;">
-      <div>© 2026 <span data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</span> — جميع الحقوق محفوظة</div>
+    <div class="footer-grid">
+
+      <div class="footer-col">
+        <div class="footer-logo">
+          <div class="logo-badge">
+            <img id="footerLogoImg" src="" alt="شعار النقابة" style="display:none;" />
+            <svg class="logo-fallback" id="footerLogoFallback" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+              <line x1="14" y1="4" x2="10" y2="20" />
+            </svg>
+          </div>
+          <div>
+            <div class="footer-logo-main" data-site-name>نقابة تكنولوجيا المعلومات والبرمجيات</div>
+            <div class="footer-logo-sub" data-setting="site_name_en">I.T.W.S</div>
+          </div>
+        </div>
+        <p class="footer-desc" data-setting="footer_description">
+          منظومة رقمية متكاملة لتقديم وإدارة عضويات نقابة تكنولوجيا المعلومات والبرمجيات.
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h4>روابط سريعة</h4>
+        <ul class="footer-links">
+          <li><a href="home.html">الرئيسية</a></li>
+          <li><a href="dashboard.html">لوحة اللجنة</a></li>
+          <li><a href="members.html">الأعضاء</a></li>
+          <li><a href="subscriptions.html">الاشتراكات</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>تواصل معنا</h4>
+        <ul class="footer-contact">
+          <li>
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+            <span data-contact-email>info@itsyndicate.eg</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+            <span data-contact-phone>+20 100 000 0000</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span data-contact-address>القاهرة، مصر</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <div data-footer-text>© 2026 نقابة تكنولوجيا المعلومات والبرمجيات — جميع الحقوق محفوظة</div>
+      <div class="footer-head">
+        النقيب العام: <strong data-head-name>م / محمود جميل</strong>
+      </div>
     </div>
   </div>
 </footer>
@@ -905,18 +1055,492 @@
 <script src="js/theme-manager.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/realtime.js"></script>
-<script src="js/security.js"></script>
-<script src="js/subscriptions.js"></script>
 
 <script>
+/* ============================================
+   SUBSCRIPTIONS PAGE — LOGIC
+   ============================================ */
+(function () {
+  'use strict';
+
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+  let client = null;
+  let currentUser = null;
+  let allSubscriptions = [];
+  let filteredSubscriptions = [];
+  let currentFilter = 'all';
+  let searchQuery = '';
+
+  /* ============================================
+     HELPERS
+     ============================================ */
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '—';
+    try {
+      return new Date(dateStr).toLocaleDateString('ar-EG', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    } catch (e) {
+      return '—';
+    }
+  }
+
+  function daysBetween(date1, date2) {
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+    d1.setHours(0, 0, 0, 0);
+    d2.setHours(0, 0, 0, 0);
+    return Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
+  }
+
+  function getInitials(name) {
+    if (!name) return '؟';
+    const parts = String(name).trim().split(/\s+/);
+    if (parts.length === 0) return '؟';
+    if (parts.length === 1) return parts[0].charAt(0);
+    return parts[0].charAt(0) + ' ' + parts[1].charAt(0);
+  }
+
+  function showToast(message, type = 'info') {
+    const container = document.querySelector('.toast-container') || createToastContainer();
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-20px)';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  function createToastContainer() {
+    const c = document.createElement('div');
+    c.className = 'toast-container';
+    document.body.appendChild(c);
+    return c;
+  }
+
+  /* ============================================
+     AUTH CHECK
+     ============================================ */
+  async function checkAuth() {
+    try {
+      const { data: sessionData } = await client.auth.getSession();
+      const session = sessionData?.session;
+
+      if (!session) {
+        window.location.href = 'login.html';
+        return false;
+      }
+
+      currentUser = session.user;
+
+      const { data: userData } = await client
+        .from('users')
+        .select('role, full_name')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      const role = userData?.role || 'committee';
+      const allowedRoles = [
+        'head', 'vice_president', 'deputy', 'committee',
+        'treasurer', 'treasurer_assist'
+      ];
+
+      if (!allowedRoles.includes(role)) {
+        alert('ليس لديك صلاحية الوصول لهذه الصفحة');
+        window.location.href = 'login.html';
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      console.error('Auth error:', e);
+      window.location.href = 'login.html';
+      return false;
+    }
+  }
+
+  /* ============================================
+     LOAD SUBSCRIPTIONS
+     ============================================ */
+  async function loadSubscriptions() {
+    try {
+      const { data, error } = await client
+        .from('users')
+        .select(`
+          id,
+          full_name,
+          email,
+          phone,
+          role,
+          position,
+          membership_no,
+          membership_type_id,
+          subscription_start,
+          subscription_end,
+          is_active,
+          created_at,
+          membership_types (
+            name,
+            fee
+          )
+        `)
+        .eq('is_active', true)
+        .order('subscription_end', { ascending: true, nullsFirst: false });
+
+      if (error) throw error;
+
+      allSubscriptions = (data || []).map(u => {
+        const endDate = u.subscription_end;
+        const now = new Date();
+        let status = 'active';
+        let daysLeft = null;
+
+        if (endDate) {
+          daysLeft = daysBetween(now, endDate);
+          if (daysLeft < 0) status = 'expired';
+          else if (daysLeft <= 30) status = 'expiring';
+          else status = 'active';
+        } else {
+          status = 'expired';
+        }
+
+        return {
+          ...u,
+          status,
+          daysLeft,
+          endDate
+        };
+      });
+
+      updateStats();
+      applyFilterAndRender();
+
+    } catch (e) {
+      console.error('Load subscriptions error:', e);
+      renderError('فشل تحميل الاشتراكات');
+    }
+  }
+
+  /* ============================================
+     UPDATE STATS
+     ============================================ */
+  function updateStats() {
+    const active = allSubscriptions.filter(s => s.status === 'active').length;
+    const expiring = allSubscriptions.filter(s => s.status === 'expiring').length;
+    const expired = allSubscriptions.filter(s => s.status === 'expired').length;
+    const total = allSubscriptions.length;
+
+    setText('statActive', active);
+    setText('statExpiring', expiring);
+    setText('statExpired', expired);
+    setText('statTotal', total);
+
+    setText('countAll', total);
+    setText('countActive', active);
+    setText('countExpiring', expiring);
+    setText('countExpired', expired);
+  }
+
+  function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+
+  /* ============================================
+     APPLY FILTER + SEARCH + RENDER
+     ============================================ */
+  function applyFilterAndRender() {
+    let list = [...allSubscriptions];
+
+    /* Filter by status */
+    if (currentFilter !== 'all') {
+      list = list.filter(s => s.status === currentFilter);
+    }
+
+    /* Search */
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter(s => {
+        const name = (s.full_name || '').toLowerCase();
+        const email = (s.email || '').toLowerCase();
+        const memberNo = (s.membership_no || '').toLowerCase();
+        return name.includes(q) || email.includes(q) || memberNo.includes(q);
+      });
+    }
+
+    filteredSubscriptions = list;
+    renderList();
+  }
+
+  /* ============================================
+     RENDER LIST
+     ============================================ */
+  function renderList() {
+    const container = document.getElementById('subsList');
+    if (!container) return;
+
+    if (!filteredSubscriptions.length) {
+      renderEmpty();
+      return;
+    }
+
+    container.innerHTML = filteredSubscriptions.map(sub => renderCard(sub)).join('');
+  }
+
+  function renderCard(sub) {
+    const name = sub.full_name || 'بدون اسم';
+    const initials = getInitials(name);
+    const membershipNo = sub.membership_no || '—';
+    const typeName = sub.membership_types?.name || '—';
+    const phone = sub.phone || '—';
+    const startDate = formatDate(sub.subscription_start);
+    const endDate = formatDate(sub.subscription_end);
+    const fee = sub.membership_types?.fee || 0;
+
+    /* Status Badge */
+    let badgeClass = 'active';
+    let badgeLabel = 'نشط';
+    let progressPercent = 100;
+    let progressClass = 'active';
+
+    if (sub.status === 'expiring') {
+      badgeClass = 'expiring';
+      badgeLabel = `ينتهي خلال ${sub.daysLeft} يوم`;
+      progressPercent = Math.max(0, (sub.daysLeft / 30) * 100);
+      progressClass = 'expiring';
+    } else if (sub.status === 'expired') {
+      badgeClass = 'expired';
+      badgeLabel = 'منتهي';
+      progressPercent = 0;
+      progressClass = 'expired';
+    }
+
+    /* Days label */
+    let daysLabel = '—';
+    if (sub.daysLeft !== null) {
+      if (sub.daysLeft < 0) daysLabel = `منتهي منذ ${Math.abs(sub.daysLeft)} يوم`;
+      else if (sub.daysLeft === 0) daysLabel = 'ينتهي اليوم';
+      else daysLabel = `${sub.daysLeft} يوم متبقي`;
+    }
+
+    return `
+      <div class="subs-card status-${sub.status}">
+        <div class="subs-card-header">
+          <div class="subs-card-avatar">${escapeHtml(initials)}</div>
+          <div class="subs-card-info">
+            <h3 class="subs-card-name">${escapeHtml(name)}</h3>
+            <p class="subs-card-role">${escapeHtml(typeName)} • ${escapeHtml(membershipNo)}</p>
+          </div>
+          <span class="subs-card-badge ${badgeClass}">
+            <span class="dot"></span>
+            ${escapeHtml(badgeLabel)}
+          </span>
+        </div>
+
+        <div class="subs-card-details">
+          <div class="subs-detail">
+            <span class="subs-detail-label">الهاتف</span>
+            <p class="subs-detail-value" dir="ltr">${escapeHtml(phone)}</p>
+          </div>
+          <div class="subs-detail">
+            <span class="subs-detail-label">بداية الاشتراك</span>
+            <p class="subs-detail-value">${escapeHtml(startDate)}</p>
+          </div>
+          <div class="subs-detail">
+            <span class="subs-detail-label">نهاية الاشتراك</span>
+            <p class="subs-detail-value">${escapeHtml(endDate)}</p>
+          </div>
+          <div class="subs-detail">
+            <span class="subs-detail-label">قيمة الاشتراك</span>
+            <p class="subs-detail-value amount">${escapeHtml(fee)} ج.م</p>
+          </div>
+        </div>
+
+        <div style="width:100%; margin-top:4px;">
+          <div class="subs-progress">
+            <div class="subs-progress-bar ${progressClass}" style="width:${progressPercent}%"></div>
+          </div>
+          <p style="font-size:11px;color:var(--text-dim);margin-top:6px;text-align:center;">${escapeHtml(daysLabel)}</p>
+        </div>
+
+        <div class="subs-card-actions">
+          <button type="button" class="btn btn-sm btn-primary" onclick="renewSubscription('${sub.id}')">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+            </svg>
+            <span>تجديد</span>
+          </button>
+          <button type="button" class="btn btn-sm btn-outline" onclick="viewMember('${sub.id}')">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span>عرض</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ============================================
+     RENDER EMPTY
+     ============================================ */
+  function renderEmpty() {
+    const container = document.getElementById('subsList');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="subs-empty">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <h3>لا توجد اشتراكات</h3>
+        <p>لم يتم العثور على أي اشتراكات في هذه الفئة</p>
+      </div>
+    `;
+  }
+
+  /* ============================================
+     RENDER ERROR
+     ============================================ */
+  function renderError(message) {
+    const container = document.getElementById('subsList');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="subs-empty">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <h3>حدث خطأ</h3>
+        <p>${escapeHtml(message)}</p>
+      </div>
+    `;
+  }
+
+  /* ============================================
+     ACTIONS
+     ============================================ */
+  window.refreshList = async function () {
+    const container = document.getElementById('subsList');
+    if (container) {
+      container.innerHTML = `
+        <div class="subs-loading">
+          <div class="spinner"></div>
+          <span>جاري التحديث...</span>
+        </div>
+      `;
+    }
+    await loadSubscriptions();
+    showToast('تم التحديث', 'success');
+  };
+
+  window.renewSubscription = function (id) {
+    const sub = allSubscriptions.find(s => s.id === id);
+    if (!sub) return;
+    if (confirm(`تجديد اشتراك "${sub.full_name}" لمدة سنة إضافية؟`)) {
+      /* TODO: Call renewal logic */
+      showToast('ميزة التجديد قريبًا', 'info');
+    }
+  };
+
+  window.viewMember = function (id) {
+    window.location.href = `members.html?id=${id}`;
+  };
+
+  /* ============================================
+     TABS
+     ============================================ */
+  function initTabs() {
+    $$('.subs-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const filter = tab.dataset.filter;
+        if (!filter) return;
+
+        $$('.subs-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        currentFilter = filter;
+        applyFilterAndRender();
+      });
+    });
+  }
+
+  /* ============================================
+     SEARCH
+     ============================================ */
+  function initSearch() {
+    const input = document.getElementById('searchInput');
+    if (!input) return;
+
+    let timer = null;
+    input.addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        searchQuery = input.value;
+        applyFilterAndRender();
+      }, 250);
+    });
+  }
+
+  /* ============================================
+     NAVBAR
+     ============================================ */
   window.toggleMobileNav = function () {
     const nav = document.getElementById('navLinks');
     if (nav) nav.classList.toggle('open');
   };
 
-  (function () {
+  function initNavbar() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (!confirm('تسجيل الخروج؟')) return;
+        try {
+          await client.auth.signOut();
+        } catch (err) {}
+        window.location.href = 'login.html';
+      });
+    }
+
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (!navbar) return;
+      if (window.scrollY > 30) navbar.classList.add('scrolled');
+      else navbar.classList.remove('scrolled');
+    }, { passive: true });
+  }
+
+  /* ============================================
+     BACKGROUND CANVAS
+     ============================================ */
+  function initCanvas() {
     const canvas = document.getElementById('bgCanvas');
     if (!canvas) return;
+
     const ctx = canvas.getContext('2d');
     let W = 0, H = 0, dots = [];
 
@@ -931,23 +1555,26 @@
 
     function resize() {
       const dpr = window.devicePixelRatio || 1;
-      W = window.innerWidth; H = window.innerHeight;
-      canvas.width = W * dpr; canvas.height = H * dpr;
-      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       init();
     }
 
     function init() {
-      const count = Math.min(45, Math.max(18, Math.floor(W / 34)));
+      const count = Math.min(40, Math.max(15, Math.floor(W / 40)));
       dots = [];
       for (let i = 0; i < count; i++) {
         dots.push({
           x: Math.random() * W,
           y: Math.random() * H,
-          vx: (Math.random() - 0.5) * 0.25,
-          vy: (Math.random() - 0.5) * 0.25,
-          r: Math.random() * 1.3 + 0.5
+          vx: (Math.random() - 0.5) * 0.22,
+          vy: (Math.random() - 0.5) * 0.22,
+          r: Math.random() * 1.2 + 0.4
         });
       }
     }
@@ -956,19 +1583,22 @@
       const rgb = accentRgb();
       ctx.clearRect(0, 0, W, H);
       dots.forEach((d, i) => {
-        d.x += d.vx; d.y += d.vy;
+        d.x += d.vx;
+        d.y += d.vy;
         if (d.x < 0 || d.x > W) d.vx *= -1;
         if (d.y < 0 || d.y > H) d.vy *= -1;
-        ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.4)`;
+
+        ctx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},0.35)`;
         ctx.beginPath();
         ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
         ctx.fill();
+
         for (let j = i + 1; j < dots.length; j++) {
           const dx = d.x - dots[j].x;
           const dy = d.y - dots[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 130) {
-            ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.07 * (1 - dist / 130)})`;
+            ctx.strokeStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${0.06 * (1 - dist / 130)})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(d.x, d.y);
@@ -987,7 +1617,49 @@
 
     resize();
     loop();
-  })();
+  }
+
+  /* ============================================
+     INIT
+     ============================================ */
+  function init() {
+    if (typeof window.onSupabaseReady !== 'function') {
+      setTimeout(init, 100);
+      return;
+    }
+
+    window.onSupabaseReady(async (c) => {
+      client = c;
+
+      const ok = await checkAuth();
+      if (!ok) return;
+
+      initTabs();
+      initSearch();
+      initNavbar();
+      initCanvas();
+
+      /* Load data */
+      await loadSubscriptions();
+
+      /* Realtime */
+      if (window.Realtime) {
+        window.Realtime.watch('users', () => {
+          loadSubscriptions();
+        }, { debounceMs: 1000 });
+      }
+
+      console.log('[Subscriptions] Ready');
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
 </script>
 
 </body>
